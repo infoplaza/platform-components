@@ -1,0 +1,44 @@
+{
+  "name": "platform-components",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./components": {
+      "types": "./dist/components/index.d.ts",
+      "default": "./dist/components/index.js"
+    }
+  },
+  "scripts": {
+    "build": "rm -rf dist && rollup -c && tsc -p tsconfig.json --emitDeclarationOnly",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "maplibre-gl": "^5.24.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-map-gl": "^8.1.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "rollup": "^4.62.0",
+    "tslib": "^2.8.1",
+    "typescript": "^6.0.3"
+  }
+}
