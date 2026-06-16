@@ -1,9 +1,12 @@
 {
-  "name": "platform-components",
+  "name": "@infoplaza/platform",
   "version": "1.0.0",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -12,10 +15,14 @@
     "./components": {
       "types": "./dist/components/index.d.ts",
       "default": "./dist/components/index.js"
+    },
+    "./providers": {
+      "types": "./dist/providers/index.d.ts",
+      "default": "./dist/providers/index.js"
     }
   },
   "scripts": {
-    "build": "rm -rf dist && rollup -c && tsc -p tsconfig.json --emitDeclarationOnly",
+    "build": "rm -rf dist && rollup -c && tsc -p tsconfig.json --emitDeclarationOnly --ignoreDeprecations 6.0",
     "demo": "vite --config demo/vite.config.ts",
     "demo:build": "vite build --config demo/vite.config.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -34,6 +41,7 @@
     "react-map-gl": "^8.1.1"
   },
   "devDependencies": {
+    "@rollup/plugin-alias": "^6.0.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.3.0",

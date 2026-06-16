@@ -1,7 +1,7 @@
-export { default as BaseMap } from './base-map'
+export { default as BaseMap } from '@/src/components/base-map'
 export type {
   BaseMapProps,
   BaseMapStyle,
   BaseMapModelInfo,
   MapStyleVariant,
-} from './base-map'
+} from '@/src/components/base-map'
