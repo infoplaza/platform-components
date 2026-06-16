@@ -3,7 +3,7 @@ import React, {
   useContext,
   useMemo,
 } from 'react'
-import { resolveAvailableModel } from '@/src/providers/weather/weather.utils'
+import { resolveAvailableModel } from '@/src/providers/weather/utils'
 import {
   useWeatherElements,
   useWeatherLayers,

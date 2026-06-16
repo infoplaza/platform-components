@@ -7,7 +7,7 @@ import {
   suggestModelLevel,
   suggestModelMember,
   suggestModelRun,
-} from '@/src/providers/weather/weather.utils'
+} from '@/src/providers/weather/utils'
 import type {
   ElementInfo,
   ModelInfo,
