@@ -1,27 +1,11 @@
-import React, {
-  createContext,
-  useContext,
-  useMemo,
-} from 'react'
+import React, { createContext, useContext, useMemo } from 'react'
 import { resolveAvailableModel } from '@/src/providers/weather/utils'
-import {
-  useWeatherElements,
-  useWeatherLayers,
-  useWeatherModels,
-  useWeatherState,
-  useWeatherSuggestions,
-} from '@/src/providers/weather/hooks'
-import type {
-  WeatherConfig,
-  WeatherContextValue,
-} from '@/@types/weather.types'
+import { useWeatherElements, useWeatherLayers, useWeatherModels, useWeatherState, useWeatherSuggestions } from '@/src/providers/weather/hooks'
+import type { WeatherConfig, WeatherContextValue } from '@/@types/weather.types'
 
 export const WeatherMapContext = createContext<WeatherContextValue | null>(null)
 
-export const WeatherMapProvider: React.FC<WeatherConfig> = ({
-  children,
-  ...config
-}) => {
+export const WeatherMapProvider: React.FC<WeatherConfig> = ({ children, ...config }) => {
   const weatherState = useWeatherState(config)
   const { modelInfo: selectedModelInfo } = useWeatherModels(
     config.models,

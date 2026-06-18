@@ -1,1 +1,2 @@
-export * from '@/src/providers/weather'
+export * from './weather'
+export * from './providers'

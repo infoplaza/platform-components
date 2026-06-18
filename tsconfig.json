@@ -6,7 +6,8 @@
     "baseUrl": ".",
     "paths": {
       "@/src/*": ["src/*"],
-      "@/@types/*": ["@types/*"]
+      "@/@types/*": ["@types/*"],
+      "@/config/*": ["src/config/*"]
     },
     "jsx": "react-jsx",
     "strict": true,

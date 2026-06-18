@@ -1,4 +1,5 @@
 import alias from '@rollup/plugin-alias'
+import commonjs from '@rollup/plugin-commonjs'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import terser from '@rollup/plugin-terser'
 import typescript from '@rollup/plugin-typescript'
@@ -20,7 +21,10 @@ export default {
   input: {
     index: 'src/index.ts',
     'components/index': 'src/components/index.ts',
+    'layers/composer': 'src/layers/composer.tsx',
+    'layers/overlay': 'src/layers/overlay.tsx',
     'providers/index': 'src/providers/index.ts',
+    'events/index': 'src/events/index.tsx',
   },
   external,
   output: {
@@ -45,6 +49,7 @@ export default {
       ],
     }),
     nodeResolve({ extensions: ['.mjs', '.js', '.json', '.ts', '.tsx'] }),
+    commonjs(),
     typescript({
       tsconfig: './tsconfig.json',
       compilerOptions: { ignoreDeprecations: '6.0' },

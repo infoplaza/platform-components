@@ -1,0 +1,1 @@
+export const imageRendering = 'IMAGE_V2'

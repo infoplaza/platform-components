@@ -1,7 +1,12 @@
+import { TIMESTAMP_STATUS } from './config'
+import type { Layer } from "@/@types/layer.types"
 import type {
+  AggregatedLayer,
   ElementInfo,
-  LayerInfoBase,
   ModelInfo,
+  MapLayer,
+  LayerData,
+  TimestampInfo
 } from '@/@types/weather.types'
 
 const FREE_MODEL_SLUG = 'gfs'
@@ -34,7 +39,7 @@ export const resolveAvailableModel = <T extends SelectableModel>(
 }
 
 export const buildUnit = (
-  layer: LayerInfoBase,
+  layer: Layer,
   getUnit: (key: string) => { value: string },
 ): string => {
   let unit = layer.unit ?? layer.units?.[0] ?? ''
@@ -57,6 +62,58 @@ export const createLayerId = (
 ): string => {
   return `layer-${viewKey}${elementInfo?.slug ? `-${elementInfo.slug}` : ''}${element ? `-${element}` : ''}`
 }
+
+/**
+ * Aggregates map layers by timestamp
+ * @param layers - Map layers array
+ * @returns Aggregated layers by timestamp
+ */
+export const aggregateMapLayers = (layers: MapLayer[] | undefined): Record<string, AggregatedLayer> | null => {
+  if (!layers) return null
+
+  return layers.reduce((acc, cur) => {
+      cur?.data?.layers?.forEach((layer: LayerData) => {
+          const { timestamp, url, datetime } = layer
+          if (!acc[timestamp]) {
+              acc[timestamp] = { timestamp, urls: url ? [url] : [], datetime }
+          } else {
+              if (!acc[timestamp]?.urls) acc[timestamp].urls = [url]
+              acc[timestamp].urls.push(url)
+          }
+      })
+
+      return acc
+  }, {} as Record<string, AggregatedLayer>)
+}
+
+/**
+* Builds timestamp information for UI
+* @param aggregatedLayers - Aggregated map layers
+* @param preloadedData - Preloaded data URLs
+* @returns Timestamp information array
+*/
+export const buildTimestampsInfo = (
+  aggregatedLayers: Record<string, AggregatedLayer> | null, 
+  preloadedData: string[]
+): TimestampInfo[] => {
+  if (!aggregatedLayers) {
+      return []
+  }
+
+  return Object.values(aggregatedLayers).map((ts, index) => {
+      const urlList = ts?.urls.filter(Boolean)
+      const isLoaded = urlList.some(url => preloadedData.includes(url))
+
+      return {
+          index,
+          timestamp: ts.timestamp,
+          active: urlList.length > 0,
+          url: urlList.length > 0,
+          procent: isLoaded ? TIMESTAMP_STATUS.LOADED : TIMESTAMP_STATUS.NOT_LOADED,
+      }
+  }) as unknown as TimestampInfo[]
+}
+
 
 export const findElementInfo = (
   modelInfo: ModelInfo | null,

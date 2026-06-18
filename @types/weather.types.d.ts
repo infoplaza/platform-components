@@ -1,20 +1,10 @@
-import type { ReactNode } from 'react'
+import { ReactNode } from 'react'
+import type { Layer, LayerConfigSettings } from '@/@types/layer.types'
+import type Connection from '../../connections/connection'
 
-export type UnitResolver = (key: string) => { value: string }
-
-export type ConnectionMap = Record<string, unknown>
-
-export interface LayerInfoBase {
-  connection: string
-  element: string
-  rendering: string | string[]
-  unit?: string
-  units?: string[]
-  unitKey?: string
-  i18n?: string
-  grayscale?: boolean
-  [key: string]: unknown
-}
+/**
+ * Weather Context Type Definitions
+ */
 
 export interface WeatherConfig {
   model?: string
@@ -25,8 +15,6 @@ export interface WeatherConfig {
   models?: ModelInfo[]
   hideLayers?: string[]
   children?: ReactNode
-  connections?: ConnectionMap
-  getUnit?: UnitResolver
 }
 
 export interface WeatherState {
@@ -37,7 +25,7 @@ export interface WeatherState {
   modelLevel: string | null
   month: string | null
   period: string | null
-  mapState: unknown | null
+  mapState: MapState | null
 }
 
 export interface ModelInfo {
@@ -48,7 +36,7 @@ export interface ModelInfo {
   members: string[]
   elementGroups: ElementGroup[]
   type: string
-  description?: unknown
+  description?: any
   available?: boolean
 }
 
@@ -61,35 +49,159 @@ export interface ElementInfo {
   slug: string
   name: string
   description?: string
-  layers: LayerInfoBase[]
+  layers: Layer[]
   levels?: string[]
+  lightning?: boolean
   group?: ElementGroup
   i18n?: string
   available?: boolean
-  [key: string]: unknown
+  live?: boolean
+  refresh?: number
+  preloading?: boolean
+  options?: {
+    legend?: {
+      type?: string
+      position?: string
+      size?: string
+      color?: string
+    }
+    timebar?: {
+      acceptedMinutes?: string[]
+    }
+  }
 }
 
-export interface LayerViewConfig {
-  connection: unknown
+export interface LayerConfig {
+  element: string
+  rendering: string
+  unit?: string
+  units?: string[]
+  unitKey?: string
+  palette?: any
+  model?: string
+  period?: string
+  i18n?: string
+  grayscale?: boolean
+}
+
+export interface LayerInfo extends Layer {
+  id: string
+  view: ViewConfig
+}
+
+export interface ViewConfig {
   key: string | string[]
   rendering: string[]
+  [key: string]: any
 }
 
-export interface LayerInfo extends LayerInfoBase {
-  id: string
-  unit: string
-  view: LayerViewConfig
+export interface TimestampInfo {
+  index?: number
+  loaded?: boolean
+  timestamp: number
   active: boolean
+  url: boolean
+  procent: number
+}
+
+export interface AggregatedLayer {
+  timestamp: string
+  urls: string[]
+  datetime: string
 }
 
 export interface WeatherLayersInfo {
+  isMixedLayers?: boolean
   run: string
   member: string
   level: string
   layers: LayerInfo[]
+  legends?: LegendInfo[] // deprecated, should be removed in the future
+}
+
+export interface LegendInfo {
+  i18n: string
+  slug: string
+  unitKey?: string
+  unit?: string
+  visualization: {
+    databounds: any
+    labels?: string[]
+    datalabels: any
+    colors: any
+  }
+}
+
+export interface MapState {
+  layers: MapLayer[]
+}
+
+export interface MapLayer {
+  id?: string
+  active?: boolean
+  preloading?: boolean
+  rendering?: string | string[]
+  palettesUrl?: string
+  data?: {
+    layers?: LayerData[]
+    features?: GeoJSON.Feature[]
+    element?: {
+      composite?: boolean
+      isLogscale?: boolean
+      unit?: string
+      level?: string
+      databounds: any
+      datalabels: any
+      labels?: string[]
+      visualization: any
+      palette?: {
+        png: string
+        jpg: string
+        webp: string
+      }
+    }
+    elementdescription?: {
+      unit?: string
+      visualization?: {
+        databounds: any
+        datalabels: any
+        labels?: string[]
+        colors: any
+      }
+    }
+    rundescription?: {
+      region_category?: string
+    }
+  }
+  view?: {
+    legend?: boolean
+  }
+  palette?: string
+  isAlphaImage?: boolean
+  grayscale?: boolean
+  i18n?: string
+  settings?: LayerConfigSettings
+  element?: string,
+  level?: string,
+  unitKey?: string
+  unit?: string
+  boundingBox?:  {
+    west: number
+    south: number
+    east: number
+    north: number
+  }
+  layersApi?: string
+}
+
+export interface LayerData {
+  timestamp: string
+  url: string
+  datetime: string
 }
 
 export interface WeatherContextValue extends WeatherState {
+  // State setters
   setElement: (element: string) => void
   setModel: (model: string) => void
   setModelRun: (run: string) => void
@@ -97,11 +209,15 @@ export interface WeatherContextValue extends WeatherState {
   setModelLevel: (level: string | null) => void
   setMonth: (month: string | null) => void
   setPeriod: (period: string | null) => void
-  setMapState: (state: unknown | null) => void
+  setMapState: (state: MapState | null) => void
+  
+  // Computed values
   modelInfo: ModelInfo | null
   selectedModelInfo?: ModelInfo | null
   elementInfo: ElementInfo | null
   layersInfo: WeatherLayersInfo | null
+  
+  // Config values
   hideLayers: string[]
 }
 
@@ -109,4 +225,10 @@ export interface WeatherSuggestions {
   suggestedModelRun: string
   suggestedModelMember: string
   suggestedModelLevel: string
+}
+
+export interface EnrichedMapLayer extends MapLayer {
+  connection: Connection
+  getLayersUrl: (args: any) => string
+  layersUrl?: string
 }
