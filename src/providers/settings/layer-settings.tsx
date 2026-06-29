@@ -1,5 +1,3 @@
-'use client'
-
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useReducer, ReactNode } from 'react'
 import { ImageInterpolation, type ImageInterpolation as ImageInterpolationType } from '@/src/_utils/image-interpolation'
 import StorageService from '@/src/utilities/storage'

@@ -5,7 +5,6 @@ import { ImageType } from '../../_utils/image-type'
 import { ImageInterpolation } from '../../_utils/image-interpolation'
 import { ClipExtension } from "@deck.gl/extensions"
 import type { LayerSettingsState } from '@/src/providers/settings/layer-settings'
-import type { Palette } from '@/src/_utils/palette'
 import { getPaletteBounds } from '@/src/_utils/image-unscale'
 import { type Legend } from '@/src/_utils/pixel-value'
 
@@ -15,7 +14,7 @@ import { type Legend } from '@/src/_utils/pixel-value'
 interface BitmapLayerConfig {
     image: TextureData | ImageData
     bounds: [number, number, number, number]
-    palette?: Palette | null
+    palette?: any | null
     opacity?: number
     imageUnscale?: [number, number]
     imageSmoothing?: number

@@ -1,8 +1,9 @@
 {
   "name": "@infoplaza/platform",
-  "version": "1.0.1",
+  "version": "1.0.7",
   "description": "",
   "main": "./dist/index.js",
+  "style": "./dist/styles.css",
   "types": "./dist/index.d.ts",
   "publishConfig": {
     "access": "public"
@@ -19,13 +20,35 @@
     "./providers": {
       "types": "./dist/providers/index.d.ts",
       "default": "./dist/providers/index.js"
-    }
+    },
+    "./events": {
+      "types": "./dist/events/index.d.ts",
+      "default": "./dist/events/index.js"
+    },
+    "./layers/composer": {
+      "types": "./dist/layers/composer.d.ts",
+      "default": "./dist/layers/composer.js"
+    },
+    "./layers/overlay": {
+      "types": "./dist/layers/overlay.d.ts",
+      "default": "./dist/layers/overlay.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./styles.embed.css": "./dist/styles.embed.css"
   },
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
-    "build": "rm -rf dist && rollup -c && tsc -p tsconfig.json --emitDeclarationOnly --ignoreDeprecations 6.0",
+    "build": "rm -rf dist && rollup -c && tsc -p tsconfig.json --emitDeclarationOnly --ignoreDeprecations 6.0 && node scripts/fix-dts.mjs && npm run build:css",
+    "build:css": "npm run build:css:full && npm run build:css:embed",
+    "build:css:full": "tailwindcss -i ./src/styles/tailwind.css -o ./dist/styles.css --minify",
+    "build:css:embed": "tailwindcss -i ./src/styles/tailwind.embed.css -o ./dist/styles.embed.css --minify",
     "demo": "vite --config demo/vite.config.ts",
     "demo:build": "vite build --config demo/vite.config.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "publish": "npm publish",
+    "publish:dry-run": "npm publish --dry-run"
   },
   "keywords": [],
   "author": "",
@@ -40,20 +63,26 @@
     "@deck.gl/geo-layers": "^9.3.4",
     "@deck.gl/layers": "^9.3.4",
     "@deck.gl/mapbox": "^9.3.4",
+    "@headlessui/react": "^2.2.10",
     "@luma.gl/constants": "^9.3.4",
     "@luma.gl/core": "^9.3.4",
     "@luma.gl/engine": "^9.3.4",
     "@mapbox/sphericalmercator": "^2.0.2",
     "@reduxjs/toolkit": "^2.12.0",
-    "cpt2js": "^1.6.2",
-    "geodesy-fn": "^1.2.2",
+    "date-fns": "^4.4.0",
     "geokdbush": "^2.1.0",
     "maplibre-gl": "^5.24.0",
     "proj4": "^2.20.9",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
     "react-map-gl": "^8.1.1",
-    "react-redux": "^9.3.0"
+    "react-redux": "^9.3.0",
+    "tailwind-merge": "^3.6.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "optionalDependencies": {
+    "geotiff": "^3.0.5"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^6.0.0",
@@ -61,13 +90,20 @@
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.3.0",
+    "@tailwindcss/cli": "^4.3.1",
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/typography": "^0.5.20",
     "@types/geojson": "^7946.0.16",
     "@types/lodash": "^4.17.24",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "geotiff": "^3.0.5",
     "lodash": "^4.18.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "rollup": "^4.62.0",
+    "tailwind-scrollbar-hide": "^4.0.0",
+    "tailwindcss": "^4.3.1",
     "tslib": "^2.8.1",
     "typescript": "^6.0.3",
     "vite": "^8.0.16"

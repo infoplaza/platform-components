@@ -8,7 +8,6 @@ import {ImageType} from '../../_utils/image-type';
 import type {ImageUnscale} from '../../_utils/image-unscale';
 import {isViewportGlobe, isViewportInZoomBounds} from '../../_utils/viewport';
 import type {RasterPointProperties} from '../../_utils/raster-data';
-import type {Palette} from '../../_utils/palette';
 import {createEmptyTextureCached} from '../../_utils/texture';
 import type {TextureData} from '../../_utils/texture-data';
 import {getPixelMagnitudeValue, type Legend} from '../../_utils/pixel-value';
@@ -34,7 +33,7 @@ type _ImageBitmapLayerProps = BitmapLayerProps & {
   minZoom: number | null;
   maxZoom: number | null;
 
-  palette: Palette | null;
+  palette: any | null;
   legend?: Legend;
   isAlphaImage: boolean;
   paletteData: TextureData | null;

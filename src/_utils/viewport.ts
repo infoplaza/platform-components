@@ -1,6 +1,5 @@
 import type { Viewport, WebMercatorViewport, _GlobeViewport as GlobeViewport, LayerExtension } from '@deck.gl/core'
 import { ClipExtension } from '@deck.gl/extensions'
-import { distance } from './geodesy'
 import { MERCATOR_BOUNDS, wrapBounds, clipBounds, isPositionInBounds } from './bounds'
 
 export function isViewportGlobe(viewport: Viewport): viewport is GlobeViewport {
@@ -26,27 +25,27 @@ export function getViewportGlobeCenter(viewport: GlobeViewport): [number, number
     return [viewport.longitude, viewport.latitude]
 }
 
-export function getViewportGlobeRadius(viewport: GlobeViewport): number {
-    const viewportGlobeCenter = getViewportGlobeCenter(viewport)
+// export function getViewportGlobeRadius(viewport: GlobeViewport): number {
+//     const viewportGlobeCenter = getViewportGlobeCenter(viewport)
 
-    const viewportGlobeRadius = Math.max(
-        distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, 0])),
-        distance(viewportGlobeCenter, viewport.unproject([0, viewport.height / 2])),
-        ...(viewport.width > viewport.height ? [
-            distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2 - viewport.height / 4 * 1, viewport.height / 2])),
-            distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2 - viewport.height / 2 * 1, viewport.height / 2])),
-            distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2 - viewport.height / 4 * 3, viewport.height / 2])),
-            distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2 - viewport.height, viewport.height / 2])),
-        ] : [
-            distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, viewport.height / 2 - viewport.width / 4 * 1])),
-            distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, viewport.height / 2 - viewport.width / 2 * 1])),
-            distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, viewport.height / 2 - viewport.width / 4 * 3])),
-            distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, viewport.height / 2 - viewport.width])),
-        ])
-    )
+//     const viewportGlobeRadius = Math.max(
+//         distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, 0])),
+//         distance(viewportGlobeCenter, viewport.unproject([0, viewport.height / 2])),
+//         ...(viewport.width > viewport.height ? [
+//             distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2 - viewport.height / 4 * 1, viewport.height / 2])),
+//             distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2 - viewport.height / 2 * 1, viewport.height / 2])),
+//             distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2 - viewport.height / 4 * 3, viewport.height / 2])),
+//             distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2 - viewport.height, viewport.height / 2])),
+//         ] : [
+//             distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, viewport.height / 2 - viewport.width / 4 * 1])),
+//             distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, viewport.height / 2 - viewport.width / 2 * 1])),
+//             distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, viewport.height / 2 - viewport.width / 4 * 3])),
+//             distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, viewport.height / 2 - viewport.width])),
+//         ])
+//     )
 
-    return viewportGlobeRadius
-}
+//     return viewportGlobeRadius
+// }
 
 export function getViewportBounds(viewport: WebMercatorViewport): [number, number, number, number] {
     return wrapBounds(viewport.getBounds())

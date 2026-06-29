@@ -1,0 +1,10 @@
+const FallbackIcon = ({ className }) => {
+    return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <path fill="none" stroke="currentColor" strokeWidth="2"
+                d="M2.998 1H17.5L21 4.5V23H3zM16 1v5h5M9 12l6 6m0-6l-6 6"/>
+        </svg>
+    )
+}
+
+export default FallbackIcon

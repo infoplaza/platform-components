@@ -3,7 +3,7 @@ import { SphericalMercator } from '@mapbox/sphericalmercator'
 import mesh from '@/src/utilities/mesh'
 import KDBush from 'kdbush'
 import * as geokdbush from 'geokdbush'
-import { isViewportGlobe, isViewportMercator, getViewportGlobeCenter, getViewportGlobeRadius, getViewportBounds, getViewportZoom } from './viewport'
+import { isViewportGlobe, isViewportMercator, getViewportGlobeCenter, getViewportBounds, getViewportZoom } from './viewport'
 import { wrapLongitude } from './bounds'
 
 const GLOBAL_POSITIONS_AT_ZOOM_CACHE = new Map<number, GeoJSON.Position[]>()
@@ -11,12 +11,14 @@ const GLOBAL_INDEX_AT_ZOOM_CACHE = new Map<number, KDBush>()
 
 export function getViewportGridPositions(viewport: Viewport, zoomOffset: number = 0, layout: 'squared' | 'staggered' = 'staggered'): GeoJSON.Position[] {
     let positions: GeoJSON.Position[]
-    if (isViewportGlobe(viewport)) {
-        const viewportGlobeCenter = getViewportGlobeCenter(viewport)
-        const viewportGlobeRadius = getViewportGlobeRadius(viewport)
-        const gridZoom = Math.floor(getViewportZoom(viewport) + zoomOffset + 1)
-        positions = generateGlobeGrid(viewportGlobeCenter, viewportGlobeRadius, gridZoom)
-    } else if (isViewportMercator(viewport)) {
+    // if (isViewportGlobe(viewport)) {
+    //     const viewportGlobeCenter = getViewportGlobeCenter(viewport)
+    //     const viewportGlobeRadius = getViewportGlobeRadius(viewport)
+    //     const gridZoom = Math.floor(getViewportZoom(viewport) + zoomOffset + 1)
+    //     positions = generateGlobeGrid(viewportGlobeCenter, viewportGlobeRadius, gridZoom)
+    // } else 
+    
+    if (isViewportMercator(viewport)) {
         const viewportBounds = getViewportBounds(viewport)
         const gridZoom = Math.ceil(getViewportZoom(viewport) + zoomOffset)
         positions = generateGrid(viewportBounds, gridZoom, layout)

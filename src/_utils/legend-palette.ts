@@ -1,5 +1,3 @@
-import { colorRampCanvas, parsePalette } from 'cpt2js'
-import type { PaletteArray } from 'cpt2js'
 
 export interface LegendVisualization {
     databounds: (number | null)[]
@@ -96,67 +94,4 @@ function parseRgbColor(rgba: unknown): [number, number, number] {
     return match
         ? [Number(match[1]), Number(match[2]), Number(match[3])]
         : [0, 0, 0]
-}
-
-/**
- * Builds a cpt2js-compatible PaletteArray from a legend's databounds + rgba colors.
- *
- * - Skips entries with null/undefined bounds.
- * - Falls back to black for unparseable rgba strings.
- * - Default mode sorts by bound so the palette domain is monotonic.
- * - When `useSyntheticIndices` is true, the input order is preserved and the
- *   stops become `0..N-1`. Required for joined multi-row palettes whose rows
- *   share or overlap their data ranges (e.g. row 1 and row 2 both covering
- *   1..30 mm/hr) — using the real bounds would collapse the two rows together.
- */
-export function buildPaletteSampleFromLegend(
-    legend: LegendForPalette | undefined,
-    options: { useSyntheticIndices?: boolean } = {}
-): PaletteArray {
-    const { useSyntheticIndices = false } = options
-    const databounds = legend?.visualization?.databounds ?? []
-    const colors = (legend?.visualization?.colors as unknown[] | undefined) ?? []
-
-    const valid = databounds
-        .map((bound, index): [number, [number, number, number]] | null =>
-            bound === null || bound === undefined
-                ? null
-                : [bound, parseRgbColor(colors[index])]
-        )
-        .filter((item): item is [number, [number, number, number]] => item !== null)
-
-    if (useSyntheticIndices) {
-        return valid.map(([, rgb], i): [number, [number, number, number]] => [i, rgb]) as PaletteArray
-    }
-
-    return valid.sort((a, b) => a[0] - b[0]) as PaletteArray
-}
-
-/**
- * Generates a palette ImageData via cpt2js from a legend's databounds + colors.
- * For multi-row "/hr" legends (precipitation), the visible rows are joined
- * into a single linear sequence first and rendered with synthetic indices, so
- * the result looks like the legend's rows concatenated horizontally.
- *
- * Returns null when fewer than 2 usable stops exist or no 2D context is available.
- */
-export function buildPaletteImageFromLegend(
-    legend: LegendForPalette | undefined
-): ImageData | null {
-    if (!legend) {
-        return null
-    }
-    const isMultiRow = isMultiRowLegend(legend)
-    const normalized = isMultiRow ? flattenMultiRowLegend(legend) : legend
-    const sample = buildPaletteSampleFromLegend(normalized, { useSyntheticIndices: isMultiRow })
-    if (sample.length < 2) {
-        return null
-    }
-    const paletteScale = parsePalette(sample)
-    const paletteCanvas = colorRampCanvas(paletteScale)
-    const ctx = paletteCanvas.getContext('2d')
-    if (!ctx) {
-        return null
-    }
-    return ctx.getImageData(0, 0, paletteCanvas.width, paletteCanvas.height)
 }

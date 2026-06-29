@@ -3,7 +3,6 @@ import { loadTextureData, loadBytes, loadGrayscaleImage, loadVectorImage } from 
 import { MapLayer } from '@/@types/weather.types'
 import Connection, { ConnectionConfig, resolveApiEnv } from './connection'
 import { getImageUnscaleFromDatabounds, isRegionalModel } from '../_utils/image-unscale'
-import { buildPaletteImageFromLegend, isMultiRowLegend } from '../_utils/legend-palette'
 
 export default class ImageConnection extends Connection {
     constructor(config: ConnectionConfig) {

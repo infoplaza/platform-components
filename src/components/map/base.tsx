@@ -1,5 +1,9 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { Map } from 'react-map-gl/maplibre'
+import { MAP_STYLES } from '../../config/styles'
+import type { MapStyle } from '@/@types/map-style.types'
+
+export type { MapStyle }
 
 export type MapStyleVariant = {
   source?: string | object | null
@@ -25,7 +29,21 @@ export type BaseMapProps = {
   onMove?: (event: unknown) => void
   onClickMap?: (event: unknown) => void
   children?: React.ReactNode | ((props: { beforeId: string }) => React.ReactNode)
+  /**
+   * Explicit style object. When provided it takes precedence over `mapStyleKey`
+   * and is used as-is. Mostly kept for backwards compatibility.
+   */
   mapStyle?: BaseMapStyle
+  /**
+   * Key of the style to select from `mapStyles` (e.g. 'dark', 'land', 'sea').
+   */
+  mapStyleKey?: string
+  /**
+   * Available styling options to choose from. Defaults to the built-in
+   * `MAP_STYLES`. Pass an extended list to add your own options, e.g.
+   * `mapStyles={[...MAP_STYLES, myCustomStyle]}`.
+   */
+  mapStyles?: MapStyle[]
   modelInfo?: BaseMapModelInfo
 }
 
@@ -58,6 +76,25 @@ function detectIosAndroidPhoneOrTablet() {
   return /(android|iphone|ipad|ipod)/i.test(navigator.userAgent)
 }
 
+function getSelectedMapStyle(
+  mapStyles: MapStyle[],
+  mapStyleKey?: string,
+  mapStyle?: BaseMapStyle,
+): BaseMapStyle | undefined {
+  if (mapStyle) {
+    return mapStyle
+  }
+
+  if (mapStyleKey) {
+    const matched = mapStyles.find((option) => option.key === mapStyleKey)
+    if (matched) {
+      return matched
+    }
+  }
+
+  return mapStyles[0]
+}
+
 function getResolvedMapStyle(mapStyle?: BaseMapStyle, modelInfo?: BaseMapModelInfo) {
   const category = modelInfo?.description?.category?.toLowerCase()
   const isMarineModel = category ? marineStyles.includes(category) : false
@@ -77,6 +114,8 @@ export default function BaseMap({
   onClickMap,
   children,
   mapStyle,
+  mapStyleKey,
+  mapStyles = MAP_STYLES,
   modelInfo,
 }: BaseMapProps) {
   const [device, setDevice] = useState<{ ready: boolean; isMobile: boolean }>({
@@ -88,7 +127,8 @@ export default function BaseMap({
     setDevice({ ready: true, isMobile: detectIosAndroidPhoneOrTablet() })
   }, [])
 
-  const resolvedMapStyle = getResolvedMapStyle(mapStyle, modelInfo)
+  const selectedMapStyle = getSelectedMapStyle(mapStyles, mapStyleKey, mapStyle)
+  const resolvedMapStyle = getResolvedMapStyle(selectedMapStyle, modelInfo)
   const resolvedMapSource = style ?? resolvedMapStyle?.source
   const resolvedBeforeId = resolvedMapStyle?.beforeId ?? 'lakes-transparent'
 

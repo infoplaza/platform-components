@@ -1,0 +1,41 @@
+/*
+ * Embed build for host applications (e.g. Next.js) that already run their own
+ * Tailwind / global styles.
+ *
+ * Differences from the full `tailwind.css` build:
+ *   - Preflight (`tailwindcss/preflight.css`) is intentionally NOT imported, so we
+ *     never ship global element resets (`html`, `*`, `button`, `input`, `svg`, …)
+ *     that would overwrite the host's styles.
+ *   - All utilities and theme variables are emitted with the `ip` prefix, so
+ *     `.ip\:flex` can never collide with the host's own `.flex`.
+ *   - Form control styles use the `class` strategy (see tailwind.embed.config.mjs)
+ *     so the `@tailwindcss/forms` plugin does not inject global element selectors.
+ */
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme) prefix(ip);
+@import "tailwindcss/utilities.css" layer(utilities) prefix(ip);
+
+@config "../../tailwind.embed.config.mjs";
+
+@source "../components";
+@source "../hooks";
+@source "../providers";
+@source "../layers";
+@source "../events";
+
+/*
+ * Host-agnostic icon hook. Opt-in via the `ip-icon` class so it never affects
+ * MapLibre / deck.gl SVGs. Color and size resolve from CSS variables and fall
+ * back to `currentColor` / `1em`, so icons stay visible even when the host does
+ * not provide Tailwind `text-*` utilities.
+ */
+@layer components {
+  .ip-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    width: var(--ip-icon-size, 1em);
+    height: var(--ip-icon-size, 1em);
+    fill: var(--ip-icon-color, currentColor);
+  }
+}
