@@ -18,7 +18,7 @@ This example follows the same flow as `demo/main.tsx`: wrap your map with provid
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { BaseMap, MapControlHud } from '@infoplaza/platform/components'
+import { BaseMap, MapControlHud, MAP_STYLES } from '@infoplaza/platform/components'
 import { Providers } from '@infoplaza/platform/providers'
 import { LayerComposer, Overlay } from '@infoplaza/platform'
 
@@ -36,6 +36,7 @@ function App() {
     zoom: 7,
   })
   const [models, setModels] = useState<any[]>([])
+  const [mapStyleKey, setMapStyleKey] = useState('dark')
 
   useEffect(() => {
     const controller = new AbortController()
@@ -71,26 +72,31 @@ function App() {
       <BaseMap
         viewState={viewState}
         onMove={(event: any) => setViewState(event?.viewState)}
-        style="https://demotiles.maplibre.org/style.json"
+        mapStyles={MAP_STYLES}
+        mapStyleKey={mapStyleKey}
       >
-        <MapEventsProvider handler="demand">
-          {(mapComponents) => (
-            <LayerComposer mapComponents={mapComponents}>
-              {({ layers }) => <Overlay layers={[...layers]} interleaved controller />}
-            </LayerComposer>
-          )}
-        </MapEventsProvider>
+        {({ beforeId }) => (
+          <>
+            <MapEventsProvider handler="demand">
+              {(mapComponents) => (
+                <LayerComposer beforeId={beforeId} mapComponents={mapComponents}>
+                  {({ layers }) => <Overlay layers={[...layers]} interleaved controller />}
+                </LayerComposer>
+              )}
+            </MapEventsProvider>
 
-        <MapControlHud
-          mapIndex={0}
-          mapsLength={1}
-          isMultipleMapView={false}
-          models={models}
-          onMapsCount={() => {}}
-          onExportChange={() => {}}
-          mapRef={null}
-          viewState={viewState}
-        />
+            <MapControlHud
+              mapIndex={0}
+              mapsLength={1}
+              isMultipleMapView={false}
+              models={models}
+              onMapsCount={() => {}}
+              onExportChange={() => {}}
+              mapRef={null}
+              viewState={viewState}
+            />
+          </>
+        )}
       </BaseMap>
     </Providers>
   )
@@ -112,7 +118,7 @@ createRoot(rootElement).render(
 
 - A React application with an element like `<div id="root"></div>`.
 - A model endpoint (or local data source) that returns the `weatherConfig.models` collection.
-- A valid MapLibre style URL for `BaseMap` (`style` prop).
+- A map style for `BaseMap`: pick one of the built-in `MAP_STYLES` via `mapStyleKey`, pass your own `mapStyles` list, or supply a raw MapLibre style URL via `style` (see [Map styles](#map-styles)).
 - Package styles imported once: `@infoplaza/platform/styles.css`.
 - MapLibre CSS imported once: `maplibre-gl/dist/maplibre-gl.css`.
 
@@ -125,12 +131,119 @@ createRoot(rootElement).render(
 - `MapControlHud` (`@infoplaza/platform/components`): built-in map controls for model/element/time interactions.
 - `MapEventsProvider` (`@infoplaza/platform/events`): bridges map interaction events into the layer pipeline.
 
+## Map styles
+
+`BaseMap` controls the underlying MapLibre basemap through a small, structured
+**map style** system instead of a single style URL. A map style bundles the
+basemap source(s) and the `beforeId` that the weather layers should be inserted
+under, so data layers always render below the right labels/features.
+
+### Shape of a map style
+
+```ts
+import type { MapStyle } from '@infoplaza/platform/components'
+
+const myStyle: MapStyle = {
+  key: 'dark',          // unique id used by `mapStyleKey`
+  title: 'Dark',        // human-readable label (e.g. for a style picker)
+  styles: {
+    // Used for normal (land/atmospheric) models.
+    default: {
+      source: 'https://maps.example.com/styles/dark/style.json', // URL or MapLibre style object
+      beforeId: 'lakes-transparent', // weather layers are inserted before this layer id
+    },
+    // Used automatically for marine models (category `wave` / `ocean`).
+    marine: {
+      source: 'https://maps.example.com/styles/dark-marine/style.json',
+      beforeId: 'landcover',
+    },
+  },
+}
+```
+
+- `source` is either a MapLibre style URL or an inline MapLibre style object.
+- `beforeId` is the id of the basemap layer the weather layers are placed under.
+  `BaseMap` exposes the resolved value through the `beforeId` render-prop so you
+  can forward it to `LayerComposer` (`<LayerComposer beforeId={beforeId} … />`).
+  If a style omits it, `BaseMap` falls back to `'lakes-transparent'`.
+
+### Selecting a style
+
+`BaseMap` resolves the active style in this order:
+
+1. **`style`** — a raw MapLibre style URL or object. If set, it overrides
+   everything else (escape hatch / quick start).
+2. **`mapStyle`** — an explicit `BaseMapStyle` object (`{ styles: { default, marine } }`).
+   Takes precedence over `mapStyleKey`; kept mainly for backwards compatibility.
+3. **`mapStyleKey`** — selects an entry by `key` from the `mapStyles` list.
+4. Fallback — the first entry of `mapStyles`.
+
+```tsx
+// Use a built-in style by key
+<BaseMap mapStyles={MAP_STYLES} mapStyleKey="dark" viewState={viewState}>
+  {({ beforeId }) => /* … */}
+</BaseMap>
+```
+
+`mapStyles` defaults to the built-in `MAP_STYLES`, so `mapStyleKey` alone is
+enough when you only need the shipped options.
+
+### Built-in styles (`MAP_STYLES`)
+
+`MAP_STYLES` (from `@infoplaza/platform/components`) ships these keys:
+
+| `key` | `title` | Notes |
+| --- | --- | --- |
+| `dark` | Dark | Dark basemap |
+| `land` | Land | Land-focused basemap |
+| `sea` | Sea | Sea-focused basemap |
+| `traffic` | Traffic | Traffic basemap |
+
+Each one provides both a `default` and a `marine` variant.
+
+### Marine auto-switching
+
+When you pass `modelInfo` to `BaseMap`, marine models (where
+`modelInfo.description.category` is `wave` or `ocean`) automatically use the
+style's `marine` variant; all other models use `default`. If a style has no
+`marine` variant, it falls back to `default`.
+
+### Extending the built-in styles
+
+Add your own option by spreading `MAP_STYLES` and appending a custom `MapStyle`:
+
+```tsx
+import { BaseMap, MAP_STYLES } from '@infoplaza/platform/components'
+
+const customStyle = {
+  key: 'demotiles',
+  title: 'MapLibre Demo',
+  styles: {
+    default: { source: 'https://demotiles.maplibre.org/style.json', beforeId: '' },
+    marine:  { source: 'https://demotiles.maplibre.org/style.json', beforeId: '' },
+  },
+}
+
+const mapStyles = [...MAP_STYLES, customStyle]
+
+// A simple style picker:
+<select value={mapStyleKey} onChange={(e) => setMapStyleKey(e.target.value)}>
+  {mapStyles.map((option) => (
+    <option key={option.key} value={option.key}>{option.title}</option>
+  ))}
+</select>
+
+<BaseMap mapStyles={mapStyles} mapStyleKey={mapStyleKey} viewState={viewState}>
+  {({ beforeId }) => /* … */}
+</BaseMap>
+```
+
 ## Entry Points
 
 | Import | Purpose |
 | --- | --- |
 | `@infoplaza/platform` | Top-level API (`LayerComposer`, `Overlay`, components, providers) |
-| `@infoplaza/platform/components` | `BaseMap`, `MapControlHud`, … |
+| `@infoplaza/platform/components` | `BaseMap`, `MapControlHud`, `MAP_STYLES`, `MapStyle` type, … |
 | `@infoplaza/platform/providers` | `Providers` |
 | `@infoplaza/platform/events` | `MapEventsProvider` |
 | `@infoplaza/platform/layers/composer` · `/layers/overlay` | Individual layer building blocks |

@@ -3,7 +3,7 @@ import { useMemo, useRef, type ReactNode } from "react"
 // ** Connectors Imports
 import { ImageLayerConnector } from "./connectors/image"
 // import { ImageAltLayerConnector } from "./connectors/image_alt"
-// import { GridLayerConnector } from "./connectors/grid"
+import { GridLayerConnector } from "./connectors/grid"
 // import { DirectionLayerConnector } from "./connectors/direction"
 // import { BarbLayerConnector } from "./connectors/barb"
 // import { ParticleLayerConnector } from "./connectors/particle"
@@ -19,7 +19,7 @@ import { useTimestampMap } from "@/src/redux/timestamps/provider"
 // import { useObservation } from "../context/observation/observation"
 // import { LocationLayerConnector } from "./connectors/location"
 // import { useSettings } from "@/context/settings"
-// import { GridStyle } from "./grid/style"
+import { GridStyle } from "./grid/style"
 // import { RangeLayerConnector } from "./connectors/range"
 // import { useMapLocation } from "@/components/_webgl/context"
 import type { Layer, LayerRendering } from "@/@types/layer.types"
@@ -38,6 +38,7 @@ type RenderingBuilder = {
 }
 
 type ImageConnectorLayer = ComposedLayer & Parameters<typeof ImageLayerConnector>[0]
+type GridConnectorLayer = ComposedLayer & Parameters<typeof GridLayerConnector>[0]
 
 const hasRendering = (layer: Layer, type: LayerRendering): boolean =>
     layer.rendering === type ||
@@ -63,7 +64,7 @@ const asComposedLayers = (components: unknown[] | undefined): ComposedLayer[] | 
     return components.filter(isComposedLayer)
 }
 
-const isImageConnectorLayer = (layer: ComposedLayer): layer is ImageConnectorLayer => {
+const hasImageAndBounds = (layer: ComposedLayer): boolean => {
     const bounds = (layer as { bounds?: unknown }).bounds
     return (
         'image' in layer &&
@@ -72,6 +73,12 @@ const isImageConnectorLayer = (layer: ComposedLayer): layer is ImageConnectorLay
         bounds.every((value) => typeof value === 'number')
     )
 }
+
+const isImageConnectorLayer = (layer: ComposedLayer): layer is ImageConnectorLayer =>
+    hasImageAndBounds(layer)
+
+const isGridConnectorLayer = (layer: ComposedLayer): layer is GridConnectorLayer =>
+    hasImageAndBounds(layer)
 
 const LayerComposer = ({ children, beforeId, mapComponents }: LayerComposerProps) => {
     const { getLayerState } = useLayerSettings()
@@ -99,14 +106,22 @@ const LayerComposer = ({ children, beforeId, mapComponents }: LayerComposerProps
             //     condition: (layer: Layer) => hasRendering(layer, 'IMAGE_ALT') && getLayerState(layer).imageEnabled,
             //     create: (layer: Layer) => ImageAltLayerConnector(layer, getLayerState(layer), beforeId),
             // },
-            // {
-            //     condition: (layer: Layer) => hasRendering(layer, 'VALUES') && getLayerState(layer).gridValuesEnabled,
-            //     create: (layer: Layer) => GridLayerConnector({
-            //         ...layer,
-            //         id: `${layer.id}-values`,
-            //         style: GridStyle.VALUE,
-            //     }, getLayerState(layer), beforeId),
-            // },
+            {
+                condition: (layer: ComposedLayer) =>
+                    hasRendering(layer, 'VALUES') &&
+                    getLayerState(layer).gridValuesEnabled &&
+                    isGridConnectorLayer(layer),
+                create: (layer: ComposedLayer) => {
+                    if (!isGridConnectorLayer(layer)) {
+                        return null
+                    }
+                    return GridLayerConnector({
+                        ...layer,
+                        id: `${layer.id}-values`,
+                        style: GridStyle.VALUE,
+                    }, getLayerState(layer), beforeId)
+                },
+            },
             // {
             //     condition: (layer: Layer) => hasRendering(layer, 'PARTICLES') && getLayerState(layer).particleEnabled,
             //     create: (layer: Layer) => ParticleLayerConnector(layer, getLayerState(layer), timebarPlaying, beforeId),

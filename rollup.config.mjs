@@ -1,5 +1,7 @@
 import alias from '@rollup/plugin-alias'
 import commonjs from '@rollup/plugin-commonjs'
+import image from '@rollup/plugin-image'
+import json from '@rollup/plugin-json'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import terser from '@rollup/plugin-terser'
 import typescript from '@rollup/plugin-typescript'
@@ -82,6 +84,8 @@ export default {
       ],
     }),
     nodeResolve({ extensions: ['.mjs', '.js', '.jsx', '.json', '.ts', '.tsx'] }),
+    image(),
+    json(),
     commonjs(),
     typescript({
       tsconfig: './tsconfig.json',

@@ -57,7 +57,6 @@ function App() {
         return response.json()
       })
       .then((data) => {
-        console.log('data', data)
         setModels(Array.isArray(data?.data) ? data.data : [])
       })
       .catch((error) => {
