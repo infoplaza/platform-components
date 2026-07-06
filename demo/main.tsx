@@ -46,7 +46,7 @@ function App() {
   useEffect(() => {
     const controller = new AbortController()
 
-    fetch('/api/models?apiEnv=prod&betaModels=false', {
+    fetch('/api/platform/models?apiEnv=prod&betaModels=false', {
       signal: controller.signal,
     })
       .then((response) => {
@@ -57,6 +57,7 @@ function App() {
         return response.json()
       })
       .then((data) => {
+        console.log('data', data)
         setModels(Array.isArray(data?.data) ? data.data : [])
       })
       .catch((error) => {

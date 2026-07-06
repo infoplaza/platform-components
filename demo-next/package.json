@@ -1,0 +1,11 @@
+{
+  "name": "platform-components-demo-next",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Next.js distribution demo for @infoplaza/platform. Mirrors the Vite demo but bundles the map page and the /api/platform/* catch-all auth handler into a single Next.js app.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  }
+}

@@ -49,6 +49,7 @@ export default {
     'layers/overlay': 'src/layers/overlay.tsx',
     'providers/index': 'src/providers/index.ts',
     'events/index': 'src/events/index.tsx',
+    'auth/index': 'src/auth/index.ts',
   },
   external,
   output: {

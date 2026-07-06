@@ -25,6 +25,10 @@
       "types": "./dist/events/index.d.ts",
       "default": "./dist/events/index.js"
     },
+    "./auth": {
+      "types": "./dist/auth/index.d.ts",
+      "default": "./dist/auth/index.js"
+    },
     "./layers/composer": {
       "types": "./dist/layers/composer.d.ts",
       "default": "./dist/layers/composer.js"
@@ -46,6 +50,9 @@
     "build:css:embed": "tailwindcss -i ./src/styles/tailwind.embed.css -o ./dist/styles.embed.css --minify",
     "demo": "vite --config demo/vite.config.ts",
     "demo:build": "vite build --config demo/vite.config.ts",
+    "demo:next": "next dev demo-next",
+    "demo:next:build": "next build demo-next",
+    "demo:next:start": "next start demo-next",
     "test": "echo \"Error: no test specified\" && exit 1",
     "publish": "npm publish",
     "publish:dry-run": "npm publish --dry-run"
@@ -101,6 +108,7 @@
     "@types/react-dom": "^19.2.3",
     "geotiff": "^3.0.5",
     "lodash": "^4.18.1",
+    "next": "^16.2.10",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "rollup": "^4.62.0",

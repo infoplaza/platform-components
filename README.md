@@ -41,7 +41,7 @@ function App() {
   useEffect(() => {
     const controller = new AbortController()
 
-    fetch('/api/models?apiEnv=prod&betaModels=false', { signal: controller.signal })
+    fetch('/api/platform/models?apiEnv=prod&betaModels=false', { signal: controller.signal })
       .then((response) => {
         if (!response.ok) {
           throw new Error(`Failed to fetch models: ${response.status}`)
