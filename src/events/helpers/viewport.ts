@@ -9,7 +9,7 @@ export type ViewportGetLayersUrlArgs = {
 
 export function buildLayersViewportUrl(
     layersUrl: string,
-    { graphicalPreset = 1 }: ViewportGetLayersUrlArgs,
+    _args: ViewportGetLayersUrlArgs,
     modelInfo: any
 ) {
     const defaultBoundingbox = {
@@ -18,10 +18,9 @@ export function buildLayersViewportUrl(
         south: -89.9,
         west: -180,
     }
-    const graphicPresetCorrection = graphicalPreset - 2
-    const zoomLevel = Math.ceil(modelInfo.description?.maxzoom + graphicPresetCorrection)
+    const zoomLevel = modelInfo?.maxzoom
 
-    const { west, east, south, north } = modelInfo.description?.boundingbox ?? defaultBoundingbox
+    const { west, east, south, north } = modelInfo?.boundingbox ?? defaultBoundingbox
     return layersUrl
         .replace('{zoom}', String(zoomLevel))
         .replace('{ne.lat}', String(north.toFixed(2)))

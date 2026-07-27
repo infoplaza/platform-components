@@ -67,6 +67,7 @@ export interface ModelInfo {
   group?: ModelGroup
   description?: any
   available?: boolean
+  regionCategory?: string
 }
 
 export interface ModelGroup {

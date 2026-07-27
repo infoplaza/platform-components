@@ -59,7 +59,7 @@ export default function MapDemo() {
       <div className="map-shell ip-platform">
         <ProvidersComponent
           weatherConfig={{
-            model: 'gfs',
+            model: 'optimal',
             element: 'temperature',
             run: 'latest',
             member: '0',
@@ -75,7 +75,7 @@ export default function MapDemo() {
           >
             {({ beforeId }: { beforeId: string }) => (
               <>
-                <MapEventsProvider handler="demand">
+                <MapEventsProvider>
                   {(mapComponents: any) => (
                     <LayerComposer beforeId={beforeId} mapComponents={mapComponents}>
                       {({ layers }: { layers: any[] }) => (

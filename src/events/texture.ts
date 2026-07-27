@@ -22,6 +22,10 @@ type TextureRequest = {
     signal: AbortSignal
 }
 
+export type MapLayerTextureOptions = {
+    preloadAll?: boolean
+}
+
 // function getStructuralLayersKey(layers: EnrichedMapLayer[]): string {
 //     return layers
 //         .map((layer) => `${layer.id ?? ''}|${layer.rendering ?? ''}|${layer.element ?? ''}|${layer.active ?? ''}`)
@@ -32,7 +36,11 @@ type TextureRequest = {
 //     return layers.map((layer) => layer.layersUrl ?? '').join(';')
 // }
 
-export function useMapLayerTexture(layers: EnrichedMapLayer[]) {
+export function useMapLayerTexture(
+    layers: EnrichedMapLayer[],
+    options: MapLayerTextureOptions = {},
+) {
+    const preloadAll = options.preloadAll ?? false
     const { getContourGeoJsonState } = useLayerSettings()
     const frameSkip = false
     const textureLoadMode = 'image'
@@ -176,7 +184,9 @@ export function useMapLayerTexture(layers: EnrichedMapLayer[]) {
             const result = await layer.connection?.getTextures(layer, ts, textureLoadMode, { signal })
             if (!result || !isCurrentTextureRequest(request)) return
 
-            addUrlToPreload(result.preloadUrl)
+            if (result.preloadUrl) {
+                addUrlToPreload(result.preloadUrl)
+            }
             const { preloadUrl, ...textureData } = result
             return textureData
         },
@@ -282,7 +292,6 @@ export function useMapLayerTexture(layers: EnrichedMapLayer[]) {
             if (!startTimestamp) {
                 return
             }
-            const preloadCount = timebarPlaying ? 20 : 30;
             const signal = request.signal
             if (!isCurrentTextureRequest(request)) {
                 return
@@ -307,11 +316,17 @@ export function useMapLayerTexture(layers: EnrichedMapLayer[]) {
                 const layerData = data?.layers?.find((l) => Number(l.timestamp) === startTimestamp)
                 const sourcePreloadUrls = data?.layers?.map(({ url }) => url)
 
-                if (!sourcePreloadUrls?.length || !layerData?.url || preloadCount <= 0) {
+                if (!sourcePreloadUrls?.length || !layerData?.url) {
                     return
                 }
 
                 const totalUrls = sourcePreloadUrls.length
+                const preloadCount = preloadAll
+                    ? totalUrls
+                    : (timebarPlaying ? 20 : 30)
+                if (preloadCount <= 0) {
+                    return
+                }
                 const urlIndex = sourcePreloadUrls.indexOf(layerData.url)
                 if (urlIndex === -1) {
                     return
@@ -351,7 +366,7 @@ export function useMapLayerTexture(layers: EnrichedMapLayer[]) {
             //     await Promise.all(activeLayers.map(runLayer))
             // }
         },
-        [preDraw, timebarPlaying, frameSkip, isCurrentTextureRequest, preloadUrl]
+        [preDraw, timebarPlaying, frameSkip, isCurrentTextureRequest, preloadUrl, preloadAll]
     )
 
     const runPreloadAfterCurrent = useCallback(

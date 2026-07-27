@@ -49,10 +49,6 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsC
     const hasLegends = !isEmpty(legends)
     const legendListType = elementInfo?.options?.legend?.type === 'list'
 
-    useEffect(() => {
-        console.log('modelInfo', modelInfo)
-    }, [modelInfo])
-
     return (
         <>
         
