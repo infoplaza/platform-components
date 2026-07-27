@@ -13,10 +13,21 @@ export type {
   PlatformRouteHandler,
 } from './types'
 import { proxyUpstream } from './proxy'
+import { transformModelsResponse } from './dto/models-transform'
 
 export { proxyUpstream } from './proxy'
 
 const DEFAULT_BASE_PATH = '/api/platform'
+const DEFAULT_BASE_URL = 'https://api.infoplaza.dev/v1/weather/maps'
+// Upstream expects the key as `?token=<apiKey>` rather than an auth header.
+const DEFAULT_API_KEY_QUERY_PARAM = 'token'
+
+/** Resolves the `apiEnv` query parameter to a supported environment. */
+function resolveApiEnv(req: PlatformRequest): 'prod' | 'test' {
+  const queryString = (req.url ?? '').split('?')[1]
+  const value = new URLSearchParams(queryString).get('apiEnv')
+  return value === 'test' ? 'test' : 'prod'
+}
 
 /**
  * Resolves the endpoint segments that follow the mounted base path.
@@ -54,8 +65,12 @@ async function dispatch(
   switch (endpoint) {
     case 'models': {
       // Proxies to `${baseUrl}/models` (e.g.
-      // https://api.infoplaza.dev/v1/weather/maps/models?token=<apiKey>).
-      await proxyUpstream(req, res, options, 'models')
+      // https://api.infoplaza.dev/v1/weather/maps/models?token=<apiKey>) and
+      // enriches each model with a computed `elementGroups` collection derived
+      // from the FORECAST layer configuration.
+      await proxyUpstream(req, res, options, 'models', (data) =>
+        transformModelsResponse(data),
+      )
       return
     }
     default: {
@@ -180,7 +195,15 @@ export default function PlatformAuth(
     throw new Error('[PlatformAuth] `apiKey` is required.')
   }
 
-  const basePath = options.basePath ?? DEFAULT_BASE_PATH
+  // `apiKey` is the only required option. `baseUrl` and `apiKeyQueryParam` fall
+  // back to the Infoplaza defaults so a minimal `{ apiKey }` config just works.
+  const resolvedOptions: PlatformAuthOptions = {
+    ...options,
+    baseUrl: options.baseUrl ?? DEFAULT_BASE_URL,
+    apiKeyQueryParam: options.apiKeyQueryParam ?? DEFAULT_API_KEY_QUERY_PARAM,
+  }
+
+  const basePath = resolvedOptions.basePath ?? DEFAULT_BASE_PATH
 
   const handler = (async (
     reqOrRequest: Request | PlatformRequest,
@@ -188,12 +211,12 @@ export default function PlatformAuth(
   ): Promise<Response | void> => {
     // Pages Router: invoked as `(req, res)`.
     if (isPlatformResponse(maybeRes)) {
-      await dispatch(reqOrRequest as PlatformRequest, maybeRes, options, basePath)
+      await dispatch(reqOrRequest as PlatformRequest, maybeRes, resolvedOptions, basePath)
       return
     }
 
     // App Router / Web: invoked as `(request, context?)`.
-    return await handleWebRequest(reqOrRequest as Request, options, basePath)
+    return await handleWebRequest(reqOrRequest as Request, resolvedOptions, basePath)
   }) as PlatformRouteHandler
 
   return handler

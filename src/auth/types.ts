@@ -39,11 +39,14 @@ export interface PlatformRouteHandler {
 }
 
 export interface PlatformAuthOptions {
-  /** Static API key attached to every proxied upstream request. */
+  /**
+   * Static API key attached to every proxied upstream request. This is the only
+   * required option.
+   */
   apiKey: string
   /**
-   * Base URL of the upstream API that requests are proxied to
-   * (e.g. `https://api.infoplaza.io`). Required once endpoints proxy upstream.
+   * Base URL of the upstream API that requests are proxied to.
+   * @default 'https://api.infoplaza.dev/v1/weather/maps'
    */
   baseUrl?: string
   /**
@@ -53,18 +56,22 @@ export interface PlatformAuthOptions {
    */
   basePath?: string
   /**
-   * Request header used to send the API key upstream.
+   * Request header used to send the API key upstream. Only used when
+   * `apiKeyQueryParam` is explicitly set to a falsy value.
    * @default 'Authorization'
    */
   apiKeyHeader?: string
   /**
-   * Formats the API key into the header value.
+   * Formats the API key into the header value. Only used when
+   * `apiKeyQueryParam` is explicitly set to a falsy value.
    * @default (apiKey) => `Bearer ${apiKey}`
    */
   apiKeyScheme?: (apiKey: string) => string
   /**
-   * If set, the API key is sent as this query-string parameter instead of a
-   * request header (e.g. `'token'` results in `?token=<apiKey>`).
+   * Query-string parameter the API key is sent as (e.g. `'token'` results in
+   * `?token=<apiKey>`). Sent as a query parameter by default; set this to an
+   * empty string to fall back to header-based auth instead.
+   * @default 'token'
    */
   apiKeyQueryParam?: string
 }

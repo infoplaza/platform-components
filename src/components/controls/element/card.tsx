@@ -3,10 +3,11 @@ import React from "react"
 // ** Components Imports
 // import IconElement, { IconElementData } from "@/components/icon/element"
 // import LayerIcon from "@/components/icon/layer-line"
-// import LocationFavoritesIcon from "@/components/icon/location-favorites"
-import PercentageIcon from "@/src/components/icons/percentage"
+// import IpLocationFavoritesIcon from "@/components/icon/location-favorites"
+import { IpPercentageIcon } from "@/src/components/icons"
 // import Tag from "@/src/components/tags/tag"
 // import TagPro from "@/src/components/tags/pro"
+import IconElement, { IconElementData } from "@/src/components/controls/element/icons"
 
 // ** Utils Imports
 import { twMerge } from "@/src/utilities/external/twMerge"
@@ -51,11 +52,11 @@ const ElementCard = ({ item, activeModel, activeElement, onChangeHandler, isFavo
             <div className="ip:grow ip:py-2">
                 <div className="ip:flex ip:gap-2">
                     <div className="ip:shrink-0 ip:w-6 ip:h-6 ip:relative ip:flex ip:items-start">
-                        {/* <IconElement
+                        <IconElement
                             data={item as unknown as IconElementData}
                             white={isActive}
-                            iconClass={twMerge(isActive && "text-white fill-white")}
-                        /> */}
+                            iconClass={twMerge(isActive && "")}
+                        />
                     </div>
 
                     <div className="ip:grow ip:min-w-0">
@@ -80,7 +81,7 @@ const ElementCard = ({ item, activeModel, activeElement, onChangeHandler, isFavo
                     <div className="ip:flex ip:shrink-0 ip:gap-2">
                         {!cleanView && probabilityElements && (
                             <div title="Probability Element">
-                                <PercentageIcon className="ip:size-4 ip:fill-gray-500 ip:dark:fill-gray-400" />
+                                <IpPercentageIcon className="ip:size-4 ip:fill-gray-500 ip:dark:fill-gray-400" />
                             </div>
                         )}
                         {/* {item.isMixedLayers && (
@@ -108,7 +109,7 @@ const ElementCard = ({ item, activeModel, activeElement, onChangeHandler, isFavo
                                         onToggleFavorite(item.slug)
                                     }}
                                 >
-                                    <LocationFavoritesIcon className="h-4 w-4" filled={isFavorite} />
+                                    <IpLocationFavoritesIcon className="h-4 w-4" filled={isFavorite} />
                                 </button>
                             </div>
                         )} */}

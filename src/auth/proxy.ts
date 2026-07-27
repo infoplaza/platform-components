@@ -7,15 +7,28 @@ import type {
 const defaultScheme = (apiKey: string) => `Bearer ${apiKey}`
 
 /**
+ * Optional hook to mutate a JSON upstream response before it is sent back to the
+ * caller. Only invoked for `application/json` responses.
+ */
+export type UpstreamJsonTransform = (
+  data: unknown,
+  req: PlatformRequest,
+) => unknown | Promise<unknown>
+
+/**
  * Forwards the incoming request to the configured upstream API, attaching the
  * static API key. The upstream status, content-type and body are streamed back
  * to the caller. Endpoints can use this once they are ready to proxy for real.
+ *
+ * When `transformJson` is provided and the upstream returns JSON, the parsed
+ * body is passed through it before being serialized to the caller.
  */
 export async function proxyUpstream(
   req: PlatformRequest,
   res: PlatformResponse,
   options: PlatformAuthOptions,
   upstreamPath: string,
+  transformJson?: UpstreamJsonTransform,
 ): Promise<void> {
   const base = options.baseUrl?.replace(/\/+$/, '')
 
@@ -72,7 +85,8 @@ export async function proxyUpstream(
 
   if (contentType.includes('application/json')) {
     const data = await upstream.json()
-    res.json(data)
+    const result = transformJson ? await transformJson(data, req) : data
+    res.json(result)
     return
   }
 

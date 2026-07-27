@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react'
-import { UilAngleDown } from '@/src/components/icons/index'
+import { IpAngleDown } from '@/src/components/icons'
 import useResize from "@/src/utilities/resize"
 import { twMerge } from "@/src/utilities/external/twMerge"
 
@@ -119,7 +119,7 @@ function DropdownControl({ items, minItems = 1, maxItems = 3, onChange, onMore, 
                                 ) : (
                                     <div className='ip:text-xs'>{viewModel.itemsMore.length} more</div>
                                 )}
-                                <UilAngleDown className="ip:h-3 ip:w-3 " aria-hidden="true" />
+                                <IpAngleDown className="ip:h-3 ip:w-3 " aria-hidden="true" />
                             </MenuButton>
                     }
 
@@ -133,7 +133,7 @@ function DropdownControl({ items, minItems = 1, maxItems = 3, onChange, onMore, 
                                 ) : (
                                     <div className='ip:text-xs'>{viewModel.itemsMore.length} more</div>
                                 )}
-                                <UilAngleDown className="ip:h-3 ip:w-3" aria-hidden="true" />
+                                <IpAngleDown className="ip:h-3 ip:w-3" aria-hidden="true" />
                             </div>
                     }
                 </div>

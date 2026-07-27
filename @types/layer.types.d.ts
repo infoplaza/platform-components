@@ -137,6 +137,7 @@ export interface Layer {
     units?: string[]
     members?: string[]
     optional?: boolean
+    name?: string
     i18n?: string
     level?: string
     palette?: string
@@ -160,7 +161,8 @@ export interface ItemOptions {
 
 export interface Item {
     slug: string
-    i18n: string
+    name: string
+    i18n?: string
     icon?: string
     iconUrl?: string
     preloading?: boolean
@@ -179,7 +181,8 @@ export interface Item {
 }
 
 export interface LayerGroup {
-    i18n: string
+    name: string
+    i18n?: string
     items: Item[]
 }
 

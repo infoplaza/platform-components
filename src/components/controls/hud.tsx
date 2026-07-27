@@ -5,7 +5,7 @@ import MapControlElement from '@/src/components/controls/element'
 // import MapControlLegend, { LegendTrigger, MapControlLegendDetails } from '@/src/components/controls/legend'
 // import MapControlLegendList from '@/src/components/controls/legend/list'
 // import { isMultiRowLegend } from '@/src/components/controls/legend/utils'
-// import MapControlModel from '@/src/components/controls/model'
+import MapControlModel from '@/src/components/controls/model'
 // import MapControlRun from '@/src/components/controls/run'
 // import MapControlMember from '@/src/components/controls/member'
 
@@ -22,7 +22,10 @@ export type MapControlHudProps = {
     mapIndex: number
     mapsLength: number
     isMultipleMapView: boolean
-    models: any
+    /**
+     * @deprecated Models are now provided internally through the weather context.
+     */
+    models?: any
     onMapsCount: (count: number) => void
     onExportChange: (value: boolean) => void
     mapRef: any
@@ -32,8 +35,9 @@ export type MapControlHudProps = {
     }
 }
 
-export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, models, onMapsCount, onExportChange, mapRef, viewState }: MapControlHudProps) {
-    const { modelInfo, model, elementInfo, layersInfo, month } = useWeatherMap()
+export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, models: modelsProp, onMapsCount, onExportChange, mapRef, viewState }: MapControlHudProps) {
+    const { models: contextModels, modelInfo, model, elementInfo, layersInfo, month } = useWeatherMap()
+    const models = modelsProp ?? contextModels
     const { legends } = useLegendValues()
     const { timestamp, timestampsInfo } = useTimestampMap()
     // const isMobileDevice = useIsIosAndroidPhoneOrTablet()
@@ -67,15 +71,15 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, models,
                                         />
                                     </div>
                                 </div>
-                                {/* <div className="flex relative gap-1 items-end">
+                                <div className="ip:flex ip:relative ip:gap-1 ip:items-end">
                                     <MapControlModel
                                         models={models}
-                                        maxItems={2}
+                                        maxItems={3}
                                         small={false}
                                     />
-                                    <MapControlRun small={false} />
-                                    <MapControlMember small={false} />
-                                </div> */}
+                                    {/* <MapControlRun small={false} />
+                                    <MapControlMember small={false} /> */}
+                                </div>
                             </div>
                         </div>
 

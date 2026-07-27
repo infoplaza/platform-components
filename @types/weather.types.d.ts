@@ -12,9 +12,35 @@ export interface WeatherConfig {
   run?: string
   member?: string
   level?: string
+  /**
+   * @deprecated Models are now fetched internally by the `ModelsProvider`.
+   * Passing them here is only kept for backwards compatibility and, when
+   * provided, takes precedence over the internally fetched models.
+   */
   models?: ModelInfo[]
   hideLayers?: string[]
   children?: ReactNode
+}
+
+/**
+ * Configuration for the internal models request performed by `ModelsProvider`.
+ */
+export interface ModelsConfig {
+  /** Upstream environment to request models for. Defaults to `prod`. */
+  apiEnv?: 'prod' | 'test'
+  /** Whether to include beta models. Defaults to `false`. */
+  betaModels?: boolean
+  /**
+   * Base path where the platform auth handler is mounted. The models request is
+   * sent to `${basePath}/models`. Defaults to `/api/platform`.
+   */
+  basePath?: string
+}
+
+export interface ModelsContextValue {
+  models: ModelInfo[]
+  loading: boolean
+  error: Error | null
 }
 
 export interface WeatherState {
@@ -32,12 +58,21 @@ export interface ModelInfo {
   slug: string
   name: string
   title?: string
+  title_i18n?: string
   runtimes: string[]
   members: string[]
   elementGroups: ElementGroup[]
   type: string
+  group?: ModelGroup
   description?: any
   available?: boolean
+}
+
+export interface ModelGroup {
+  slug?: string
+  i18n?: string | null
+  title?: string
+  sort?: number
 }
 
 export interface ElementGroup {
@@ -179,6 +214,7 @@ export interface MapLayer {
   palette?: string
   isAlphaImage?: boolean
   grayscale?: boolean
+  name?: string
   i18n?: string
   settings?: LayerConfigSettings
   element?: string,
@@ -212,6 +248,7 @@ export interface WeatherContextValue extends WeatherState {
   setMapState: (state: MapState | null) => void
   
   // Computed values
+  models: ModelInfo[]
   modelInfo: ModelInfo | null
   selectedModelInfo?: ModelInfo | null
   elementInfo: ElementInfo | null

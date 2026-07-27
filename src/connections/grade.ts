@@ -169,7 +169,7 @@ export default class GradeConnection extends Connection {
             id: layer.id,
             element: layer.element,
             level: layer.level,
-            i18n: layer.i18n,
+            i18n: layer.name ?? layer.i18n,
             data: points,
             geojson,
             type: 'grades',

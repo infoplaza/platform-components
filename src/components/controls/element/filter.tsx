@@ -1,5 +1,5 @@
 import React from 'react'
-import { UilSearch, UilTimes } from '@/src/components/icons/index'
+import { IpSearch, IpTimes } from '@/src/components/icons'
 import { twMerge } from '@/src/utilities/external/twMerge'
 
 type ElementFilterProps = {
@@ -29,7 +29,7 @@ const ElementFilter = ({
         <div className={twMerge('ip:flex ip:items-center ip:gap-3', className)}>
             <div className="ip:relative">
                 <div className="ip:absolute ip:left-0 ip:top-0 ip:px-2 ip:py-2">
-                    <UilSearch className="ip:w-4 ip:h-4 ip:text-gray-500" />
+                    <IpSearch className="ip:w-4 ip:h-4 ip:text-gray-500" />
                 </div>
                 <input
                     name="search"
@@ -45,7 +45,7 @@ const ElementFilter = ({
                 />
                 { isSearching && (
                     <button type="button" onClick={() => onChange('')} className="ip:absolute ip:right-0 ip:-top-0.5 ip:transition-colors ip:duration-200 ip:px-2 ip:py-2">
-                        <UilTimes className="ip:w-5 ip:h-5" />
+                        <IpTimes className="ip:w-5 ip:h-5" />
                     </button>
                 )}
             </div>

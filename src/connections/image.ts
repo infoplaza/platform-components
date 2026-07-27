@@ -121,7 +121,7 @@ export default class ImageConnection extends Connection {
             id: layer.id,
             element: layer.element,
             level: layer.level,
-            i18n: layer.i18n,
+            name: layer.name,
             bounds: boundingBox,
             image: texture,
             rendering: layer.rendering,

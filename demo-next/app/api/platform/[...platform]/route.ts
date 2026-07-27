@@ -8,11 +8,10 @@ if (!apiKey) {
   throw new Error('PLATFORM_API_KEY environment variable is not set')
 }
 
+// `apiKey` is the only required option. `baseUrl` defaults to the Infoplaza API
+// and the key is sent as `?token=<apiKey>` unless overridden.
 export const authOptions = {
   apiKey,
-  baseUrl: process.env.PLATFORM_BASE_URL ?? 'https://api.infoplaza.dev/v1/weather/maps',
-  // Upstream expects the key as `?token=<apiKey>` rather than an auth header.
-  apiKeyQueryParam: 'token',
 }
 
 const handler = PlatformAuth(authOptions)

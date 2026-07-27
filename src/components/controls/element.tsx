@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from "react"
 
 // ** Components Imports
-import * as Unicons from '@/src/components/icons/index'
+import { IpLayerGroup } from '@/src/components/icons'
 // import IconElement from '@/src/components/icons/element'
 
 
@@ -12,6 +12,7 @@ import ElementModal from '@/src/components/controls/element/modal'
 import { useWeatherMap } from "@/src/providers/weather/weather"
 import { twMerge } from "@/src/utilities/external/twMerge"
 import useResize from '@/src/utilities/resize'
+import IconElement from '@/src/components/controls/element/icons'
 
 import type { ModelInfo, ElementInfo as ElementItem } from '@/@types/weather.types'
 
@@ -172,7 +173,7 @@ export default function MapControlElement({
                                 onClick={() => dialogOpen()}>
                                 <div className='ip:relative ip:group'>
                                     <div className={twMerge(` ip:bg-white/80 ip:dark:bg-dark/80 ip:hover:bg-white ip:dark:hover:bg-dark ip:border ip:dark:border-white/10 ip:relative ip:backdrop-blur-md ip:rounded-lg ip:flex ip:items-center ip:cursor-pointer ip:h-8 ip:shrink-0 ip:w-8 ip:place-content-center`, small && '')}>
-                                        <Unicons.UilLayerGroup className={twMerge("ip:w-5 ip:h-5", small && 'ip:w-5 ip:h-5')} />
+                                        <IpLayerGroup className={twMerge("ip:w-5 ip:h-5", small && 'ip:w-5 ip:h-5')} />
                                     </div>
 
                                     <div className={twMerge(
@@ -206,11 +207,11 @@ export default function MapControlElement({
                                                 item.available === false && 'ip:opacity-40', 
                                                 small && 'ip:size-8 ip:sm:size-7 ip:pt-1'
                                             ])}>
-                                            {/* <IconElement 
+                                            <IconElement 
                                                 data={item as unknown as any} 
                                                 white={active} 
                                                 className="scale-90" 
-                                                iconClass={twMerge([active && 'text-white', small && 'size-6 sm:size-5'])}/> */}
+                                                iconClass={twMerge([ small && 'size-6 sm:size-5'])}/>
                                         </div>
                                         {hover && (
                                             <div className={twMerge(['ip:text-xs ip:tracking-wide ip:pr-2 ip:truncate ip:opacity-0 ip:transition-all ip:duration-300 ip:font-medium' , hover && 'ip:opacity-100', small && 'ip:text-2xs'])}>{item.i18n ?? item.name}</div>

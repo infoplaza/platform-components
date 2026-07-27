@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { BaseMap, MAP_STYLES, MapControlHud } from '../../dist/components/index.js'
 import { Providers as ProvidersComponent } from '../../dist/providers/index.js'
 import MapEventsProvider from '../../dist/events/index.js'
@@ -31,37 +31,7 @@ export default function MapDemo() {
     latitude: 52.3676,
     zoom: 7,
   })
-  const [models, setModels] = useState<any[]>([])
   const [mapStyleKey, setMapStyleKey] = useState('dark')
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    fetch('/api/platform/models?apiEnv=prod&betaModels=false', {
-      signal: controller.signal,
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to fetch models: ${response.status}`)
-        }
-
-        console.log('response', response)
-        return response.json()
-      })
-      .then((data) => {
-        console.log('data', data)
-        setModels(Array.isArray(data?.data) ? data.data.models : [])
-      })
-      .catch((error) => {
-        if (error.name !== 'AbortError') {
-          console.error('Unable to load models', error)
-        }
-      })
-
-    return () => {
-      controller.abort()
-    }
-  }, [])
 
   return (
     <div className="page">
@@ -89,13 +59,13 @@ export default function MapDemo() {
       <div className="map-shell ip-platform">
         <ProvidersComponent
           weatherConfig={{
-            models: models,
             model: 'gfs',
             element: 'temperature',
             run: 'latest',
             member: '0',
             level: '2m',
           }}
+          modelsConfig={{ apiEnv: 'prod', betaModels: false }}
         >
           <BaseMap
             viewState={viewState}
@@ -118,7 +88,6 @@ export default function MapDemo() {
                   mapIndex={0}
                   mapsLength={1}
                   isMultipleMapView={false}
-                  models={models}
                   onMapsCount={() => {}}
                   onExportChange={() => {}}
                   mapRef={null}

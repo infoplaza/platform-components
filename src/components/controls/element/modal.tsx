@@ -11,7 +11,7 @@ import { useStorageState } from "@/src/utilities/storageState"
 
 // ** External Imports
 import { DialogTitle } from "@headlessui/react"
-import ExpandIcon from "@/src/components/icons/expand"
+import { IpExpandIcon } from "@/src/components/icons"
 
 import type { ElementGroup as WeatherElementGroup, ModelInfo } from "@/@types/weather.types"
 import type { ElementCardItem } from "./card"
@@ -77,7 +77,7 @@ const ElementModal = ({
                 <span>Element Layers</span>
                 <span className="ip:absolute ip:top-4 ip:right-12 ip:z-100 ip:hover:bg-primary/20 ip:p-0.5 ip:rounded-md">
                     <a href={`/models/${activeModel.slug}`} className="ip:rounded-md ip:text-dark/50 ip:dark:text-white/50  ip:focus:outline-none">
-                        <ExpandIcon className="ip:size-[22px]" />
+                        <IpExpandIcon className="ip:size-6" />
                     </a>
                 </span>
                 {/* <Link href={`/models/${activeModel.slug}`} className="flex gap-1 items-center ml-2 text-2xs font-light text-primary dark:text-gray-400 cursor-pointer">

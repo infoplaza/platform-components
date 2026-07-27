@@ -10,12 +10,79 @@ npm install @infoplaza/platform maplibre-gl
 
 The package expects a React app (React + ReactDOM) and ships styles you should import once in your app entry.
 
+> **Heads up:** as of the latest version the available weather models are
+> fetched **internally** by `Providers`. You no longer fetch `/api/platform/models`
+> yourself or pass a `models` array into `weatherConfig`. This does require you to
+> mount the platform auth route on your server — see
+> [Server setup (required)](#server-setup-required).
+
+## Server setup (required)
+
+`Providers` loads the available weather models for you by calling
+`GET /api/platform/models` on **your own** server, which proxies the request to
+the Infoplaza API using your secret API key. You must mount the platform auth
+handler once so this endpoint exists — without it the models request (and
+therefore the weather layers) will not load.
+
+The handler is NextAuth-style: mount it once on a catch-all route and every
+platform endpoint (e.g. `/api/platform/models`) is served automatically. Your
+API key stays server-side; the browser only ever talks to `/api/platform/*`.
+
+### App Router — `app/api/platform/[...platform]/route.ts`
+
+```ts
+import PlatformAuth from '@infoplaza/platform/auth'
+
+const apiKey = process.env.PLATFORM_API_KEY
+if (!apiKey) {
+  throw new Error('PLATFORM_API_KEY environment variable is not set')
+}
+
+// `apiKey` is the only required option — `baseUrl` defaults to the Infoplaza API
+// and the key is sent as `?token=<apiKey>` unless you override those.
+const handler = PlatformAuth({ apiKey })
+
+export { handler as GET, handler as POST }
+```
+
+### Pages Router — `pages/api/platform/[...platform].ts`
+
+```ts
+import PlatformAuth from '@infoplaza/platform/auth'
+
+export default PlatformAuth({ apiKey: process.env.PLATFORM_API_KEY! })
+```
+
+### Options
+
+Only `apiKey` is required. The rest are optional:
+
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `apiKey` | — (required) | Secret key attached to every proxied upstream request. |
+| `baseUrl` | `'https://api.infoplaza.dev/v1/weather/maps'` | Upstream API that requests are proxied to. |
+| `apiKeyQueryParam` | `'token'` | Query param the key is sent as. Set to `''` to use header auth instead. |
+| `basePath` | `'/api/platform'` | Public path this handler is mounted on. |
+
+### Environment variables
+
+```bash
+# .env.local
+PLATFORM_API_KEY=your-secret-key
+```
+
+If you mount the handler under a different base path, pass it through
+`modelsConfig.basePath` on `Providers` so the internal request targets the right
+URL (see [`modelsConfig`](#configuring-the-models-request)).
+
 ## Quick Start
 
-This example follows the same flow as `demo/main.tsx`: wrap your map with providers, compose layers, render an overlay, and mount the control HUD.
+This example follows the same flow as `demo-next/app/map-demo.tsx`: wrap your map
+with providers, compose layers, render an overlay, and mount the control HUD.
+Note there is **no** client-side models fetch — `Providers` handles it.
 
 ```tsx
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { BaseMap, MapControlHud, MAP_STYLES } from '@infoplaza/platform/components'
@@ -35,39 +102,19 @@ function App() {
     latitude: 52.3676,
     zoom: 7,
   })
-  const [models, setModels] = useState<any[]>([])
   const [mapStyleKey, setMapStyleKey] = useState('dark')
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    fetch('/api/platform/models?apiEnv=prod&betaModels=false', { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to fetch models: ${response.status}`)
-        }
-        return response.json()
-      })
-      .then((data) => setModels(Array.isArray(data?.data) ? data.data : []))
-      .catch((error) => {
-        if (error.name !== 'AbortError') {
-          console.error('Unable to load models', error)
-        }
-      })
-
-    return () => controller.abort()
-  }, [])
 
   return (
     <Providers
       weatherConfig={{
-        models,
         model: 'gfs',
         element: 'temperature',
         run: 'latest',
         member: '0',
         level: '2m',
       }}
+      // Optional — controls the internal models request. These are the defaults.
+      modelsConfig={{ apiEnv: 'prod', betaModels: false }}
     >
       <BaseMap
         viewState={viewState}
@@ -89,7 +136,6 @@ function App() {
               mapIndex={0}
               mapsLength={1}
               isMultipleMapView={false}
-              models={models}
               onMapsCount={() => {}}
               onExportChange={() => {}}
               mapRef={null}
@@ -114,17 +160,44 @@ createRoot(rootElement).render(
 )
 ```
 
+### Configuring the models request
+
+`Providers` accepts an optional `modelsConfig` prop that controls the internal
+`/api/platform/models` request:
+
+| Field | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `apiEnv` | `'prod' \| 'test'` | `'prod'` | Upstream environment to request models for. |
+| `betaModels` | `boolean` | `false` | Whether to include beta models. |
+| `basePath` | `string` | `'/api/platform'` | Base path where the auth handler is mounted; the request is sent to `${basePath}/models`. |
+
+The fetched models are exposed through context. If you need direct access, use
+the `useModels()` hook (or `useProviders().models`) from
+`@infoplaza/platform/providers`:
+
+```tsx
+import { useModels } from '@infoplaza/platform/providers'
+
+function ModelCount() {
+  const { models, loading, error } = useModels()
+  if (loading) return <span>Loading models…</span>
+  if (error) return <span>Failed to load models</span>
+  return <span>{models.length} models available</span>
+}
+```
+
 ## What You Need
 
 - A React application with an element like `<div id="root"></div>`.
-- A model endpoint (or local data source) that returns the `weatherConfig.models` collection.
+- The platform auth route mounted on your server plus a `PLATFORM_API_KEY` — this is what powers the internal models request (see [Server setup (required)](#server-setup-required)).
 - A map style for `BaseMap`: pick one of the built-in `MAP_STYLES` via `mapStyleKey`, pass your own `mapStyles` list, or supply a raw MapLibre style URL via `style` (see [Map styles](#map-styles)).
 - Package styles imported once: `@infoplaza/platform/styles.css`.
 - MapLibre CSS imported once: `maplibre-gl/dist/maplibre-gl.css`.
 
 ## Main Building Blocks
 
-- `Providers` (`@infoplaza/platform/providers`): sets weather/config context used by the layer pipeline.
+- `Providers` (`@infoplaza/platform/providers`): sets weather/config context used by the layer pipeline and fetches the available models internally.
+- `PlatformAuth` (`@infoplaza/platform/auth`): server-side catch-all handler that proxies `/api/platform/*` to the Infoplaza API using your secret key (required — see [Server setup](#server-setup-required)).
 - `BaseMap` (`@infoplaza/platform/components`): renders the MapLibre map container and handles camera updates.
 - `LayerComposer` (`@infoplaza/platform`): converts map event output into Deck.gl-ready layers.
 - `Overlay` (`@infoplaza/platform`): mounts Deck.gl layers on top of the map.
@@ -244,7 +317,8 @@ const mapStyles = [...MAP_STYLES, customStyle]
 | --- | --- |
 | `@infoplaza/platform` | Top-level API (`LayerComposer`, `Overlay`, components, providers) |
 | `@infoplaza/platform/components` | `BaseMap`, `MapControlHud`, `MAP_STYLES`, `MapStyle` type, … |
-| `@infoplaza/platform/providers` | `Providers` |
+| `@infoplaza/platform/providers` | `Providers`, `useModels`, `useProviders` |
+| `@infoplaza/platform/auth` | `PlatformAuth` (server-side route handler) |
 | `@infoplaza/platform/events` | `MapEventsProvider` |
 | `@infoplaza/platform/layers/composer` · `/layers/overlay` | Individual layer building blocks |
 | `@infoplaza/platform/styles.css` | Full stylesheet (includes Tailwind preflight) — for standalone apps |

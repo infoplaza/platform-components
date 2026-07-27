@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from "react"
 
-import * as Unicons from '@/src/components/icons'
+import { IpAngleLeftB, IpAngleRightB, IpLoadingSpinner, IpPause, IpPlay } from '@/src/components/icons'
 import ReactSlider from '@/src/components/sliders'
-import { LoadingSpinner as LoadingSpinnerIcon } from "@/src/components/icons"
 // import ExportPreviewMarker from "@/components/_experimental/map/control/timebar/ExportPreviewMarker"
 
 // import { useSettings } from "@/src/providers/settings/settings"
@@ -578,7 +577,7 @@ export default function MapControlTimebar({ language, timezone, small = false, o
                                                 small ? 'ip:w-7 ip:h-7' : 'ip:w-10 ip:md:w-12 ip:h-10 ip:md:h-12 ',
                                             ]
                                         )}>
-                                    <LoadingSpinnerIcon className={twMerge(small ? 'ip:w-4 ip:h-4' : 'ip:w-7 ip:h-7')} />
+                                    <IpLoadingSpinner className={twMerge(small ? 'ip:w-4 ip:h-4' : 'ip:w-7 ip:h-7')} />
                                 </button>
                             ) : (
                                 <button
@@ -595,9 +594,9 @@ export default function MapControlTimebar({ language, timezone, small = false, o
                                             ]
                                         )} >
                                     {playingButton ? (
-                                        <Unicons.UilPause className={twMerge(small ? 'ip:w-4 ip:h-4' : 'ip:w-6 ip:h-6')} />
+                                        <IpPause className={twMerge(small ? 'ip:w-4 ip:h-4' : 'ip:w-6 ip:h-6')} />
                                     ) : (
-                                        <Unicons.UilPlay className={twMerge(small ? 'ip:w-4 ip:h-4' : 'ip:w-6 ip:h-6')} />
+                                        <IpPlay className={twMerge(small ? 'ip:w-4 ip:h-4' : 'ip:w-6 ip:h-6')} />
                                     )}
                                 </button>
                             )}
@@ -617,14 +616,14 @@ export default function MapControlTimebar({ language, timezone, small = false, o
                                         <button type="button"
                                             onClick={() => onButtonPrev()}
                                             className="ip:bg-white ip:text-primary ip:hover:bg-cloud ip:p-1 ip:rounded-l-full ip:w-6">
-                                            <Unicons.UilAngleLeftB className="ip:w-4 ip:h-4" />
+                                            <IpAngleLeftB className="ip:w-4 ip:h-4" />
                                         </button>
                                     </div>
                                     <div title={`Next${state.timeSkip ? `: Skip ${state.timeSkip} frames` : ''}`}>
                                         <button type="button"
                                             onClick={() => onButtonNext()}
                                             className="ip:bg-white ip:text-primary ip:hover:bg-cloud ip:p-1 ip:rounded-r-full ip:w-6">
-                                            <Unicons.UilAngleRightB className="ip:w-4 ip:h-4" />
+                                            <IpAngleRightB className="ip:w-4 ip:h-4" />
                                         </button>
                                     </div>
                                 </div>

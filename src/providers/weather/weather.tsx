@@ -1,19 +1,28 @@
 import React, { createContext, useContext, useMemo } from 'react'
 import { resolveAvailableModel } from '@/src/providers/weather/utils'
 import { useWeatherElements, useWeatherLayers, useWeatherModels, useWeatherState, useWeatherSuggestions } from '@/src/providers/weather/hooks'
+import { useModelsContext } from '@/src/providers/models/models'
 import type { WeatherConfig, WeatherContextValue } from '@/@types/weather.types'
 
 export const WeatherMapContext = createContext<WeatherContextValue | null>(null)
 
 export const WeatherMapProvider: React.FC<WeatherConfig> = ({ children, ...config }) => {
+  const modelsContext = useModelsContext()
+  // Models are now fetched internally by the `ModelsProvider`. A `models` value
+  // passed through the config still takes precedence for backwards compatibility.
+  const models = useMemo(
+    () => config.models ?? modelsContext?.models ?? [],
+    [config.models, modelsContext?.models],
+  )
+
   const weatherState = useWeatherState(config)
   const { modelInfo: selectedModelInfo } = useWeatherModels(
-    config.models,
+    models,
     weatherState.model,
   )
   const modelInfo = useMemo(() => {
-    return resolveAvailableModel(config.models, weatherState.model)
-  }, [config.models, weatherState.model])
+    return resolveAvailableModel(models, weatherState.model)
+  }, [models, weatherState.model])
   const { elementInfo } = useWeatherElements(modelInfo, weatherState.element)
 
   const suggestions = useWeatherSuggestions(
@@ -38,6 +47,7 @@ export const WeatherMapProvider: React.FC<WeatherConfig> = ({ children, ...confi
   const state = useMemo(
     (): WeatherContextValue => ({
       ...weatherState,
+      models,
       modelInfo,
       selectedModelInfo,
       elementInfo,
@@ -53,6 +63,7 @@ export const WeatherMapProvider: React.FC<WeatherConfig> = ({ children, ...confi
       weatherState.month,
       weatherState.period,
       weatherState.mapState,
+      models,
       modelInfo,
       selectedModelInfo,
       elementInfo,

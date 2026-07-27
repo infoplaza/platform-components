@@ -147,7 +147,7 @@ export const useWeatherLayers = (
       return {
         ...layer,
         id,
-        i18n: layer.i18n ?? elementInfo.i18n ?? '',
+        i18n: layer.name ?? elementInfo.name ?? layer.i18n ?? elementInfo.i18n ?? '',
         unit: buildUnit(layer, getUnit),
         view: {
           connection,
