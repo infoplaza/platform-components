@@ -54,8 +54,7 @@ const ElementCard = ({ item, activeModel, activeElement, onChangeHandler, isFavo
                     <div className="ip:shrink-0 ip:w-6 ip:h-6 ip:relative ip:flex ip:items-start">
                         <IconElement
                             data={item as unknown as IconElementData}
-                            white={isActive}
-                            iconClass={twMerge(isActive && "")}
+                            iconClass={twMerge(isActive && "ip:text-primary ip:fill-primary")}
                         />
                     </div>
 

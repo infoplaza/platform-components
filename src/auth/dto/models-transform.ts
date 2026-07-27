@@ -164,6 +164,7 @@ export function transformModelsResponse(payload: unknown): unknown {
     ...model,
     slug: model.id,
     elementGroups: filterElementGroups(model),
+    format: 'forecast',
   }))
 
   const base = isPlainObject(payload) ? payload : {}

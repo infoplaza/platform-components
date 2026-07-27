@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import ControlTimebar from '@/src/components/controls/timebars/timebar'
 import MapControlElement from '@/src/components/controls/element'
@@ -22,10 +22,6 @@ export type MapControlHudProps = {
     mapIndex: number
     mapsLength: number
     isMultipleMapView: boolean
-    /**
-     * @deprecated Models are now provided internally through the weather context.
-     */
-    models?: any
     onMapsCount: (count: number) => void
     onExportChange: (value: boolean) => void
     mapRef: any
@@ -35,9 +31,9 @@ export type MapControlHudProps = {
     }
 }
 
-export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, models: modelsProp, onMapsCount, onExportChange, mapRef, viewState }: MapControlHudProps) {
+export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsCount, onExportChange, mapRef, viewState }: MapControlHudProps) {
     const { models: contextModels, modelInfo, model, elementInfo, layersInfo, month } = useWeatherMap()
-    const models = modelsProp ?? contextModels
+    const models = contextModels
     const { legends } = useLegendValues()
     const { timestamp, timestampsInfo } = useTimestampMap()
     // const isMobileDevice = useIsIosAndroidPhoneOrTablet()
@@ -52,6 +48,10 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, models:
     const closeLegendDetails = () => setLegendDetailsOpen(false)
     const hasLegends = !isEmpty(legends)
     const legendListType = elementInfo?.options?.legend?.type === 'list'
+
+    useEffect(() => {
+        console.log('modelInfo', modelInfo)
+    }, [modelInfo])
 
     return (
         <>
@@ -73,7 +73,7 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, models:
                                 </div>
                                 <div className="ip:flex ip:relative ip:gap-1 ip:items-end">
                                     <MapControlModel
-                                        models={models}
+                                        models={models as any}
                                         maxItems={3}
                                         small={false}
                                     />
@@ -135,7 +135,7 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, models:
                         </div>
                     </div>
 
-                    {Boolean(modelInfo?.type) && ['nowcast', 'forecast'].includes(modelInfo?.type ?? '') && (
+                    {Boolean(modelInfo?.format) && ['nowcast', 'forecast'].includes(modelInfo?.format ?? '') && (
                         // elementInfo?.slug === 'observations' ? (
                         //     <ObservationTimebar />
                         // ) : (

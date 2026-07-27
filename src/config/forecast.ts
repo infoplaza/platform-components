@@ -71,7 +71,7 @@ const FORECAST: LayerConfig = {
 
                 { slug: 'temperaturemin',
                     name: 'Temperature min',
-                    iconUrl: '/img/elements/imw-min-temperature.svg',
+                    icon: 'IpMinTemperatureIcon',
                     timestampFilter: { hours: 6, start: 1 },
                     layers: [
                         { element: 'temperaturemin', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'temperature', grayscale: true },
@@ -129,7 +129,7 @@ const FORECAST: LayerConfig = {
 
                 { slug: 'cloudcoverlow',
                     name: 'Low level cloud cov',
-                    iconUrl: '/img/elements/imw-low-level-cloud-cov.svg',
+                    icon: 'IpLowLevelCloudCoverIcon',
                     layers: [
                         { element: 'cloudcoverlow', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, isAlphaImage: true },
                         // { element: 'cloudcoverlow', rendering: 'VALUES', optional: true }
@@ -137,7 +137,7 @@ const FORECAST: LayerConfig = {
 
                 { slug: 'cloudcovermiddle',
                     name: 'Mid level cloud cov',
-                    iconUrl: '/img/elements/imw-medium-level-cloud-cov.svg',
+                    icon: 'IpMediumLevelCloudCoverIcon',
                     layers: [
                         { element: 'cloudcovermiddle', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, isAlphaImage: true, settings: { value: { textColor: '#000000' } } },
                         // { element: 'cloudcovermiddle', rendering: 'VALUES', optional: true }
@@ -145,7 +145,7 @@ const FORECAST: LayerConfig = {
 
                 { slug: 'cloudcoverhigh',
                     name: 'High level cloud cov',
-                    iconUrl: '/img/elements/imw-high-level-cloud-cov.svg',
+                    icon: 'IpHighLevelCloudCoverIcon',
                     layers: [
                         { element: 'cloudcoverhigh', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, isAlphaImage: true, settings: { value: { textColor: '#000000' } } },
                         // { element: 'cloudcoverhigh', rendering: 'VALUES', optional: true }
@@ -198,7 +198,7 @@ const FORECAST: LayerConfig = {
                 { slug: 'cloudbaseheightconvective',
                     name: 'Cloud base height convective',
                     description: 'Above Ground Level',
-                    iconUrl: '/img/elements/imw-cloud-base-height-convective.svg',
+                    icon: 'IpCloudBaseHeightConvectiveIcon',
                     layers: [
                         { element: 'cloudbaseheightconvective', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, unitKey: 'altitude', settings: { value: { textColor: '#000000' } } },
                     ] 
@@ -206,7 +206,7 @@ const FORECAST: LayerConfig = {
                 { slug: 'cloudbaseheightstratiform',
                     name: 'Cloud base height stratiform',
                     description: 'Above Ground Level',
-                    iconUrl: '/img/elements/imw-cloud-base-height-stratiform.svg',
+                    icon: 'IpCloudBaseHeightStratiformIcon',
                     layers: [
                         { element: 'cloudbaseheightstratiform', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, unitKey: 'altitude', settings: { value: { textColor: '#000000' } } },
                     ] 
@@ -317,14 +317,14 @@ const FORECAST: LayerConfig = {
 
                 { slug: 'precipitation',
                     name: 'Precipitation',
-                    iconUrl: '/img/elements/imw-precipitation.svg',
+                    icon: 'IpPrecipitationIcon',
                     layers: [
                         { element: 'precipitation', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'precipitation', grayscale: true, settings: { value: { textDecimals: 1, textColor: '#000000' } }},
                     ] 
                 },
                 { slug: 'precipitationrate',
                     name: 'Precipitation rate',
-                    iconUrl: '/img/elements/imw-precipitation.svg',
+                    icon: 'IpPrecipitationIcon',
                     layers: [
                         { element: 'precipitationrate', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'precipitation', grayscale: false, settings: { value: { density: -1 } } },
                     ] 
@@ -332,7 +332,6 @@ const FORECAST: LayerConfig = {
                 { 
                     slug: 'precipitationtype',
                     name: 'Precipitation type',
-                    // iconUrl: '/img/elements/imw-precipitation.svg',
                     icon: 'IpPrecipitationTypeIcon',
                     layers: [
                         { element: 'precipitationtype', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: false },
@@ -396,7 +395,7 @@ const FORECAST: LayerConfig = {
                 { slug: 'probability_precipitation',
                     name: 'Probability Precipitation',
                     badge: '%',
-                    iconUrl: '/img/elements/imw-precipitation.svg',
+                    icon: 'IpPrecipitationIcon',
                     layers: [
                         { element: 'probability_precipitation', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'] },
                         // { element: 'probability_precipitation', rendering: 'VALUES', optional: true, hideConfiguredValue: true }
@@ -462,7 +461,7 @@ const FORECAST: LayerConfig = {
                 {   
                     slug: 'seaheight',
                     name: 'Wind waves',
-                    iconUrl: '/img/elements/imw-sea-height.svg',
+                    icon: 'IpSeaHeightIcon',
                     layers: [
                         { element: 'waveheight_wind', connection: 'ImageConnection', rendering: [ imageRendering, 'VALUES' ], grayscale: true, settings: { value: { textColor: '#000000', textDecimals: 1 } } },
                         { element: 'wavevector_wind', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false } } },
@@ -472,7 +471,7 @@ const FORECAST: LayerConfig = {
                 { 
                     slug: 'swell',
                     name: 'Swell',
-                    iconUrl: '/img/elements/imw-swell.svg',
+                    icon: 'IpSwellIcon',
                     layers: [
                         { element: 'waveheight_swell', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textColor: '#000000', textDecimals: 1 } } },
                         { element: 'wavevector_swell', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false }  } },
@@ -482,7 +481,7 @@ const FORECAST: LayerConfig = {
                 { 
                     slug: 'waveperiod_swell',
                     name: 'Swell period',
-                    iconUrl: '/img/elements/imw-swell.svg',
+                    icon: 'IpSwellIcon',
                     layers: [
                         { element: 'waveperiod_swell', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textDecimals: 1 } } },
                         // { element: 'wavedirection_swell', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
@@ -494,7 +493,7 @@ const FORECAST: LayerConfig = {
                 { 
                     slug: 'significantwaveheight_wind',
                     name: 'Significant wind wave height',
-                    iconUrl: '/img/elements/imw-significant-wave-height.svg',
+                    icon: 'IpSignificantWaveHeightIcon',
                     layers: [
                         { element: 'waveheight_significant', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textDecimals: 1 } } },
                         { element: 'wavevector_swell', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false }  } },
@@ -505,7 +504,7 @@ const FORECAST: LayerConfig = {
                 // {   
                 //     slug: 'significantwaveheight_mean',
                 //     name: 'Mean significant wave height',
-                //     iconUrl: '/img/elements/imw-significant-wave-height.svg',
+                //     icon: 'IpSignificantWaveHeightIcon',
                 //     layers: [
                 //         { element: 'waveheight_significant', connection: 'ImageConnection', rendering: [imageRendering ], grayscale: true },
                 //         { element: 'wavedirection_mean', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
@@ -538,7 +537,7 @@ const FORECAST: LayerConfig = {
                 // {
                 //     slug: 'waveheight_wind',
                 //     name: 'Wind waves',
-                //     iconUrl: '/img/elements/imw-sea-height.svg',
+                //     icon: 'IpSeaHeightIcon',
                 //     layers: [
                 //         { element: 'waveheight_wind', connection: 'ImageConnection', rendering: [imageRendering], unitKey: 'wave', grayscale: true },
                 //         { element: 'wavevector_wind', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 10, opacity: 0.2 } } },
@@ -557,7 +556,7 @@ const FORECAST: LayerConfig = {
                 {
                     slug: 'waveheight_significant',
                     name: 'Significant wave height',
-                    iconUrl: '/img/elements/imw-significant-wave-height.svg',
+                    icon: 'IpSignificantWaveHeightIcon',
                     layers: [
                         { element: 'waveheight_significant', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'wave', grayscale: true, settings: { value: { textDecimals: 1 } } },
                         { element: 'wavevector_significant', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false }  } },
@@ -576,7 +575,7 @@ const FORECAST: LayerConfig = {
                 // {
                 //     slug: 'waveheight_swell',
                 //     name: 'Swell height',
-                //     iconUrl: '/img/elements/imw-swell.svg',
+                //     icon: 'IpSwellIcon',
                 //     layers: [
                 //         { element: 'waveheight_swell', connection: 'ImageConnection', rendering: [imageRendering], unitKey: 'wave', grayscale: true },
                 //         { element: 'wavevector_swell', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 10, opacity: 0.2 } } },
@@ -595,7 +594,7 @@ const FORECAST: LayerConfig = {
                 {
                     slug: 'waveheight_swell_secondary',
                     name: 'Secondary swell height',
-                    iconUrl: '/img/elements/imw-swell.svg',
+                    icon: 'IpSwellIcon',
                     layers: [
                         { element: 'waveheight_swell_secondary', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'wave', grayscale: true, settings: { value: { textColor: '#000000', textDecimals: 1 } } },
                         { element: 'wavevector_swell_secondary', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.2 }, direction: { directionEnabled: false }  } },
@@ -622,7 +621,7 @@ const FORECAST: LayerConfig = {
                 {
                     slug: 'waveperiod_swell_secondary',
                     name: 'Secondary swell period',
-                    iconUrl: '/img/elements/imw-swell.svg',
+                    icon: 'IpSwellIcon',
                     layers: [
                         { element: 'waveperiod_swell_secondary', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textDecimals: 1 } } },
                         // { element: 'wavedirection_swell_secondary', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
@@ -632,7 +631,7 @@ const FORECAST: LayerConfig = {
                 {   
                     slug: 'current_seasurface',
                     name: 'Current',
-                    iconUrl: '/img/elements/imw-swell.svg',
+                    icon: 'IpSwellIcon',
                     layers: [
                         { element: 'currentspeed', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'windgust', grayscale: true, settings: { value: { textDecimals: 1 } } },
                         // { element: 'currentdirection', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
@@ -642,7 +641,7 @@ const FORECAST: LayerConfig = {
                 },
                 { slug: 'seasurfaceheight',
                     name: 'Water level',
-                    iconUrl: '/img/elements/imw-sea-height.svg',
+                    icon: 'IpSeaHeightIcon',
                     layers: [
                         { element: 'seasurfaceheight', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'wave', grayscale: true, settings: { value: { textDecimals: 1 } } },
                     ],

@@ -55,6 +55,7 @@ export interface WeatherState {
 }
 
 export interface ModelInfo {
+  format?: 'forecast' | 'nowcast' | 'grade' | 'stormtrack' | 'climate'
   slug: string
   name: string
   title?: string

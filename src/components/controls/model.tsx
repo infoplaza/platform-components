@@ -144,10 +144,6 @@ export default function MapControlModel({ maxItems = 3, small = false, models = 
         return groups
     }, [ forecastModels, favorites ])
 
-    useEffect(() => {
-        console.log('modelGroups', modelGroups)
-    }, [ modelGroups ])
-
     const blurActiveElement = (): void => {
         if (typeof document === 'undefined') {
             return

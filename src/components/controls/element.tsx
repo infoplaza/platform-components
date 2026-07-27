@@ -209,9 +209,8 @@ export default function MapControlElement({
                                             ])}>
                                             <IconElement 
                                                 data={item as unknown as any} 
-                                                white={active} 
-                                                className="scale-90" 
-                                                iconClass={twMerge([ small && 'size-6 sm:size-5'])}/>
+                                                className="ip:scale-90" 
+                                                iconClass={twMerge([active && 'ip:text-white ip:fill-white', small && 'ip:size-6 ip:sm:size-5'])}/>
                                         </div>
                                         {hover && (
                                             <div className={twMerge(['ip:text-xs ip:tracking-wide ip:pr-2 ip:truncate ip:opacity-0 ip:transition-all ip:duration-300 ip:font-medium' , hover && 'ip:opacity-100', small && 'ip:text-2xs'])}>{item.i18n ?? item.name}</div>

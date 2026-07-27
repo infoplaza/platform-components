@@ -24,7 +24,6 @@ const getIconName = (name = '') => {
 
 export default function IconElement({
     data,
-    white = false,
     className = '',
     iconClass = '',
 }: IconElementProps) {
