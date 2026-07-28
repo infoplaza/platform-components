@@ -12,6 +12,7 @@ if (!apiKey) {
 // and the key is sent as `?token=<apiKey>` unless overridden.
 export const authOptions = {
   apiKey,
+  baseUrl: 'https://api.infoplaza.dev/v1/weather/maps',
 }
 
 const handler = PlatformAuth(authOptions)
