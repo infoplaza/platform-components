@@ -18,7 +18,7 @@ import { transformModelsResponse } from './dto/models-transform'
 export { proxyUpstream } from './proxy'
 
 const DEFAULT_BASE_PATH = '/api/platform'
-const DEFAULT_BASE_URL = 'https://api.infoplaza.dev/v1/weather/maps'
+const DEFAULT_BASE_URL = 'https://api.infoplaza.com/weather/v1'
 // Upstream expects the key as `?token=<apiKey>` rather than an auth header.
 const DEFAULT_API_KEY_QUERY_PARAM = 'token'
 
@@ -65,7 +65,7 @@ async function dispatch(
   switch (endpoint) {
     case 'models': {
       // Proxies to `${baseUrl}/models` (e.g.
-      // https://api.infoplaza.dev/v1/weather/maps/models?token=<apiKey>) and
+      // https://api.infoplaza.com/weather/v1/models?token=<apiKey>) and
       // enriches each model with a computed `elementGroups` collection derived
       // from the FORECAST layer configuration.
       await proxyUpstream(req, res, options, 'models', (data) =>

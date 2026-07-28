@@ -46,7 +46,7 @@ export interface PlatformAuthOptions {
   apiKey: string
   /**
    * Base URL of the upstream API that requests are proxied to.
-   * @default 'https://api.infoplaza.dev/v1/weather/maps'
+   * @default 'https://api.infoplaza.com/weather/v1'
    */
   baseUrl?: string
   /**

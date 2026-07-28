@@ -60,7 +60,7 @@ Only `apiKey` is required. The rest are optional:
 | Option | Default | Purpose |
 | --- | --- | --- |
 | `apiKey` | — (required) | Secret key attached to every proxied upstream request. |
-| `baseUrl` | `'https://api.infoplaza.dev/v1/weather/maps'` | Upstream API that requests are proxied to. |
+| `baseUrl` | `'https://api.infoplaza.com/weather/v1'` | Upstream API that requests are proxied to. |
 | `apiKeyQueryParam` | `'token'` | Query param the key is sent as. Set to `''` to use header auth instead. |
 | `basePath` | `'/api/platform'` | Public path this handler is mounted on. |
 
