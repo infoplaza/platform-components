@@ -187,6 +187,7 @@ export interface MapLayer {
       isLogscale?: boolean
       unit?: string
       level?: string
+      fillvalue?: number
       databounds: any
       datalabels: any
       labels?: string[]
@@ -215,7 +216,9 @@ export interface MapLayer {
   }
   palette?: string
   isAlphaImage?: boolean
+  fillvalue?: number
   grayscale?: boolean
+  imageStride?: number
   name?: string
   i18n?: string
   settings?: LayerConfigSettings

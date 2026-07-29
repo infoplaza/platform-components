@@ -3,6 +3,7 @@ import { loadTextureData, loadBytes, loadGrayscaleImage, loadVectorImage } from 
 import { MapLayer } from '@/@types/weather.types'
 import Connection, { ConnectionConfig, resolveApiEnv } from './connection'
 import { getImageUnscaleFromDatabounds, isRegionalModel } from '../_utils/image-unscale'
+import { resolveImageFillValue } from '../_utils/image-fill-value'
 
 export default class ImageConnection extends Connection {
     constructor(config: ConnectionConfig) {
@@ -83,7 +84,7 @@ export default class ImageConnection extends Connection {
         }
 
         const url = this.addPalette(`${layer.layersApi}${layerData?.url}`, layer)
-        const [texture, serverPaletteImage] = await Promise.all([
+        const [texture, paletteImage] = await Promise.all([
             this.getTextureData(textureLoadMode, url, layer, signal),
             element?.palette?.png
                 ? loadTextureData(`${layer.layersApi}${element.palette.png}`, { signal })
@@ -103,20 +104,15 @@ export default class ImageConnection extends Connection {
             },
         }
 
-        const regionCategory = (data as { rundescription?: { region_category?: string } })?.rundescription?.region_category
+        const regionCategory = data?.rundescription?.region_category
         const imageUnscale = isRegionalModel(regionCategory)
             ? getImageUnscaleFromDatabounds(element?.databounds, { regional: true })
             : undefined
 
-        // Multi-row legends (e.g. precipitation rate "/hr") interleave several
-        // data rows into databounds/colors, so the server-rendered palette PNG
-        // doesn't match the legend's full value range. Rebuild the palette
-        // locally with all rows joined into one monotonic sequence.
-        // const paletteImage = isMultiRowLegend(legend) && layer.grayscale
-        //     ? (buildPaletteImageFromLegend(legend) ?? serverPaletteImage)
-        //     : serverPaletteImage
+        const imageFillValue = resolveImageFillValue(layer.fillvalue, element,{ 
+            isRegionalGrayscale: isRegionalModel(regionCategory) && (layer.grayscale ?? false) 
+        })
 
-        const paletteImage = serverPaletteImage
         return {
             id: layer.id,
             element: layer.element,
@@ -127,10 +123,12 @@ export default class ImageConnection extends Connection {
             rendering: layer.rendering,
             isLogScale: data?.element?.isLogscale ?? false,
             isAlphaImage: layer.isAlphaImage ?? false,
+            imageFillValue,
             ...(!element?.composite ? { legend: legend } : {}),
             url,
             paletteImage,
             grayscale: layer.grayscale,
+            imageStride: layer.imageStride,
             settings: layer.settings,
             ...(imageUnscale ? { imageUnscale } : {}),
             pickable: layer.settings?.image?.pickable ?? true,

@@ -6,6 +6,7 @@ import { ImageInterpolation } from '../../_utils/image-interpolation'
 import { ClipExtension } from "@deck.gl/extensions"
 import type { LayerSettingsState } from '@/src/providers/settings/layer-settings'
 import { getPaletteBounds } from '@/src/_utils/image-unscale'
+import type { ImageFillValue } from '@/src/_utils/image-fill-value'
 import { type Legend } from '@/src/_utils/pixel-value'
 
 /**
@@ -34,13 +35,15 @@ interface BitmapLayerConfig {
     paletteImage?: TextureData | ImageData
     pickable?: boolean
     grayscale?: boolean
+    imageStride?: number
+    imageFillValue?: ImageFillValue
+    isAlphaImage?: boolean
+    imageBanded?: boolean
     [key: string]: unknown
 }
 
 const DEFAULT_IMAGE_SMOOTHING = 0
-const DEFAULT_IMAGE_INTERPOLATION = ImageInterpolation.CUBIC
-const DEFAULT_IMAGE_MIN_VALUE = -255
-const DEFAULT_IMAGE_MAX_VALUE = 255
+const DEFAULT_IMAGE_INTERPOLATION = ImageInterpolation.NEAREST
 const DEFAULT_IMAGE_OPACITY = 0.18
 
 /**
@@ -79,7 +82,9 @@ export function ImageLayerConnector(
     void beforeId
 
     const imageSmoothing = state.imageSmoothing ?? DEFAULT_IMAGE_SMOOTHING
-    const imageInterpolation = state.imageInterpolation ?? DEFAULT_IMAGE_INTERPOLATION
+    const imageInterpolation = layer.imageStride
+        ? ImageInterpolation.NEAREST
+        : state.imageInterpolation ?? DEFAULT_IMAGE_INTERPOLATION
     const imageMinValue = state.imageMinValue ?? null
     const imageMaxValue = state.imageMaxValue ?? null
     const opacity = state.imageOpacity ?? DEFAULT_IMAGE_OPACITY
@@ -96,10 +101,12 @@ export function ImageLayerConnector(
         imageUnscale: layer.imageUnscale ?? paletteBounds,
         imageSmoothing,
         imageInterpolation,
+        imageStride: layer.imageStride ?? 1,
         imageWeight: layer.imageWeight ?? 0,
         imageType: layer.imageType ?? ImageType.SCALAR,
         imageMinValue,
         imageMaxValue,
+        imageBanded: layer.imageBanded ?? true,
         pickable: layer.pickable ?? true,
         extensions: [new ClipExtension()],
         beforeId,

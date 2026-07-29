@@ -6,6 +6,7 @@ import {DEFAULT_LINE_WIDTH, DEFAULT_LINE_COLOR, ensureDefaultProps} from '../../
 import {ImageInterpolation} from '../../_utils/image-interpolation';
 import {ImageType} from '../../_utils/image-type';
 import type {ImageUnscale} from '../../_utils/image-unscale';
+import type {ImageFillValue} from '../../_utils/image-fill-value';
 import {isViewportGlobe, isViewportInZoomBounds} from '../../_utils/viewport';
 import type {RasterPointProperties} from '../../_utils/raster-data';
 import {createEmptyTextureCached} from '../../_utils/texture';
@@ -24,11 +25,13 @@ type _ImageBitmapLayerProps = BitmapLayerProps & {
   imageTexture2: Texture | null;
   imageSmoothing: number;
   imageInterpolation: ImageInterpolation;
+  imageStride: number;
   imageWeight: number;
   imageType: ImageType;
   imageUnscale: ImageUnscale;
   imageMinValue: number | null;
   imageMaxValue: number | null;
+  imageFillValue: ImageFillValue;
   bounds: BitmapBoundingBox;
   minZoom: number | null;
   maxZoom: number | null;
@@ -46,6 +49,7 @@ type _ImageBitmapLayerProps = BitmapLayerProps & {
   gridSize: number | null;
   gridColor: Color | null;
   grayscale: boolean;
+  imageBanded: boolean;
 };
 
 export type ImageBitmapLayerProps = _ImageBitmapLayerProps & LayerProps;
@@ -55,11 +59,13 @@ const defaultProps: DefaultProps<ImageBitmapLayerProps> = {
   imageTexture2: {type: 'object', value: null},
   imageSmoothing: {type: 'number', value: 0},
   imageInterpolation: {type: 'object', value: ImageInterpolation.CUBIC},
+  imageStride: {type: 'number', value: 1},
   imageWeight: {type: 'number', value: 0},
   imageType: {type: 'object', value: ImageType.SCALAR},
   imageUnscale: {type: 'array', value: null},
   imageMinValue: {type: 'object', value: null},
   imageMaxValue: {type: 'object', value: null},
+  imageFillValue: {type: 'object', value: null},
   bounds: {type: 'array', value: [-180, -90, 180, 90], compare: true},
   minZoom: {type: 'object', value: null},
   maxZoom: {type: 'object', value: null},
@@ -76,6 +82,7 @@ const defaultProps: DefaultProps<ImageBitmapLayerProps> = {
   gridSize: {type: 'number', value: DEFAULT_LINE_WIDTH},
   gridColor: {type: 'color', value: DEFAULT_LINE_COLOR},
   grayscale: {type: 'boolean', value: true},
+  imageBanded: {type: 'boolean', value: true},
 };
 
 export class ImageBitmapLayer<ExtraPropsT extends {} = {}> extends BitmapLayer<ExtraPropsT & Required<_ImageBitmapLayerProps>> {
@@ -116,7 +123,7 @@ export class ImageBitmapLayer<ExtraPropsT extends {} = {}> extends BitmapLayer<E
   draw(opts: any): void {
     const {device, viewport} = this.context;
     const {model} = this.state;
-    const {imageTexture, imageTexture2, imageSmoothing, imageInterpolation, imageWeight, imageType, imageUnscale, imageMinValue, imageMaxValue, bounds, _imageCoordinateSystem, transparentColor, minZoom, maxZoom, borderEnabled, borderWidth, borderColor, gridEnabled, gridSize, gridColor, paletteTexture, paletteBounds} = ensureDefaultProps(this.props, defaultProps);
+    const {imageTexture, imageTexture2, imageSmoothing, imageInterpolation, imageStride, imageWeight, imageType, imageUnscale, imageMinValue, imageMaxValue, imageFillValue, isAlphaImage, bounds, _imageCoordinateSystem, transparentColor, minZoom, maxZoom, borderEnabled, borderWidth, borderColor, gridEnabled, gridSize, gridColor, imageBanded, paletteTexture, paletteBounds} = ensureDefaultProps(this.props, defaultProps);
     // const {paletteTexture, paletteBounds} = this.state;
 
     if (!imageTexture) {
@@ -144,17 +151,21 @@ export class ImageBitmapLayer<ExtraPropsT extends {} = {}> extends BitmapLayer<E
           imageTexture2: boundImageTexture2,
           imageSmoothing, 
           imageInterpolation, 
+          imageStride,
           imageWeight, 
           imageType, 
           imageUnscale, 
           imageMinValue, 
           imageMaxValue,
+          imageFillValue,
+          isAlphaImage,
           borderEnabled, 
           borderWidth, 
           borderColor,
           gridEnabled, 
           gridSize, 
           gridColor,
+          imageBanded,
         } satisfies RasterModuleProps,
 
         [paletteModule.name]: {
