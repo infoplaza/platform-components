@@ -1,5 +1,5 @@
 import { imageRendering } from '@/src/config/constants'
-import type { LayerConfig } from '@/@types/layer.types';
+import type { LayerConfig } from '@/@types/layer.types'
 
 /* Forecast */
 /**
@@ -19,29 +19,26 @@ const FORECAST: LayerConfig = {
     endpoint: {
         prod: {
             server: 'https://api.imweather.com',
-            layers: '/v0/gridmapdata/layers', 
+            layers: '/v0/gridmapdata/layers',
             models: '/v0/gridmapdata/models',
-            palettes: '/v0/gridmapdata/palette/{modelname}/{runtime}/{element}' //https://api-test.imweather.com/docs/redoc#tag/Grid-map-data-or-Layer-endpoints/operation/get_image_layer
+            palettes: '/v0/gridmapdata/palette/{modelname}/{runtime}/{element}', //https://api-test.imweather.com/docs/redoc#tag/Grid-map-data-or-Layer-endpoints/operation/get_image_layer
         },
         test: {
             server: 'https://api-test.imweather.com',
             layers: '/v0/gridmapdata/layers',
             models: '/v0/gridmapdata/models',
-            palettes: '/v0/gridmapdata/palette/{modelname}/{runtime}/{element}'
-        }
+            palettes: '/v0/gridmapdata/palette/{modelname}/{runtime}/{element}',
+        },
     },
     layers: [
-
         /**
          * @property {string} name - Display name for the group.
          * @property {Item[]} items - Array of items in the temperature group.
          */
         {
-
             /* Temperatuur */
             name: 'Temperature',
             items: [
-
                 /**
                  * @property {string} slug - Unique identifier for the item.
                  * @property {string} name - Display name for the item.
@@ -54,119 +51,115 @@ const FORECAST: LayerConfig = {
                     name: 'Temperature',
                     icon: 'IpTemperatureHalf',
                     layers: [
-                        { element: 'temperature', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: '°C', level: '2m', grayscale: true },
-                        { element: 'windvector', connection: 'ImageConnection', rendering: 'PARTICLES', unit: 'km/h', name: 'Wind animation surface level', level: '300hPa' }
+                        { element: 'temperature', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: '°C', level: '2m', selectableLevel: true, grayscale: true },
+                        { element: 'windvector', connection: 'ImageConnection', rendering: 'PARTICLES', unit: 'km/h', name: 'Wind animation surface level', level: '300hPa', optional: true },
                     ],
-                    // levels: [ '2m', '50m', '100m', '200m', '300m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa', 'seasurface' ]
+                    levels: ['2m', '50m', '100m', '200m', '300m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa', 'seasurface'],
                 },
-                // {
-                //     slug: 'windvector',
-                //     name: 'Wind vector',
-                //     icon: 'IpTemperatureHalf',
-                //     layers: [
-                //         { element: 'windvector', connection: 'ImageConnection', rendering: [imageRendering, 'PARTICLES'], unit: 'km/h', name: 'Wind animation surface level', level: '300hPa' }
-                //     ],
-                //     levels: [ '2m', '50m', '100m', '200m', '300m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa', 'seasurface' ]
-                // },
-
-                { slug: 'temperaturemin',
+                {
+                    slug: 'temperaturemin',
                     name: 'Temperature min',
                     icon: 'IpMinTemperatureIcon',
                     timestampFilter: { hours: 6, start: 1 },
                     layers: [
                         { element: 'temperaturemin', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'temperature', grayscale: true },
                     ],
-                    // levels: [ '2m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa' ] 
+                    levels: ['2m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa'],
                 },
-                { slug: 'temperaturemax',
+                {
+                    slug: 'temperaturemax',
                     name: 'Temperature max',
                     icon: 'IpTemperaturePlus',
                     timestampFilter: { hours: 6, start: 1 },
                     layers: [
                         { element: 'temperaturemax', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'temperature', grayscale: true },
                     ],
-                    // levels: [ '2m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa' ] 
+                    levels: ['2m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa'],
                 },
-                { slug: 'freezinglevel',
+                {
+                    slug: 'freezinglevel',
                     name: 'Freezing level',
                     icon: 'IpFreezingLevelIcon',
                     layers: [
                         { element: 'freezinglevel', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'wave', grayscale: true, settings: { value: { density: -1 } } },
-                    ] 
+                    ],
                 },
-            ]
+            ],
         },
         {
-
             /* Vochtigheid - Humidity*/
             name: 'Moisture / Clouds',
             items: [
-                { slug: 'dewpoint',
+                {
+                    slug: 'dewpoint',
                     name: 'Dewpoint',
                     icon: 'IpDewpointIcon',
                     layers: [
                         { element: 'dewpoint', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'temperature', grayscale: true },
-                        // { element: 'dewpoint', rendering: 'VALUES', unitKey: 'temperature', optional: true }
                     ],
-                    levels: [ '2m' ] },
-
-                { slug: 'relativehumidity',
+                    levels: ['2m'],
+                },
+                {
+                    slug: 'relativehumidity',
                     name: 'Relative humidity',
                     icon: 'IpRelativeHumidityIcon',
                     layers: [
                         { element: 'relativehumidity', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], settings: { value: { textColor: '#000000' } }, grayscale: true },
-                        // { element: 'relativehumidity', rendering: 'VALUES', optional: true }
                     ],
-                    levels: [ '2m' ] },
-
-                { slug: 'visibility',
+                    levels: ['2m'],
+                },
+                {
+                    slug: 'visibility',
                     name: 'Visibility',
                     icon: 'IpEye',
                     layers: [
                         { element: 'visibility', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'visibility', grayscale: true },
-                        // { element: 'visibility', rendering: 'VALUES', unitKey: 'visibility', optional: true, hideConfiguredValue: true }
-                    ] },
-
-                { slug: 'cloudcoverlow',
+                    ],
+                },
+                {
+                    slug: 'cloudcoverlow',
                     name: 'Low level cloud cov',
                     icon: 'IpLowLevelCloudCoverIcon',
                     layers: [
                         { element: 'cloudcoverlow', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, isAlphaImage: true },
-                        // { element: 'cloudcoverlow', rendering: 'VALUES', optional: true }
-                    ] },
-
-                { slug: 'cloudcovermiddle',
+                    ],
+                },
+                {
+                    slug: 'cloudcovermiddle',
                     name: 'Mid level cloud cov',
                     icon: 'IpMediumLevelCloudCoverIcon',
                     layers: [
                         { element: 'cloudcovermiddle', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, isAlphaImage: true, settings: { value: { textColor: '#000000' } } },
-                        // { element: 'cloudcovermiddle', rendering: 'VALUES', optional: true }
-                    ] },
-
-                { slug: 'cloudcoverhigh',
+                    ],
+                },
+                {
+                    slug: 'cloudcoverhigh',
                     name: 'High level cloud cov',
                     icon: 'IpHighLevelCloudCoverIcon',
                     layers: [
                         { element: 'cloudcoverhigh', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, isAlphaImage: true, settings: { value: { textColor: '#000000' } } },
-                        // { element: 'cloudcoverhigh', rendering: 'VALUES', optional: true }
-                    ] },
+                    ],
+                },
 
-                { slug: 'cloudcovertotal',
+                {
+                    slug: 'cloudcovertotal',
                     name: 'Total cloud cov',
                     icon: 'IpClouds',
                     layers: [
-                        { element: 'cloudcovertotal', name: 'Total cloud cov', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true,  isAlphaImage: true, settings: { value: { textColor: '#000000' } } },
-                        // { element: 'cloudcovertotal', rendering: 'VALUES', optional: true }
-                    ] },
-
-                { slug: 'cloudcovershading',
+                        { element: 'cloudcovertotal', name: 'Total cloud cov', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, isAlphaImage: true, settings: { value: { textColor: '#000000' } } },
+                    ],
+                },
+                {
+                    slug: 'cloudcovershading',
                     name: 'Cloud cover shading',
                     icon: 'IpClouds',
                     layers: [
                         { element: 'cloudcovershading', name: 'Cloud cover shading', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, isAlphaImage: true, settings: { value: { textColor: '#000000' } } },
-                    ] },
+                    ],
+                },
 
-                { slug: 'cloudcovercombi',
+                {
+                    slug: 'cloudcovercombi',
                     name: 'Combi cloud cov',
                     description: 'Combi cloud cover: low > middle > high',
                     icon: 'IpClouds',
@@ -174,9 +167,11 @@ const FORECAST: LayerConfig = {
                         { element: 'cloudcoverlow', name: 'Low level cloud cov', connection: 'ImageConnection', rendering: imageRendering, grayscale: true, isAlphaImage: true },
                         { element: 'cloudcovermiddle', name: 'Mid level cloud cov', connection: 'ImageConnection', rendering: imageRendering, grayscale: true, isAlphaImage: true },
                         { element: 'cloudcoverhigh', name: 'High level cloud cov', connection: 'ImageConnection', rendering: imageRendering, grayscale: true, isAlphaImage: true },
-                    ] },
+                    ],
+                },
 
-                { slug: 'cloudcovercombi_reverse',
+                {
+                    slug: 'cloudcovercombi_reverse',
                     name: 'Combi cloud cov (reverse)',
                     description: 'Combi cloud cover: high > middle > low',
                     icon: 'IpClouds',
@@ -184,170 +179,183 @@ const FORECAST: LayerConfig = {
                         { element: 'cloudcoverhigh', name: 'High level cloud cov', connection: 'ImageConnection', rendering: imageRendering, grayscale: true, isAlphaImage: true },
                         { element: 'cloudcovermiddle', name: 'Mid level cloud cov', connection: 'ImageConnection', rendering: imageRendering, grayscale: true, isAlphaImage: true },
                         { element: 'cloudcoverlow', name: 'Low level cloud cov', connection: 'ImageConnection', rendering: imageRendering, grayscale: true, isAlphaImage: true },
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'cloudbaseheight',
                     name: 'Cloud base height',
                     description: 'Above Ground Level',
                     icon: 'IpClouds',
                     layers: [
                         { element: 'cloudbaseheight', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, unitKey: 'altitude', settings: { value: { textColor: '#000000' } } },
-                    ] 
+                    ],
                 },
-                { slug: 'cloudbaseheightconvective',
+                {
+                    slug: 'cloudbaseheightconvective',
                     name: 'Cloud base height convective',
                     description: 'Above Ground Level',
                     icon: 'IpCloudBaseHeightConvectiveIcon',
                     layers: [
                         { element: 'cloudbaseheightconvective', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, unitKey: 'altitude', settings: { value: { textColor: '#000000' } } },
-                    ] 
+                    ],
                 },
-                { slug: 'cloudbaseheightstratiform',
+                {
+                    slug: 'cloudbaseheightstratiform',
                     name: 'Cloud base height stratiform',
                     description: 'Above Ground Level',
                     icon: 'IpCloudBaseHeightStratiformIcon',
                     layers: [
                         { element: 'cloudbaseheightstratiform', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, unitKey: 'altitude', settings: { value: { textColor: '#000000' } } },
-                    ] 
+                    ],
                 },
-                { slug: 'thetaw',
+                {
+                    slug: 'thetaw',
                     name: 'Theta-w',
                     icon: 'IpMountainsSun',
-                    description: "Wet bulb potential temperature",
+                    description: 'Wet bulb potential temperature',
                     layers: [
                         { element: 'thetaw', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                     ],
-                    levels: [ '2m', '250hPa', '300hPa', '500hPa', '700hPa', '850hPa', '925hPa' ] 
+                    levels: ['2m', '250hPa', '300hPa', '500hPa', '700hPa', '850hPa', '925hPa'],
                 },
-                { slug: 'thetae',
+                {
+                    slug: 'thetae',
                     name: 'Theta-e',
                     icon: 'IpMountains',
-                    description: "Equivalent potential temperature",
+                    description: 'Equivalent potential temperature',
                     layers: [
                         { element: 'thetae', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                     ],
-                    levels: [ '2m', '300hPa', '500hPa', '700hPa', '850hPa', '925hPa' ] 
+                    levels: ['2m', '300hPa', '500hPa', '700hPa', '850hPa', '925hPa'],
                 },
-                { slug: 'wetbulbtemperature',
+                {
+                    slug: 'wetbulbtemperature',
                     name: 'Wet bulb temperature',
                     icon: 'IpThermometer',
                     layers: [
                         { element: 'wetbulbtemperature', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                     ],
-                    levels: [ '2m', '300hPa', '500hPa', '700hPa', '850hPa', '925hPa' ] 
-                }
-            ]
+                    levels: ['2m', '300hPa', '500hPa', '700hPa', '850hPa', '925hPa'],
+                },
+            ],
         },
         {
-
             /* Wind */
             name: 'Wind',
             items: [
-
                 // wind_particles = windspeed
-                { slug: 'wind_particles',
+                {
+                    slug: 'wind_particles',
                     name: 'Wind Speed',
                     icon: 'IpWindAltIcon',
                     layers: [
                         { element: 'windspeed', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'wind', grayscale: true },
-                        { element: 'windvector', connection: 'ImageConnection', rendering: 'PARTICLES', unitKey: 'wind', optional: true   },
+                        { element: 'windvector', connection: 'ImageConnection', rendering: 'PARTICLES', unitKey: 'wind', optional: true },
                     ],
-                    levels: [ '10m', '50m', '100m', '200m', '300m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa'] 
+                    levels: ['10m', '50m', '100m', '200m', '300m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa'],
                 },
-                { slug: 'wind_barbs',
+                {
+                    slug: 'wind_barbs',
                     name: 'Wind Barbs',
                     icon: 'IpWindBarbIcon',
                     layers: [
                         { element: 'windspeed', connection: 'ImageConnection', rendering: imageRendering, unitKey: 'wind', grayscale: true },
                         { element: 'windvector', connection: 'ImageConnection', rendering: ['PARTICLES', 'BARBS'], unitKey: 'wind' },
                     ],
-                    levels: [ '2m', '10m', '50m', '100m', '200m', '300m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa', 'seasurface' ]
+                    levels: ['2m', '10m', '50m', '100m', '200m', '300m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa', 'seasurface'],
                 },
-                { slug: 'windgust',
+                {
+                    slug: 'windgust',
                     name: 'Wind gusts',
                     icon: 'IpWindgustIcon',
                     layers: [
                         { element: 'windgust', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'windgust', grayscale: true },
                         { element: 'windvector', connection: 'ImageConnection', rendering: ['PARTICLES', 'BARBS'], unitKey: 'wind' },
                     ],
-                    levels: [ '10m', '100m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa' ] 
+                    levels: ['10m', '100m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa'],
                 },
-                { slug: 'wind_direction',
+                {
+                    slug: 'wind_direction',
                     name: 'Wind direction',
                     icon: 'IpWinddirectionIcon',
                     layers: [
-                        { element: 'windspeed', connection: 'ImageConnection', rendering: imageRendering, unitKey: 'wind', grayscale: true, level: '10m', },
+                        { element: 'windspeed', connection: 'ImageConnection', rendering: imageRendering, unitKey: 'wind', grayscale: true, level: '10m' },
                         { element: 'windvector', connection: 'ImageConnection', rendering: ['PARTICLES', 'DIRECTIONS'], unitKey: 'wind', level: '10m', grayscale: false },
                         // { element: 'winddirection', connection: 'ImageConnection', rendering: ['DIRECTIONS'] },
                     ],
-                    levels: [ '10m', '50m', '100m', '200m', '300m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa' ] 
+                    levels: ['10m', '50m', '100m', '200m', '300m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa'],
                 },
-                { slug: 'jetstream',
+                {
+                    slug: 'jetstream',
                     name: 'Jetstream',
                     icon: 'IpArrowGrowth',
                     layers: [
                         { element: 'windspeed', connection: 'ImageConnection', rendering: [imageRendering], unitKey: 'wind', palette: 'windspeedjetstream', grayscale: false },
                         // { element: 'winddirection', connection: 'ImageConnection', rendering: 'DIRECTIONS', optional: true },
-                        { element: 'windvector', connection: 'ImageConnection', rendering: ['PARTICLES', 'DIRECTIONS'], unitKey: 'wind', grayscale: false },                    
+                        { element: 'windvector', connection: 'ImageConnection', rendering: ['PARTICLES', 'DIRECTIONS'], unitKey: 'wind', grayscale: false },
                     ],
-                    levels: [ '300hPa', '250hPa' ] 
+                    levels: ['300hPa', '250hPa'],
                 },
-                { slug: 'probability_storm',
+                {
+                    slug: 'probability_storm',
                     name: 'Probability Storm',
                     badge: '%',
                     icon: 'IpWind',
                     layers: [
                         { element: 'probability_storm', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
-                    ] 
+                    ],
                 },
-            ]
+            ],
         },
         {
-
             /* Neerslag */
             name: 'Precipitation',
             items: [
-                { slug: 'reflectivity',
+                {
+                    slug: 'reflectivity',
                     name: 'Radar reflectivity',
                     icon: 'IpCloudSunHail',
                     layers: [
                         { element: 'reflectivity', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
-                    ] },
+                    ],
+                },
 
-                { slug: 'precipitation',
+                {
+                    slug: 'precipitation',
                     name: 'Precipitation',
                     icon: 'IpPrecipitationIcon',
                     layers: [
-                        { element: 'precipitation', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'precipitation', grayscale: true, settings: { value: { textDecimals: 1, textColor: '#000000' } }},
-                    ] 
+                        { element: 'precipitation', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'precipitation', grayscale: true, settings: { value: { textDecimals: 1, textColor: '#000000' } } },
+                    ],
                 },
-                { slug: 'precipitationrate',
+                {
+                    slug: 'precipitationrate',
                     name: 'Precipitation rate',
                     icon: 'IpPrecipitationIcon',
                     layers: [
                         { element: 'precipitationrate', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'precipitation', grayscale: false, settings: { value: { density: -1 } } },
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'precipitationtype',
                     name: 'Precipitation type',
                     icon: 'IpPrecipitationTypeIcon',
                     layers: [
                         { element: 'precipitationtype', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: false },
-                    ], 
+                    ],
                     options: {
                         legend: {
-                            type: 'list'
-                        }
-                    }
+                            type: 'list',
+                        },
+                    },
                 },
-                { slug: 'precipitationaccumulation',
+                {
+                    slug: 'precipitationaccumulation',
                     name: 'Precipitation accumulation',
                     icon: 'IpPrecipitationAccumulationIcon',
                     layers: [
                         { element: 'precipitationaccumulation', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textDecimals: 1, textColor: '#000000' } } },
-                    ] 
+                    ],
                 },
 
                 // { slug: 'snowrate',
@@ -358,79 +366,94 @@ const FORECAST: LayerConfig = {
                 //         { element: 'precipitationrate_snow', rendering: 'VALUES', unitKey: 'precipitation', optional: true },
                 //     ] },
 
-                { slug: 'snowdepth',
+                {
+                    slug: 'snowdepth',
                     name: 'Snow depth',
                     icon: 'IpSnowHeightIcon',
                     layers: [
                         { element: 'snowdepth', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'snow', grayscale: true },
                         // { element: 'snowdepth', rendering: 'VALUES', unitKey: 'snow', optional: true, hideConfiguredValue: true }
-                    ] },
+                    ],
+                },
 
-                { slug: 'accumulationsnow',
+                {
+                    slug: 'accumulationsnow',
                     name: 'Accumulated snowfall',
                     icon: 'IpSnowAccumulationIcon',
                     layers: [
-                        { element: 'precipitationaccumulation_snow', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'snow', grayscale: true  },
+                        { element: 'precipitationaccumulation_snow', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'snow', grayscale: true },
                         // { element: 'precipitationaccumulation_snow', rendering: 'VALUES', unitKey: 'snow', optional: true, hideConfiguredValue: true }
-                    ] },
+                    ],
+                },
 
-                { slug: 'probability_frost',
+                {
+                    slug: 'probability_frost',
                     name: 'Probability Frost',
                     badge: '%',
                     icon: 'IpSnowflake',
                     layers: [
                         { element: 'probability_frost', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'] },
                         // { element: 'probability_frost', rendering: 'VALUES', optional: true, hideConfiguredValue: true }
-                    ] },
+                    ],
+                },
 
-                { slug: 'probability_severefrost',
+                {
+                    slug: 'probability_severefrost',
                     name: 'Probability Severe Frost',
                     badge: '%',
                     icon: 'IpSnowflake',
                     layers: [
                         { element: 'probability_severefrost', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'] },
                         // { element: 'probability_severefrost', rendering: 'VALUES', optional: true, hideConfiguredValue: true }
-                    ] },
+                    ],
+                },
 
-                { slug: 'probability_precipitation',
+                {
+                    slug: 'probability_precipitation',
                     name: 'Probability Precipitation',
                     badge: '%',
                     icon: 'IpPrecipitationIcon',
                     layers: [
                         { element: 'probability_precipitation', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'] },
                         // { element: 'probability_precipitation', rendering: 'VALUES', optional: true, hideConfiguredValue: true }
-                    ] },
+                    ],
+                },
 
-                { slug: 'probability_snow',
+                {
+                    slug: 'probability_snow',
                     name: 'Probability Snowfall',
                     badge: '%',
                     icon: 'IpSnowflakeAlt',
                     layers: [
                         { element: 'probability_snow', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'] },
                         // { element: 'probability_snow', rendering: 'VALUES', optional: true, hideConfiguredValue: true }
-                    ] },
+                    ],
+                },
 
-                { slug: 'probability_freezingrain',
+                {
+                    slug: 'probability_freezingrain',
                     name: 'Probability freezing rain',
                     badge: '%',
                     icon: 'IpCloudRain',
                     layers: [
                         { element: 'probability_freezingrain', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'] },
                         // { element: 'probability_freezingrain', rendering: 'VALUES', optional: true, hideConfiguredValue: true }
-                    ] },
+                    ],
+                },
 
-                { slug: 'probability_snowcover',
+                {
+                    slug: 'probability_snowcover',
                     name: 'Probability Snowcover',
                     badge: '%',
                     icon: 'IpSnowflakeAlt',
                     layers: [
                         { element: 'probability_snowcover', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'] },
                         // { element: 'probability_snowcover', rendering: 'VALUES', optional: true, hideConfiguredValue: true }
-                    ] },
-            ]
+                    ],
+                },
+            ],
         },
         {
-
             /* Stability */
             name: 'Stability',
             items: [
@@ -441,67 +464,67 @@ const FORECAST: LayerConfig = {
                     layers: [
                         { element: 'cape', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                     ],
-                    levels: [ 'mixedlayer', 'mostunstable', 'surface' ]
+                    levels: ['mixedlayer', 'mostunstable', 'surface'],
                 },
-                { slug: 'liftedindex',
+                {
+                    slug: 'liftedindex',
                     name: 'Lifted index',
                     icon: 'IpArrowUpRight',
                     layers: [
                         { element: 'liftedindex', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                     ],
-                    levels: [ 'mixedlayer', 'mostunstable', 'surface' ] 
+                    levels: ['mixedlayer', 'mostunstable', 'surface'],
                 },
-            ]
+            ],
         },
         {
-
             /* Wave */
             name: 'Maritime',
             items: [
-                {   
+                {
                     slug: 'seaheight',
                     name: 'Wind waves',
                     icon: 'IpSeaHeightIcon',
                     layers: [
-                        { element: 'waveheight_wind', connection: 'ImageConnection', rendering: [ imageRendering, 'VALUES' ], grayscale: true, settings: { value: { textColor: '#000000', textDecimals: 1 } } },
-                        { element: 'wavevector_wind', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false } } },
+                        { element: 'waveheight_wind', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textColor: '#000000', textDecimals: 1 } } },
+                        { element: 'wavevector_wind', connection: 'ImageConnection', rendering: ['DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false } } },
                         // { element: 'waveheight_wind', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'swell',
                     name: 'Swell',
                     icon: 'IpSwellIcon',
                     layers: [
                         { element: 'waveheight_swell', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textColor: '#000000', textDecimals: 1 } } },
-                        { element: 'wavevector_swell', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false }  } },
+                        { element: 'wavevector_swell', connection: 'ImageConnection', rendering: ['DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false } } },
                         // { element: 'waveheight_swell', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'waveperiod_swell',
                     name: 'Swell period',
                     icon: 'IpSwellIcon',
                     layers: [
                         { element: 'waveperiod_swell', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textDecimals: 1 } } },
                         // { element: 'wavedirection_swell', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
-                        { element: 'wavevector_swell', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false }  } },
+                        { element: 'wavevector_swell', connection: 'ImageConnection', rendering: ['DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false } } },
 
                         // { element: 'waveperiod_swell', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'significantwaveheight_wind',
                     name: 'Significant wind wave height',
                     icon: 'IpSignificantWaveHeightIcon',
                     layers: [
                         { element: 'waveheight_significant', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textDecimals: 1 } } },
-                        { element: 'wavevector_swell', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false }  } },
+                        { element: 'wavevector_swell', connection: 'ImageConnection', rendering: ['DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false } } },
                         // { element: 'wavedirection_wind', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
                         // { element: 'waveheight_significant', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                // {   
+                // {
                 //     slug: 'significantwaveheight_mean',
                 //     name: 'Mean significant wave height',
                 //     icon: 'IpSignificantWaveHeightIcon',
@@ -509,30 +532,30 @@ const FORECAST: LayerConfig = {
                 //         { element: 'waveheight_significant', connection: 'ImageConnection', rendering: [imageRendering ], grayscale: true },
                 //         { element: 'wavedirection_mean', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
                 //         // { element: 'waveheight_significant', rendering: 'VALUES', optional: true }
-                //     ] 
+                //     ]
                 // },
-                { 
+                {
                     slug: 'waveperiod_mean',
                     name: 'Mean wave period',
                     icon: 'IpWater',
                     layers: [
                         { element: 'waveperiod_mean', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textDecimals: 1 } } },
-                        { element: 'wavevector_significant', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false }  } },
+                        { element: 'wavevector_significant', connection: 'ImageConnection', rendering: ['DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false } } },
 
                         // { element: 'wavedirection_mean', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
                         // { element: 'waveperiod_mean', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'waveperiod_wind',
                     name: 'Wind wave period',
                     icon: 'IpWater',
                     layers: [
                         { element: 'waveperiod_wind', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textDecimals: 1 } } },
-                        { element: 'wavevector_wind', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false }  } },
+                        { element: 'wavevector_wind', connection: 'ImageConnection', rendering: ['DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false } } },
                         // { element: 'wavedirection_mean', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
                         // { element: 'waveperiod_wind', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
                 // {
                 //     slug: 'waveheight_wind',
@@ -559,9 +582,9 @@ const FORECAST: LayerConfig = {
                     icon: 'IpSignificantWaveHeightIcon',
                     layers: [
                         { element: 'waveheight_significant', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'wave', grayscale: true, settings: { value: { textDecimals: 1 } } },
-                        { element: 'wavevector_significant', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false }  } },
+                        { element: 'wavevector_significant', connection: 'ImageConnection', rendering: ['DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false } } },
                         // { element: 'wavedirection_mean', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
-                    ]
+                    ],
                 },
                 // {
                 //     slug: 'wavedirection_mean',
@@ -597,9 +620,9 @@ const FORECAST: LayerConfig = {
                     icon: 'IpSwellIcon',
                     layers: [
                         { element: 'waveheight_swell_secondary', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'wave', grayscale: true, settings: { value: { textColor: '#000000', textDecimals: 1 } } },
-                        { element: 'wavevector_swell_secondary', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.2 }, direction: { directionEnabled: false }  } },
+                        { element: 'wavevector_swell_secondary', connection: 'ImageConnection', rendering: ['DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.2 }, direction: { directionEnabled: false } } },
                         // { element: 'wavedirection_swell_secondary', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
-                    ]
+                    ],
                 },
                 // {
                 //     slug: 'wavedirection_swell_secondary',
@@ -616,7 +639,7 @@ const FORECAST: LayerConfig = {
                     icon: 'IpWater',
                     layers: [
                         { element: 'waveperiod_peak', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textDecimals: 1 } } },
-                    ]
+                    ],
                 },
                 {
                     slug: 'waveperiod_swell_secondary',
@@ -625,43 +648,45 @@ const FORECAST: LayerConfig = {
                     layers: [
                         { element: 'waveperiod_swell_secondary', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textDecimals: 1 } } },
                         // { element: 'wavedirection_swell_secondary', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
-                        { element: 'wavevector_swell_secondary', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false }  } },
-                    ]
+                        { element: 'wavevector_swell_secondary', connection: 'ImageConnection', rendering: ['DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false } } },
+                    ],
                 },
-                {   
+                {
                     slug: 'current_seasurface',
                     name: 'Current',
                     icon: 'IpSwellIcon',
                     layers: [
                         { element: 'currentspeed', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'windgust', grayscale: true, settings: { value: { textDecimals: 1 } } },
                         // { element: 'currentdirection', connection: 'ImageConnection', rendering: 'DIRECTIONS' },
-                        { element: 'currentvector', connection: 'ImageConnection', rendering: [ 'DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false }  } },
+                        { element: 'currentvector', connection: 'ImageConnection', rendering: ['DIRECTIONS', 'PARTICLES'], settings: { particle: { speedFactor: 10, maxAge: 50, width: 4, opacity: 0.1 }, direction: { directionEnabled: false } } },
                     ],
-                    levels: [ 'seasurface' ] 
+                    levels: ['seasurface'],
                 },
-                { slug: 'seasurfaceheight',
+                {
+                    slug: 'seasurfaceheight',
                     name: 'Water level',
                     icon: 'IpSeaHeightIcon',
                     layers: [
                         { element: 'seasurfaceheight', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unitKey: 'wave', grayscale: true, settings: { value: { textDecimals: 1 } } },
                     ],
-                    levels: [] },
+                    levels: [],
+                },
 
-                { 
+                {
                     slug: 'salinity',
                     name: 'Salinity',
                     icon: 'IpWater',
                     layers: [
                         { element: 'salinity', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true, settings: { value: { textDecimals: 1 } } },
                     ],
-                    levels: [ 'seasurface' ] 
+                    levels: ['seasurface'],
                 },
-            ]
+            ],
         },
         {
             name: 'Air quality',
             items: [
-                { 
+                {
                     slug: 'airqualityindex',
                     name: 'Air quality index',
                     icon: 'IpHeadSideMask',
@@ -672,11 +697,11 @@ const FORECAST: LayerConfig = {
                     ],
                     options: {
                         legend: {
-                            type: 'list'
-                        }
-                    }
+                            type: 'list',
+                        },
+                    },
                 },
-                { 
+                {
                     slug: 'biomassburning',
                     name: 'Wildfire aerosol',
                     icon: 'IpFire',
@@ -684,9 +709,9 @@ const FORECAST: LayerConfig = {
                         { element: 'biomassburning', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: 'µg/m³', grayscale: true },
                         // { element: 'biomassburning', rendering: 'VALUES', unit: 'µg/m³', optional: true }
                     ],
-                    levels: [ 'surface' ] 
+                    levels: ['surface'],
                 },
-                { 
+                {
                     slug: 'carbonmonoxide',
                     name: 'Carbon monoxide (CO)',
                     icon: 'IpSmokeIcon',
@@ -695,9 +720,9 @@ const FORECAST: LayerConfig = {
                         { element: 'carbonmonoxide', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: 'µg/m³', grayscale: true },
                         // { element: 'carbonmonoxide', rendering: 'VALUES', unit: 'µg/m³', optional: true }
                     ],
-                    levels: [ 'surface' ] 
+                    levels: ['surface'],
                 },
-                { 
+                {
                     slug: 'dust',
                     name: 'Desert dust aerosol',
                     icon: 'IpDustIcon',
@@ -705,9 +730,10 @@ const FORECAST: LayerConfig = {
                         { element: 'dust', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: 'µg/m³', grayscale: true },
                         // { element: 'dust', rendering: 'VALUES', unit: 'µg/m³', optional: true }
                     ],
-                    levels: [ 'surface' ] },
+                    levels: ['surface'],
+                },
 
-                { 
+                {
                     slug: 'nitrogendioxide',
                     name: 'Nitrogen dioxide (NO2)',
                     icon: 'IpSmokeIcon',
@@ -716,9 +742,9 @@ const FORECAST: LayerConfig = {
                         { element: 'nitrogendioxide', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: 'µg/m³', grayscale: true },
                         // { element: 'nitrogendioxide', rendering: 'VALUES', unit: 'µg/m³', optional: true }
                     ],
-                    levels: [ 'surface' ] 
+                    levels: ['surface'],
                 },
-                { 
+                {
                     slug: 'nitrogenmonoxide',
                     name: 'Nitrogen monoxide (NO)',
                     icon: 'IpSmokeIcon',
@@ -727,45 +753,45 @@ const FORECAST: LayerConfig = {
                         { element: 'nitrogenmonoxide', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: 'µg/m³', grayscale: true },
                         // { element: 'nitrogenmonoxide', rendering: 'VALUES', unit: 'µg/m³', optional: true }
                     ],
-                    levels: [ 'surface' ] 
+                    levels: ['surface'],
                 },
-                { 
+                {
                     slug: 'opticalthickness_aerosol',
                     name: 'Aerosol optical thickness',
                     icon: 'IpHeadSideMask',
                     layers: [
                         { element: 'opticalthickness_aerosol', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'opticalthickness_aerosol', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'opticalthickness_biomassburning',
                     name: 'Wildfire aerosol',
                     icon: 'IpHeadSideMask',
                     layers: [
                         { element: 'opticalthickness_biomassburning', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'opticalthickness_biomassburning', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'opticalthickness_dust',
                     name: 'Desert dust aerosol',
                     icon: 'IpHeadSideMask',
                     layers: [
                         { element: 'opticalthickness_dust', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'opticalthickness_dust', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'opticalthickness_seasalt',
                     name: 'Sea salt aerosol',
                     icon: 'IpHeadSideMask',
                     layers: [
                         { element: 'opticalthickness_seasalt', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'opticalthickness_seasalt', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'ozone',
                     name: 'Ozone (O3)',
                     icon: 'IpEarthLeafIcon',
@@ -774,9 +800,9 @@ const FORECAST: LayerConfig = {
                         { element: 'ozone', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: 'µg/m³', grayscale: true },
                         // { element: 'ozone', rendering: 'VALUES', unit: 'µg/m³', optional: true }
                     ],
-                    levels: [ 'surface' ] 
+                    levels: ['surface'],
                 },
-                { 
+                {
                     slug: 'pm1',
                     name: 'Particulate matter <1 µm (PM1)',
                     icon: 'IpDustIcon',
@@ -784,9 +810,9 @@ const FORECAST: LayerConfig = {
                         { element: 'pm1', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: 'µg/m³', grayscale: true },
                         // { element: 'pm1', rendering: 'VALUES', unit: 'µg/m³', optional: true }
                     ],
-                    levels: [ 'surface' ] 
+                    levels: ['surface'],
                 },
-                { 
+                {
                     slug: 'pm2p5',
                     name: 'Particulate matter <2.5 µm (PM2.5)',
                     icon: 'IpDustIcon',
@@ -795,9 +821,9 @@ const FORECAST: LayerConfig = {
                         { element: 'pm2p5', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: 'µg/m³', grayscale: true },
                         // { element: 'pm2p5', rendering: 'VALUES', unit: 'µg/m³', optional: true }
                     ],
-                    levels: [ 'surface' ] 
+                    levels: ['surface'],
                 },
-                { 
+                {
                     slug: 'pm10',
                     name: 'Particulate matter <10 µm (PM10)',
                     icon: 'IpDustIcon',
@@ -806,9 +832,9 @@ const FORECAST: LayerConfig = {
                         { element: 'pm10', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: 'µg/m³', grayscale: true },
                         // { element: 'pm10', rendering: 'VALUES', unit: 'µg/m³', optional: true }
                     ],
-                    levels: [ 'surface' ] 
+                    levels: ['surface'],
                 },
-                { 
+                {
                     slug: 'sulphurdioxide',
                     name: 'Sulphur dioxide (SO2)',
                     icon: 'IpSmokeIcon',
@@ -817,9 +843,9 @@ const FORECAST: LayerConfig = {
                         { element: 'sulphurdioxide', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: 'μg/m3', grayscale: true },
                         // { element: 'sulphurdioxide', rendering: 'VALUES', unit: 'μg/m3', optional: true }
                     ],
-                    levels: [ 'surface' ] 
+                    levels: ['surface'],
                 },
-                { 
+                {
                     slug: 'pollen_alder',
                     name: 'Alder pollen',
                     icon: 'IpTreePollenIcon',
@@ -827,9 +853,9 @@ const FORECAST: LayerConfig = {
                     layers: [
                         { element: 'pollen_alder', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'pollen_alder', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'pollen_birch',
                     name: 'Birch pollen',
                     icon: 'IpTreePollenIcon',
@@ -837,9 +863,9 @@ const FORECAST: LayerConfig = {
                     layers: [
                         { element: 'pollen_birch', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'pollen_birch', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'pollen_grass',
                     name: 'Grass pollen',
                     icon: 'IpFlowerPollenIcon',
@@ -847,9 +873,9 @@ const FORECAST: LayerConfig = {
                     layers: [
                         { element: 'pollen_grass', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'pollen_grass', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'pollen_mugwort',
                     name: 'Mugwort pollen',
                     icon: 'IpFlowerPollenIcon',
@@ -857,9 +883,9 @@ const FORECAST: LayerConfig = {
                     layers: [
                         { element: 'pollen_mugwort', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'pollen_mugwort', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'pollen_olive',
                     name: 'Olive pollen',
                     icon: 'IpTreePollenIcon',
@@ -867,9 +893,9 @@ const FORECAST: LayerConfig = {
                     layers: [
                         { element: 'pollen_olive', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'pollen_olive', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'pollen_ragweed',
                     name: 'Ragweed pollen',
                     icon: 'IpFlowerPollenIcon',
@@ -877,30 +903,29 @@ const FORECAST: LayerConfig = {
                     layers: [
                         { element: 'pollen_ragweed', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'pollen_ragweed', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'uvindex',
                     name: 'UV index',
                     icon: 'IpHeadSideMask',
                     layers: [
                         { element: 'uvindex', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'uvindex', rendering: 'VALUES', optional: true }
-                    ] 
+                    ],
                 },
-                { 
+                {
                     slug: 'uvindexclearsky',
                     name: 'Clear sky UV index',
                     icon: 'IpHeadSideMask',
                     layers: [
                         { element: 'uvindexclearsky', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
                         // { element: 'uvindexclearsky', rendering: 'VALUES', optional: true }
-                    ] 
-                }
-            ]
+                    ],
+                },
+            ],
         },
         {
-
             /* Other */
             name: 'Other',
             items: [
@@ -910,10 +935,10 @@ const FORECAST: LayerConfig = {
                     description: 'Total cloud cover, Precipitation and Pressure.',
                     icon: 'IpGlobe',
                     layers: [
-                        { element: 'cloudcovertotal', name: 'Total cloud cov', connection: 'ImageConnection', rendering: [imageRendering], grayscale: true,  isAlphaImage: true },
+                        { element: 'cloudcovertotal', name: 'Total cloud cov', connection: 'ImageConnection', rendering: [imageRendering], grayscale: true, isAlphaImage: true },
                         { element: 'precipitation', name: 'Precipitation', connection: 'ImageConnection', rendering: [imageRendering], unitKey: 'precipitation', grayscale: false },
                         // { element: 'pressure_meansealevel', name: 'Mean sea level pressure', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
-                    ]
+                    ],
                 },
                 {
                     slug: 'air_mass',
@@ -949,23 +974,25 @@ const FORECAST: LayerConfig = {
                         { element: 'precipitation', name: 'Precipitation', connection: 'ImageConnection', rendering: imageRendering, unitKey: 'precipitation', grayscale: false },
                     ],
                 },
-                { slug: 'pressure_meansealevel',
+                {
+                    slug: 'pressure_meansealevel',
                     name: 'Mean sea level pressure',
                     icon: 'IpTachometerFastAlt',
                     layers: [
                         { element: 'pressure_meansealevel', connection: 'ImageConnection', rendering: [imageRendering], unit: 'hPa', grayscale: true, settings: { image: { imageOpacity: 0.5, pickable: false } } },
                         // { element: 'pressure_meansealevel', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
-                    ]
+                    ],
                 },
-                { slug: 'pressure',
+                {
+                    slug: 'pressure',
                     name: 'Pressure',
                     icon: 'IpTachometerFastAlt',
-                        layers: [
-                            // { element: 'pressure', connection: 'ImageConnection', rendering: [imageRendering, 'CONTOURS'], unit: 'hPa', grayscale: true },
-                            { element: 'pressure', connection: 'ImageConnection', rendering: [imageRendering], unit: 'hPa', grayscale: true, settings: { image: { imageOpacity: 0.5, pickable: false } } },
-                            // { element: 'pressure', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
+                    layers: [
+                        // { element: 'pressure', connection: 'ImageConnection', rendering: [imageRendering, 'CONTOURS'], unit: 'hPa', grayscale: true },
+                        { element: 'pressure', connection: 'ImageConnection', rendering: [imageRendering], unit: 'hPa', grayscale: true, settings: { image: { imageOpacity: 0.5, pickable: false } } },
+                        // { element: 'pressure', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
                     ],
-                    levels: [ 'surface']
+                    levels: ['surface'],
                 },
                 {
                     slug: 'geopotential',
@@ -976,30 +1003,31 @@ const FORECAST: LayerConfig = {
                         { element: 'temperature', connection: 'ImageConnection', rendering: imageRendering, unitKey: 'temperature', grayscale: true },
                         // { element: 'geopotential', connection: 'ImageConnection', rendering: 'CONTOURS', unitKey: 'visibility', unit: 'km', interval: null },
                         // { element: 'geopotential', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unitKey: 'visibility', unit: 'km', },
-
                     ],
-                    levels: [ '300hPa', '250hPa', '500hPa', '700hPa', '850hPa', '925hPa' ]
+                    levels: ['300hPa', '250hPa', '500hPa', '700hPa', '850hPa', '925hPa'],
                 },
-                { slug: 'probability_fog',
+                {
+                    slug: 'probability_fog',
                     name: 'Probability Fog',
                     badge: '%',
                     icon: 'IpWindy',
                     layers: [
-                        { element: 'probability_fog', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true  },
-                    ]
+                        { element: 'probability_fog', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], grayscale: true },
+                    ],
                 },
-                { slug: 'others.shortwaveradiation',
+                {
+                    slug: 'others.shortwaveradiation',
                     name: 'Shortwave radiation',
                     badge: '%',
                     icon: 'IpSun',
                     layers: [
                         { element: 'shortwaveradiation', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: 'W/m²', level: 'surface', grayscale: true },
                     ],
-                    levels: [ 'surface' ]
+                    levels: ['surface'],
                 },
-            ]
-        }
-    ]
+            ],
+        },
+    ],
 }
 
 export default FORECAST

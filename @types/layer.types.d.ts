@@ -140,6 +140,8 @@ export interface Layer {
     name?: string
     i18n?: string
     level?: string
+    /** Uses the item's selected level; `level` remains the fallback/default. */
+    selectableLevel?: boolean
     palette?: string
     contourinterval?: number
     interval?: number | null

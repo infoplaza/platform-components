@@ -31,17 +31,18 @@ export default function MapControlLevel({ levels = null, maxItems = 3 }: MapCont
     return (
         <div>
             <div className="ip:pointer-events-auto">
-                <div className="ip:flex ip:items-center ip:pt-0.5 ip:pl-3">
+                <div className="ip:flex ip:items-center ip:pt-1 ip:pl-3">
                     <div className="ip:bg-white/50 ip:dark:bg-dark/50 ip:backdrop-blur-md ip:pl-2 ip:pr-4 ip:py-1 ip:rounded-l-md ip:text-xs ip:font-medium ip:-mr-2">
                         Level
                     </div>
                     <div>
                         <DropdownControl 
-                            items={modelItems}                                        
+                            items={modelItems}       
+                            small={true}                                 
                             minItems={1}
                             maxItems={maxItems}
                             onChange={(val) => onChange(val)}                                        
-                            className="ip:bg-white/80 ip:dark:bg-dark/80 ip:backdrop-blur-md ip:text-xs ip:h-6 ip:rounded-md" 
+                            className="ip:bg-white/80 ip:dark:bg-dark/80 ip:backdrop-blur-md ip:text-xs ip:h-6! ip:rounded-md" 
                         />
                     </div>
                 </div>

@@ -34,7 +34,9 @@ export default class ImageConnection extends Connection {
             run: layersInfo.run,
             element: layer?.element ?? '',
             member: layersInfo.member ? layersInfo.member : '',
-            level: layer?.level ?? layersInfo.level ?? '',
+            level: layer?.selectableLevel
+                ? layersInfo.level || layer.level || ''
+                : layer?.level ?? layersInfo.level ?? '',
             unit: layer?.unit ?? '',
             grayscale: layer?.grayscale ?? false,
         }

@@ -50,7 +50,9 @@ const LAYERS_TEMPLATE_REPLACEMENTS: {
     {
         token: '{level}',
         resolve: (layer, ctx) => {
-            const level = layer.level || ctx.layersInfo.level
+            const level = layer.selectableLevel
+                ? ctx.layersInfo.level || layer.level
+                : layer.level || ctx.layersInfo.level
             return level ? `&level=${level}` : ''
         },
     },

@@ -224,6 +224,7 @@ export interface MapLayer {
   settings?: LayerConfigSettings
   element?: string,
   level?: string,
+  selectableLevel?: boolean,
   unitKey?: string
   unit?: string
   boundingBox?:  {

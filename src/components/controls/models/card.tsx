@@ -3,7 +3,7 @@ import React from "react"
 
 // ** Components Imports
 import { IpCrown, IpLocationFavoritesIcon } from "@/src/components/icons"
-import Tag from "@/src/components/tag/tag"
+import Tag from "@/src/components/tags/tag"
 
 // ** Utils Imports
 import { twMerge } from "@/src/utilities/external/twMerge"

@@ -151,7 +151,7 @@ function DropdownControl({ items, minItems = 1, maxItems = 3, onChange, onMore, 
                     <div>
                         {(viewModel.itemsMore).map(i => (
                             <MenuItem key={i.value}>
-                                <div className={twMerge('ip:whitespace-nowrap ip:px-2 ip:md:px-3 ip:py-0.5 ip:flex ip:justify-between ip:gap-2 ip:place-items-center ip:cursor-pointer', i.active ? 'ip:text-primary ip:font-semibold' : 'ip:hover:bg-primary/20 ip:font-medium', small && 'ip:text-2xs')}
+                                <div className={twMerge('ip:whitespace-nowrap ip:px-2 ip:md:px-3 ip:py-0.5 ip:flex ip:justify-between ip:gap-2 ip:place-items-center ip:cursor-pointer', i.active ? 'ip:text-primary ip:font-semibold' : 'ip:hover:bg-primary/20 ip:font-medium', small && 'ip:text-2xs ip:font-base')}
                                     onClick={() => change(i)}>                      
                                     <div className={`${i.available === false ? 'ip:opacity-40' : ''}`}>{getItemLabel(i)}</div>
                                 </div>

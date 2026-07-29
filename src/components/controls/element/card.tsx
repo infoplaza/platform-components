@@ -5,7 +5,7 @@ import React from "react"
 // import LayerIcon from "@/components/icon/layer-line"
 // import IpLocationFavoritesIcon from "@/components/icon/location-favorites"
 import { IpPercentageIcon } from "@/src/components/icons"
-// import Tag from "@/src/components/tags/tag"
+import Tag from "@/src/components/tags/tag"
 // import TagPro from "@/src/components/tags/pro"
 import IconElement, { IconElementData } from "@/src/components/controls/element/icons"
 
@@ -40,6 +40,7 @@ const ElementCard = ({ item, activeModel, activeElement, onChangeHandler, isFavo
     const isAvailable = item.available !== false
     const probabilityElements = item.members?.includes("probabilities")
 
+    console.log(item)
     return (
         <div
             className={twMerge(
@@ -115,20 +116,20 @@ const ElementCard = ({ item, activeModel, activeElement, onChangeHandler, isFavo
                     </div>
                 </div>
 
-                {/* {!cleanView && (
-                    <div className="flex flex-wrap gap-1 pt-2">
+                {!cleanView && (
+                    <div className="ip:flex ip:flex-wrap ip:gap-1 ip:pt-2">
                         {item.levels?.slice(0, 2)?.map((level) => (
-                            <Tag key={level} className={twMerge("text-2xs px-1 text-gray-500")}>
+                            <Tag key={level} className={twMerge("ip:text-2xs ip:px-1 ip:text-gray-500")}>
                                 {level}
                             </Tag>
                         ))}
                         {item.levels && item.levels.length > 2 && (
-                            <Tag className={twMerge("text-2xs px-1 text-gray-500")}>
+                            <Tag className={twMerge("ip:text-2xs ip:px-1 ip:text-gray-500")}>
                                 {item.levels.length - 2} more
                             </Tag>
                         )}
                     </div>
-                )} */}
+                )}
             </div>
         </div>
     )

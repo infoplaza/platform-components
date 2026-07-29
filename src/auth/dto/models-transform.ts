@@ -1,4 +1,5 @@
 import FORECAST from '@/src/config/forecast'
+import type { Item, Layer, LayerGroup } from '@/@types/layer.types'
 import type { TransformedModel } from '@/@types/model.types'
 
 /**
@@ -33,113 +34,198 @@ export const isMixedLayers = (layers: any[]): boolean =>
  * enriched with the units, defaults, fill values and offsets reported by the
  * model. The result mirrors `ModelInfo['elementGroups']`.
  */
-export const filterElementGroups = (modelData: any) => {
-  const groups: any[] = []
+type ModelLevels = string[] | Record<string, unknown>
 
-  FORECAST.layers.forEach(group => {
-    const items: any[] = []
-
-    group.items.forEach((i: any) => {
-      let offset = 0
-
-      const isMixedLayersValue = isMixedLayers(i.layers)
-      const item: any = {
-        ...i,
-        isMixedLayers: isMixedLayersValue,
-        uniqueElements: getElementLayers(i.layers),
-      }
-
-      let found = true
-      const newLayers: any[] = []
-
-      item.layers.forEach((l: any) => {
-        const layer = { ...l }
-
-        let layerData: any
-        try {
-          // const latestRuntime = Math.max(...modelData.runtimes)
-          layerData = modelData.elements.find((element: any) => element.id === layer.element)
-        } catch (error) {
-          console.error('Error accessing layerData', error)
-          layerData = null
-        }
-
-        if (!layerData) {
-          if (layer.optional !== true) {
-            found = false
-          }
-        } else {
-          if (
-            layer.rendering === 'CONTOURS_BLACK' ||
-            layer.rendering === 'CONTOURS_WHITE' ||
-            layer.rendering === 'CONTOURS_COLOR'
-          ) {
-            layer.maxzoom = layer.maxzoom ?? modelData?.modeldescription?.maxzoom ?? 20
-          }
-
-          layer.units = layerData.units ?? []
-          layer.unitDefault = layerData.unit ?? (layer.units.length > 0 ? layer.units[0] : null)
-
-          if (layerData.fillvalue != null) {
-            layer.fillvalue = layerData.fillvalue
-          }
-
-          if (layerData.firstoffset > offset) {
-            offset = layerData.firstoffset
-          }
-
-          if (item.levels && layerData.levels) {
-            const newLevels: any[] = []
-            item.levels.forEach((level: any) => {
-              if (layerData.levels[level]) {
-                newLevels.push(level)
-              }
-            })
-
-            if (newLevels.length === 0 && item.levels.length > 0) {
-              if (layer.optional !== true) found = false
-            } else {
-              if (item.levels.length !== newLevels.length) {
-                item.levels = newLevels
-              }
-
-              newLayers.push(layer)
-            }
-          } else {
-            newLayers.push(layer)
-          }
-
-          if (layerData?.members) {
-            item.members = layerData.members
-          }
-        }
-      })
-
-      if (found && newLayers.length > 0) {
-        if (!item.timestampFilter) {
-          item.timestampFilter = { hours: 1, start: offset }
-        }
-
-        items.push({
-          ...item,
-          layers: newLayers,
-        })
-      }
-    })
-
-    if (items.length > 0) {
-      groups.push({
-        name: group.name,
-        items: items,
-      })
-    }
-  })
-
-  return groups
+interface ModelElementData {
+  id: string
+  units?: string[]
+  unit?: string
+  fillvalue?: number | null
+  firstoffset?: number
+  levels?: ModelLevels
+  members?: string[]
 }
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+interface ModelData {
+  elements?: ModelElementData[]
+  modeldescription?: {
+    maxzoom?: number
+  }
+}
+
+type EnrichedLayer = Layer & {
+  maxzoom?: number
+  unitDefault?: string | null
+  fillvalue?: number
+}
+
+type LayerResolution =
+  | {
+      status: 'available'
+      layer: EnrichedLayer
+      offset: number
+      members?: string[]
+    }
+  | {
+      status: 'unavailable'
+      required: boolean
+    }
+
+interface ModelContext {
+  elementsById: Map<string, ModelElementData>
+  maxzoom: number
+}
+
+const CONTOUR_RENDERINGS = new Set([
+  'CONTOURS_BLACK',
+  'CONTOURS_WHITE',
+  'CONTOURS_COLOR',
+])
+
+function hasLevel(levels: ModelLevels, level: string): boolean {
+  return Array.isArray(levels) ? levels.includes(level) : Boolean(levels[level])
+}
+
+function usesSelectableLevel(layer: Layer): boolean {
+  return layer.selectableLevel === true || layer.level == null
+}
+
+function getSupportedLevels(
+  item: Item,
+  elementsById: Map<string, ModelElementData>,
+): string[] | undefined {
+  if (!item.levels) return undefined
+
+  return item.layers
+    .filter(layer => layer.optional !== true && usesSelectableLevel(layer))
+    .reduce((levels, layer) => {
+      const modelLevels = elementsById.get(layer.element)?.levels
+      return modelLevels
+        ? levels.filter(level => hasLevel(modelLevels, level))
+        : levels
+    }, [...item.levels])
+}
+
+function enrichLayer(
+  layer: Layer,
+  element: ModelElementData,
+  maxzoom: number,
+): EnrichedLayer {
+  const units = element.units ?? []
+  const enriched: EnrichedLayer = {
+    ...layer,
+    units,
+    unitDefault: element.unit ?? units[0] ?? null,
+  }
+
+  if (typeof layer.rendering === 'string' && CONTOUR_RENDERINGS.has(layer.rendering)) {
+    enriched.maxzoom = enriched.maxzoom ?? maxzoom
+  }
+
+  if (element.fillvalue != null) {
+    enriched.fillvalue = element.fillvalue
+  }
+
+  return enriched
+}
+
+function resolveLayer(
+  layer: Layer,
+  element: ModelElementData | undefined,
+  itemLevels: string[] | undefined,
+  maxzoom: number,
+): LayerResolution {
+  const unavailable = (): LayerResolution => ({
+    status: 'unavailable',
+    required: layer.optional !== true,
+  })
+
+  if (!element) return unavailable()
+
+  if (itemLevels && element.levels && usesSelectableLevel(layer)) {
+    const hasSupportedLevel = itemLevels.some(level => hasLevel(element.levels!, level))
+    if (!hasSupportedLevel && itemLevels.length > 0) return unavailable()
+  }
+
+  if (
+    !usesSelectableLevel(layer) &&
+    layer.level &&
+    element.levels &&
+    !hasLevel(element.levels, layer.level)
+  ) {
+    return unavailable()
+  }
+
+  return {
+    status: 'available',
+    layer: enrichLayer(layer, element, maxzoom),
+    offset: element.firstoffset ?? 0,
+    members: element.members,
+  }
+}
+
+function isAvailable(
+  resolution: LayerResolution,
+): resolution is Extract<LayerResolution, { status: 'available' }> {
+  return resolution.status === 'available'
+}
+
+function resolveItem(item: Item, context: ModelContext): Item | null {
+  const levels = getSupportedLevels(item, context.elementsById)
+  if (item.levels?.length && levels?.length === 0) return null
+
+  const resolutions = item.layers.map(layer =>
+    resolveLayer(
+      layer,
+      context.elementsById.get(layer.element),
+      levels,
+      context.maxzoom,
+    ),
+  )
+
+  if (resolutions.some(result => result.status === 'unavailable' && result.required)) {
+    return null
+  }
+
+  const availableLayers = resolutions.filter(isAvailable)
+  if (availableLayers.length === 0) return null
+
+  const offset = Math.max(0, ...availableLayers.map(result => result.offset))
+  const members = availableLayers.reduce<string[] | undefined>(
+    (current, result) => result.members ?? current,
+    item.members,
+  )
+
+  return {
+    ...item,
+    ...(levels ? { levels } : {}),
+    ...(members ? { members } : {}),
+    layers: availableLayers.map(result => result.layer),
+    isMixedLayers: isMixedLayers(item.layers),
+    uniqueElements: getElementLayers(item.layers),
+    timestampFilter: item.timestampFilter ?? { hours: 1, start: offset },
+  }
+}
+
+function resolveGroup(group: LayerGroup, context: ModelContext): LayerGroup | null {
+  const items = group.items
+    .map(item => resolveItem(item, context))
+    .filter((item): item is Item => item !== null)
+
+  return items.length > 0 ? { name: group.name, items } : null
+}
+
+export const filterElementGroups = (modelData: ModelData): LayerGroup[] => {
+  const context: ModelContext = {
+    elementsById: new Map(
+      (modelData.elements ?? []).map(element => [element.id, element]),
+    ),
+    maxzoom: modelData.modeldescription?.maxzoom ?? 20,
+  }
+
+  return FORECAST.layers
+    .map(group => resolveGroup(group, context))
+    .filter((group): group is LayerGroup => group !== null)
 }
 
 /**
@@ -167,8 +253,6 @@ export function transformModelsResponse(payload: unknown): unknown {
     format: 'forecast',
     runtimes: model.runtimes.sort((a: string, b: string) => parseInt(b) - parseInt(a)),
   }))
-
-  // const base = isPlainObject(payload) ? payload : {}
 
   return models
 }
