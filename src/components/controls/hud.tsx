@@ -7,7 +7,7 @@ import MapControlElement from '@/src/components/controls/element'
 // import { isMultiRowLegend } from '@/src/components/controls/legend/utils'
 import MapControlModel from '@/src/components/controls/model'
 import MapControlRun from '@/src/components/controls/run'
-// import MapControlMember from '@/src/components/controls/member'
+import MapControlMember from '@/src/components/controls/member'
 
 import { useWeatherMap } from '@/src/providers/weather/weather'
 // import { useLegendValues, useTimestampMap } from '@/src/components/_webgl/context'
@@ -83,7 +83,7 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsC
                                         small={false}
                                     />
                                     <MapControlRun small={false} />
-                                    {/*  <MapControlMember small={false} /> */}
+                                    <MapControlMember small={false} />
                                 </div>
                             </div>
                         </div>
