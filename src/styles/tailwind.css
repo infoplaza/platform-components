@@ -14,6 +14,10 @@
  * not provide Tailwind `text-*` utilities.
  */
 @layer components {
+  .ip-platform {
+    @apply ip:font-sans;
+  }
+
   .ip-icon {
     display: inline-block;
     flex-shrink: 0;

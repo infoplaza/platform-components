@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react"
 
 // ** Components Imports
 import ElementCard from "./card"
-// import ModelGroupHeader from "@/src/components/controls/models/header"
+import ModelGroupHeader from "@/src/components/controls/models/header"
 
 // ** Utils Imports
 import { twMerge } from "@/src/utilities/external/twMerge"
@@ -51,13 +51,13 @@ const ElementGroup = ({ group, activeModel, searchElement, activeElement, onChan
 
     return (
         <div>
-            {/* <ModelGroupHeader
+            <ModelGroupHeader
                 title={group.name}
                 count={filteredItems.length}
                 countLabel="layers"
                 expanded={expanded}
                 onToggle={() => setExpanded(prev => !prev)}
-            /> */}
+            />
 
             <div
                 aria-hidden={!expanded}

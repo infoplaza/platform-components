@@ -12,6 +12,7 @@ import ModalDialog from '@/src/components/modals/dialog'
 // import useFavoriteModels from "@/src/hooks/useFavoriteModels"
 import type { ModelInfo } from "@/@types/weather.types"
 import type { TransformedModel } from "@/@types/model.types"
+import { formalizeString } from "@/src/utilities/string"
 // import NowcastModal, { OtherModelGroupState } from "@/components/_webgl/controls/models/more/nowcastModal"
 
 export const FAVORITES_GROUP_SLUG = "favorites"
@@ -119,7 +120,7 @@ export default function MapControlModel({ maxItems = 3, small = false, models = 
                 groups.push({
                     slug: m.regionCategory ?? 'default',
                     i18n: m.regionCategory ?? null,
-                    title: m.regionCategory ?? '',
+                    title: formalizeString(m.regionCategory) ?? '',
                     sort: groups.length + 1,                    
                     models: [ m as any ]
                 })

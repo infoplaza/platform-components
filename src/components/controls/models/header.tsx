@@ -2,6 +2,7 @@ import React from "react"
 // import { ChevronDownIcon } from "@heroicons/react/24/solid"
 // import { useTranslations } from "next-intl"
 
+import { IpAngleDown } from '@/src/components/icons'
 import { twMerge } from "@/src/utilities/external/twMerge"
 
 interface ModelGroupHeaderProps {
@@ -36,13 +37,13 @@ const ModelGroupHeader = ({ title, count, countLabel, expanded, onToggle, classN
                         {expanded ? 'Hide' : 'Show'} {count} {resolvedCountLabel}
                     </span>
                 )}
-                {/* <ChevronDownIcon
+                <IpAngleDown
                     aria-hidden="true"
                     className={twMerge(
-                        "h-3 w-3 shrink-0 text-gray-500 dark:text-gray-400 transition-transform duration-200",
-                        expanded ? "rotate-0" : "-rotate-180"
+                        "ip:h-3 ip:w-3 ip:shrink-0 ip:text-gray-500 ip:dark:text-gray-400 ip:transition-transform ip:duration-200",
+                        expanded ? "ip:rotate-0" : "ip:-rotate-180"
                     )}
-                /> */}
+                />
             </span>
         </button>
     )

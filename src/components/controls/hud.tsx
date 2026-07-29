@@ -12,11 +12,12 @@ import MapControlRun from '@/src/components/controls/run'
 import { useWeatherMap } from '@/src/providers/weather/weather'
 // import { useLegendValues, useTimestampMap } from '@/src/components/_webgl/context'
 import { useLegendValues } from '@/src/providers/legend/legend'
-import { useTimestampMap } from '@/src/redux/timestamps'
+
 import MapControlZoom from '@/src/components/controls/zoom'
 // import MapControlMobileTimebar from '@/src/components/controls/timebars/mobileTimebar'
 import { twMerge } from '@/src/utilities/external/twMerge'
 import { isEmpty } from 'lodash'
+import MapControlInfo from './info'
 
 export type MapControlHudProps = {
     mapIndex: number
@@ -35,7 +36,6 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsC
     const { models: contextModels, modelInfo, model, elementInfo, layersInfo, month } = useWeatherMap()
     const models = contextModels
     const { legends } = useLegendValues()
-    const { timestamp, timestampsInfo } = useTimestampMap()
     // const isMobileDevice = useIsIosAndroidPhoneOrTablet()
     const [legendDetailsOpen, setLegendDetailsOpen] = useState(false)
     const openLegendDetails = () => {
@@ -52,6 +52,15 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsC
     return (
         <>
         
+            {/* CONTROLS: TOP LEFT */}
+            <div className="ip:absolute ip:top-0 ip:left-0 ip:pointer-events-none ip:sm:w-auto ip:w-full">
+                <div className="ip:flex ip:flex-col ip:gap-1 ip:sm:gap-1 ip:p-3 ip:sm:p-1">
+                    <MapControlInfo
+                        small={isMultipleMapView}
+                    />
+                </div>
+            </div>
+
             {/* CONTROLS: BOTTOM */}
             <div className="ip:absolute ip:bottom-0 ip:inset-x-0 ip:z-10 ip:pointer-events-none">
                 <div className="ip:flex ip:flex-col ip:gap-1">
