@@ -79,8 +79,6 @@ interface MarkProps {
 export default function MapControlTimebar({ language, timezone, small = false, onlyActive = false, playButton = true, onChange = null, className, options = {} }: MapControlTimebarProps) {
     // const { state, utcTimezone } = useSettings()
     // const { mergeTimebars, playSync, setPlaySync, exportPreviewStep } = useExperimental_MapWeatherContainer()
-    const mergeTimebars: boolean = false
-    const playSync: boolean = false
     const utcTimezone = false
     const state: { timeSkip?: number; frameSkip?: number } = { timeSkip: 0, frameSkip: 0 }
     const setPlaySync: (value: boolean) => void = () => {}
@@ -115,21 +113,9 @@ export default function MapControlTimebar({ language, timezone, small = false, o
         }, [setTimestamp]
     )
 
-    const disablePlayButton = useMemo(() => {
-        return (playSync && !playing.current)
-    }, [playSync, autoplay])
-
-    useEffect(() => {
-        if (!mergeTimebars){
-            return
-        }
-
-        if (playingButton === playSync) {
-            return
-        }
-
-        setPlayingButton(playSync)
-    }, [playSync, mergeTimebars])
+    // const disablePlayButton = useMemo(() => {
+    //     return (!playing.current && !autoplay)
+    // }, [autoplay, playing.current])
 
     const mapTimestamps = useMemo((): TimestampInfo[] => {
         return (timestampsInfo || [])
@@ -252,13 +238,9 @@ export default function MapControlTimebar({ language, timezone, small = false, o
             clearTimeout(playingTimeout.current)
         }
 
-        if (mergeTimebars){
-            setPlaySync(false)
-        }
-
         playing.current = false
         setPlayingButton(false)
-    }, [mergeTimebars, setPlaySync])
+    }, [])
 
     const nextStep = useCallback(
         (cur: number) => {
@@ -290,23 +272,12 @@ export default function MapControlTimebar({ language, timezone, small = false, o
             // return
         }
 
-        if (playSync && mergeTimebars) {
-            setPlaySync(false)
-            stop()
-
-            return
-        }
-
-        if (mergeTimebars){
-            setPlaySync(true)
-        }
-
         playing.current = true
         setPlayingButton(true)
 
         nextStep(index ?? 0)
 
-    }, [index, nextStep, stop, mergeTimebars, playing, playSync, setPlaySync, autoplay])
+    }, [index, nextStep, stop, playing, autoplay])
 
     const onButtonNext = useCallback(() => {
         if (index == null || !mapTimestamps.length) {
@@ -581,7 +552,7 @@ export default function MapControlTimebar({ language, timezone, small = false, o
                                 </button>
                             ) : (
                                 <button
-                                    disabled={disablePlayButton}
+                                    // disabled={disablePlayButton}
                                     type="button"
                                     onClick={(onButtonPlay)}
                                     className={
@@ -590,7 +561,7 @@ export default function MapControlTimebar({ language, timezone, small = false, o
                                             [
                                                 small ? 'ip:w-7 ip:h-7' : 'ip:w-10 ip:md:w-12 ip:h-10 ip:md:h-12 ',
                                                 playingButton ? 'ip:bg-white ip:text-primary' : 'ip:bg-primary ip:text-white',
-                                                disablePlayButton ? 'ip:opacity-50 ip:cursor-not-allowed ip:bg-gray-200' : '',
+                                                // disablePlayButton ? 'ip:opacity-50 ip:cursor-not-allowed ip:bg-gray-200' : '',
                                             ]
                                         )} >
                                     {playingButton ? (
