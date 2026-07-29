@@ -165,9 +165,10 @@ export function transformModelsResponse(payload: unknown): unknown {
     slug: model.id,
     elementGroups: filterElementGroups(model),
     format: 'forecast',
+    runtimes: model.runtimes.sort((a: string, b: string) => parseInt(b) - parseInt(a)),
   }))
 
-  const base = isPlainObject(payload) ? payload : {}
+  // const base = isPlainObject(payload) ? payload : {}
 
-  return { ...base, data: { models } }
+  return models
 }

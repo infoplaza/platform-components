@@ -172,7 +172,7 @@ export default function MapControlElement({
                             <button className={twMerge( !vertical && 'ip:justify-end')}
                                 onClick={() => dialogOpen()}>
                                 <div className='ip:relative ip:group'>
-                                    <div className={twMerge(` ip:bg-white/80 ip:dark:bg-dark/80 ip:hover:bg-white ip:dark:hover:bg-dark ip:border ip:dark:border-white/10 ip:relative ip:backdrop-blur-md ip:rounded-lg ip:flex ip:items-center ip:cursor-pointer ip:h-8 ip:shrink-0 ip:w-8 ip:place-content-center`, small && '')}>
+                                    <div className={twMerge(` ip:bg-white/80 ip:dark:bg-dark/80 ip:hover:bg-white ip:dark:hover:bg-dark ip:border ip:border-white/10 ip:relative ip:backdrop-blur-md ip:rounded-lg ip:flex ip:items-center ip:cursor-pointer ip:h-8 ip:shrink-0 ip:w-8 ip:place-content-center`, small && '')}>
                                         <IpLayerGroup className={twMerge("ip:w-5 ip:h-5", small && 'ip:w-5 ip:h-5')} />
                                     </div>
 

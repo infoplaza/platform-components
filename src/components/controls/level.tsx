@@ -7,24 +7,21 @@ interface MapControlLevelProps {
     maxItems?: number
 }
 
-export default function MapControlLevel({ 
-    levels = null, 
-    maxItems = 3 
-}: MapControlLevelProps) {
-    const weatherContext = useWeatherMap()
+export default function MapControlLevel({ levels = null, maxItems = 3 }: MapControlLevelProps) {
+    const { layersInfo, setModelLevel } = useWeatherMap()
 
     const modelItems: DropdownItem[] = useMemo(() => {
         return (levels ?? []).map((level: string) => {
             return { 
                 value: level,
                 title: level,
-                active: level === weatherContext.layersInfo?.level
+                active: level === layersInfo?.level
             }
         }) 
-    }, [levels, weatherContext.layersInfo?.level])
+    }, [levels, layersInfo?.level])
 
     const onChange = (val: string | number): void => {
-        weatherContext.setModelLevel(val as string)
+        setModelLevel(val as string)
     }
 
     if (modelItems.length <= 1) {
@@ -44,7 +41,7 @@ export default function MapControlLevel({
                             minItems={1}
                             maxItems={maxItems}
                             onChange={(val) => onChange(val)}                                        
-                            className="ip:bg-white/80 ip:dark:bg-dark/80 ip:backdrop-blur-md ip:!text-xs ip:!h-6 ip:!rounded-md" 
+                            className="ip:bg-white/80 ip:dark:bg-dark/80 ip:backdrop-blur-md ip:text-xs ip:h-6 ip:rounded-md" 
                         />
                     </div>
                 </div>

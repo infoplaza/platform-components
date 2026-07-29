@@ -1,24 +1,31 @@
-import type {Color, LayerProps, DefaultProps, UpdateParameters, GetPickingInfoParams} from '@deck.gl/core';
 import {BitmapLayer} from '@deck.gl/layers';
-import type {BitmapLayerProps, BitmapBoundingBox, BitmapLayerPickingInfo} from '@deck.gl/layers';
-import type {Texture} from '@luma.gl/core';
+
+// ** Utils import **
 import {DEFAULT_LINE_WIDTH, DEFAULT_LINE_COLOR, ensureDefaultProps} from '../../_utils/props';
 import {ImageInterpolation} from '../../_utils/image-interpolation';
 import {ImageType} from '../../_utils/image-type';
+import {isViewportGlobe, isViewportInZoomBounds} from '../../_utils/viewport';
+import {createEmptyTextureCached} from '../../_utils/texture';
+import {getPixelMagnitudeValue, type Legend} from '../../_utils/pixel-value';
+
+// ** Shaders import **
+import {bitmapModule} from '@/src/shaders/bitmap-module/bitmap-module';
+import {rasterModule} from '@/src/shaders/raster-module/raster-module';
+import {paletteModule} from '@/src/shaders/palette-module/palette-module';
+import {RASTER_BITMAP_LAYER_FS as fs} from './fragment';
+
+// ** Types import **
+import type {Color, LayerProps, DefaultProps, UpdateParameters, GetPickingInfoParams} from '@deck.gl/core';
+import type {BitmapLayerProps, BitmapBoundingBox, BitmapLayerPickingInfo} from '@deck.gl/layers';
+import type {Texture} from '@luma.gl/core';
 import type {ImageUnscale} from '../../_utils/image-unscale';
 import type {ImageFillValue} from '../../_utils/image-fill-value';
-import {isViewportGlobe, isViewportInZoomBounds} from '../../_utils/viewport';
 import type {RasterPointProperties} from '../../_utils/raster-data';
-import {createEmptyTextureCached} from '../../_utils/texture';
 import type {TextureData} from '../../_utils/texture-data';
-import {getPixelMagnitudeValue, type Legend} from '../../_utils/pixel-value';
-import {bitmapModule} from '@/src/shaders/bitmap-module/bitmap-module';
 import type {BitmapModuleProps} from '@/src/shaders/bitmap-module/bitmap-module';
-import {rasterModule} from '@/src/shaders/raster-module/raster-module';
 import type {RasterModuleProps} from '@/src/shaders/raster-module/raster-module';
-import {paletteModule} from '@/src/shaders/palette-module/palette-module';
 import type {PaletteModuleProps} from '@/src/shaders/palette-module/palette-module';
-import {RASTER_BITMAP_LAYER_FS as fs} from './fragment';
+
 
 type _ImageBitmapLayerProps = BitmapLayerProps & {
   imageTexture: Texture | null;

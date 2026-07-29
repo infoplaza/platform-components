@@ -1,12 +1,15 @@
 import {CompositeLayer, COORDINATE_SYSTEM} from '@deck.gl/core';
-import type {LayerProps, DefaultProps, UpdateParameters, LayersList, GetPickingInfoParams, PickingInfo} from '@deck.gl/core';
-import type {Texture} from '@luma.gl/core';
-import type {TextureData} from '../../_utils/texture-data';
-import type {RasterPointProperties} from '../../_utils/raster-data';
+
 import {createTextureCached, createEmptyTextureCached} from '../../_utils/texture';
 import {isRepeatBounds} from '../../_utils/bounds';
 import {ImageBitmapLayer} from './bitmap';
+
+// ** Types import **
 import type {ImageBitmapLayerProps} from './bitmap';
+import type {Texture} from '@luma.gl/core';
+import type {TextureData} from '../../_utils/texture-data';
+import type {RasterPointProperties} from '../../_utils/raster-data';
+import type {LayerProps, DefaultProps, UpdateParameters, LayersList, GetPickingInfoParams, PickingInfo} from '@deck.gl/core';
 
 type ImageSourceData = TextureData | ImageData;
 

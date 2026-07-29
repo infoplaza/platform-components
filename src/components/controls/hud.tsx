@@ -6,7 +6,7 @@ import MapControlElement from '@/src/components/controls/element'
 // import MapControlLegendList from '@/src/components/controls/legend/list'
 // import { isMultiRowLegend } from '@/src/components/controls/legend/utils'
 import MapControlModel from '@/src/components/controls/model'
-// import MapControlRun from '@/src/components/controls/run'
+import MapControlRun from '@/src/components/controls/run'
 // import MapControlMember from '@/src/components/controls/member'
 
 import { useWeatherMap } from '@/src/providers/weather/weather'
@@ -73,8 +73,8 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsC
                                         maxItems={3}
                                         small={false}
                                     />
-                                    {/* <MapControlRun small={false} />
-                                    <MapControlMember small={false} /> */}
+                                    <MapControlRun small={false} />
+                                    {/*  <MapControlMember small={false} /> */}
                                 </div>
                             </div>
                         </div>

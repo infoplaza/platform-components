@@ -1,13 +1,16 @@
+import { ClipExtension } from "@deck.gl/extensions"
+
+import { ImageLayer } from '../image'
+import { ImageType } from '@/src/_utils/image-type'
+import { ImageInterpolation } from '@/src/_utils/image-interpolation'
+import { getPaletteBounds } from '@/src/_utils/image-unscale'
+
+// ** Types import **
 import type { TextureData } from '@/src/_utils/texture-data'
 import type { Color } from '@deck.gl/core'
-import { ImageLayer } from '../image'
-import { ImageType } from '../../_utils/image-type'
-import { ImageInterpolation } from '../../_utils/image-interpolation'
-import { ClipExtension } from "@deck.gl/extensions"
-import type { LayerSettingsState } from '@/src/providers/settings/layer-settings'
-import { getPaletteBounds } from '@/src/_utils/image-unscale'
 import type { ImageFillValue } from '@/src/_utils/image-fill-value'
-import { type Legend } from '@/src/_utils/pixel-value'
+import type { Legend } from '@/src/_utils/pixel-value'
+import type { LayerSettingsState } from '@/src/providers/settings/layer-settings'
 
 /**
  * Layer configuration for BitmapLayer creation
