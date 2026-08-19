@@ -114,6 +114,7 @@ export function ImageLayerConnector(
         extensions: [new ClipExtension()],
         beforeId,
         grayscale: layer.grayscale ?? true,
+        isLogScale: layer.isLogScale ?? false,
         legend: layer.legend,
         paletteData: layer.paletteImage as TextureData | null,
         paletteImage: paletteImage,

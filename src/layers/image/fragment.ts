@@ -292,11 +292,16 @@ void main(void) {
 
   if (bool(picking.isActive) && !bool(picking.isAttribute)) {
     if (bool(palette.hasPaletteTexture)) {
-      float paletteValue = getPaletteValue(palette.paletteBounds[0], palette.paletteBounds[1], value);
       float paletteWidth = float(textureSize(paletteTexture, 0).x);
       float paletteGrayscaleValue = pixel.r * max(paletteWidth - 1.0, 0.0);
       vec4 targetColor = applyPaletteGrayscale(paletteTexture, paletteGrayscaleValue);
-      fragColor = vec4(paletteValue, targetColor.rgb);
+      // Log-scale: keep the source palette index (pixel.r) so CPU databounds
+      // lookup matches the grid. Linear: encode the value remapped into
+      // paletteBounds so CPU mix(min, max, R) matches the grid.
+      float encoded = raster.isLogScale > 0.5
+        ? pixel.r
+        : getPaletteValue(palette.paletteBounds[0], palette.paletteBounds[1], value);
+      fragColor = vec4(encoded, targetColor.rgb);
     }
     fragColor.a = 1.0;
   }

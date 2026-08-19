@@ -28,6 +28,7 @@ uniform rasterUniforms {
   float gridSize;
   vec4 gridColor;
   float imageBanded;
+  float isLogScale;
 } raster;`
 
 const tokens = {
@@ -48,7 +49,8 @@ const tokens = {
     gridEnabled: 'gridEnabled',
     gridSize: 'gridSize',
     gridColor: 'gridColor',
-    imageBanded: 'imageBanded'
+    imageBanded: 'imageBanded',
+    isLogScale: 'isLogScale',
 } as const
 
 export type RasterModuleProps = {
@@ -72,6 +74,7 @@ export type RasterModuleProps = {
   gridSize?: number | null;
   gridColor?: Color | null;
   imageBanded?: boolean | null;
+  isLogScale?: boolean | null;
 };
 
 type RasterModuleUniforms = { [_K in keyof typeof tokens]: any }
@@ -97,6 +100,7 @@ function getUniforms(props: Partial<RasterModuleProps> = {}): RasterModuleUnifor
         [tokens.gridSize]: props.gridSize ?? 0,
         [tokens.gridColor]: props.gridColor ? deckColorToGl(props.gridColor) : [0, 0, 0, 0],
         [tokens.imageBanded]: props.imageBanded === false ? 0 : 1,
+        [tokens.isLogScale]: props.isLogScale ? 1 : 0,
     }
 }
 
@@ -123,6 +127,7 @@ export const rasterModule = {
         [tokens.gridSize]: 'f32',
         [tokens.gridColor]: 'vec4<f32>',
         [tokens.imageBanded]: 'f32',
+        [tokens.isLogScale]: 'f32',
     },
     getUniforms,
 } as const satisfies ShaderModule<RasterModuleProps, RasterModuleUniforms>

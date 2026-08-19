@@ -57,6 +57,7 @@ type _ImageBitmapLayerProps = BitmapLayerProps & {
   gridColor: Color | null;
   grayscale: boolean;
   imageBanded: boolean;
+  isLogScale: boolean;
 };
 
 export type ImageBitmapLayerProps = _ImageBitmapLayerProps & LayerProps;
@@ -90,6 +91,7 @@ const defaultProps: DefaultProps<ImageBitmapLayerProps> = {
   gridColor: {type: 'color', value: DEFAULT_LINE_COLOR},
   grayscale: {type: 'boolean', value: true},
   imageBanded: {type: 'boolean', value: true},
+  isLogScale: {type: 'boolean', value: false},
 };
 
 export class ImageBitmapLayer<ExtraPropsT extends {} = {}> extends BitmapLayer<ExtraPropsT & Required<_ImageBitmapLayerProps>> {
@@ -130,7 +132,7 @@ export class ImageBitmapLayer<ExtraPropsT extends {} = {}> extends BitmapLayer<E
   draw(opts: any): void {
     const {device, viewport} = this.context;
     const {model} = this.state;
-    const {imageTexture, imageTexture2, imageSmoothing, imageInterpolation, imageStride, imageWeight, imageType, imageUnscale, imageMinValue, imageMaxValue, imageFillValue, isAlphaImage, bounds, _imageCoordinateSystem, transparentColor, minZoom, maxZoom, borderEnabled, borderWidth, borderColor, gridEnabled, gridSize, gridColor, imageBanded, paletteTexture, paletteBounds} = ensureDefaultProps(this.props, defaultProps);
+    const {imageTexture, imageTexture2, imageSmoothing, imageInterpolation, imageStride, imageWeight, imageType, imageUnscale, imageMinValue, imageMaxValue, imageFillValue, isAlphaImage, bounds, _imageCoordinateSystem, transparentColor, minZoom, maxZoom, borderEnabled, borderWidth, borderColor, gridEnabled, gridSize, gridColor, imageBanded, paletteTexture, paletteBounds, isLogScale} = ensureDefaultProps(this.props, defaultProps);
     // const {paletteTexture, paletteBounds} = this.state;
 
     if (!imageTexture) {
@@ -173,6 +175,7 @@ export class ImageBitmapLayer<ExtraPropsT extends {} = {}> extends BitmapLayer<E
           gridSize, 
           gridColor,
           imageBanded,
+          isLogScale,
         } satisfies RasterModuleProps,
 
         [paletteModule.name]: {
@@ -215,19 +218,21 @@ export class ImageBitmapLayer<ExtraPropsT extends {} = {}> extends BitmapLayer<E
   //   this.setState({paletteTexture, paletteBounds});
   // }
 
-  // Non Logorithmic palette value
-  private _getRasterLinearColorValue(color: Uint8Array, paletteBounds: [number, number]): number {
-    return paletteBounds[0] + color[0] / 255 * (paletteBounds[1] - paletteBounds[0]);
-  }
-
   private _getRasterMagnitudeValue(color: Uint8Array): number {
-    const {imageType, imageUnscale, legend, paletteData, paletteBounds, isAlphaImage, grayscale} = ensureDefaultProps(this.props, defaultProps);
+    const {imageType, imageUnscale, legend, paletteData, paletteBounds, isAlphaImage, grayscale, isLogScale} = ensureDefaultProps(this.props, defaultProps);
+    const pixel = grayscale
+      ? [color[0], color[0], color[0], 255]
+      : Array.from(color);
+
+    // Mirror the grid connector: only log-scale (and non-grayscale) layers
+    // decode through legend databounds. Linear grayscale uses paletteBounds.
+    const legendForDecode = isLogScale || !grayscale ? legend : undefined;
 
     return getPixelMagnitudeValue(
-      Array.from(color),
+      pixel,
       imageType,
       imageUnscale,
-      legend,
+      legendForDecode,
       paletteData ?? undefined,
       paletteBounds,
       isAlphaImage,
@@ -247,14 +252,12 @@ export class ImageBitmapLayer<ExtraPropsT extends {} = {}> extends BitmapLayer<E
   getPickingInfo(params: GetPickingInfoParams): BitmapLayerPickingInfo {
     const info: BitmapLayerPickingInfo & {raster?: RasterPointProperties} = super.getPickingInfo(params);
 
-    const { imageType, isAlphaImage, paletteBounds } = ensureDefaultProps(this.props, defaultProps);
+    const { imageType } = ensureDefaultProps(this.props, defaultProps);
 
     if (!info.color) {
       return info;
     }
 
-    let rasterPointProperties: RasterPointProperties;
-    
     const value = this._getRasterMagnitudeValue(info.color);
     
     if (imageType === ImageType.VECTOR) {
