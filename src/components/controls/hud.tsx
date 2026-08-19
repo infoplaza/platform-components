@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 import ControlTimebar from '@/src/components/controls/timebars/timebar'
+import MapControlMobileTimebar from '@/src/components/controls/timebars/mobileTimebar'
 import MapControlElement from '@/src/components/controls/element'
 import MapControlLegend, { LegendTrigger, MapControlLegendDetails } from '@/src/components/controls/legend'
 import MapControlLegendList from '@/src/components/controls/legend/list'
@@ -11,6 +12,7 @@ import MapControlMember from '@/src/components/controls/member'
 
 import { useWeatherMap } from '@/src/providers/weather/weather'
 import { useLegendValues } from '@/src/providers/legend/legend'
+import { useIsIosAndroidPhoneOrTablet } from '@/src/hooks/useIosAndroidDevice'
 
 import MapControlZoom from '@/src/components/controls/zoom'
 import { twMerge } from '@/src/utilities/external/twMerge'
@@ -34,6 +36,7 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsC
     const { models: contextModels, modelInfo, model, elementInfo, layersInfo, month } = useWeatherMap()
     const models = contextModels
     const { legends } = useLegendValues()
+    const isMobileDevice = useIsIosAndroidPhoneOrTablet()
     const [legendDetailsOpen, setLegendDetailsOpen] = useState(false)
     const openLegendDetails = () => {
         if (!layersInfo?.layers.some(layer => layer.grayscale === true)) {
@@ -129,10 +132,16 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsC
 
                     {Boolean(modelInfo?.format) && ['nowcast', 'forecast'].includes(modelInfo?.format ?? '') && (
                         <div className="ip:flex ip:flex-col">
-                            <ControlTimebar
-                                small={isMultipleMapView}
-                                options={elementInfo?.options?.timebar}
-                            />
+                            {isMobileDevice ? (
+                                <MapControlMobileTimebar
+                                    options={elementInfo?.options?.timebar}
+                                />
+                            ) : (
+                                <ControlTimebar
+                                    small={isMultipleMapView}
+                                    options={elementInfo?.options?.timebar}
+                                />
+                            )}
                         </div>
                     )}
                 </div>

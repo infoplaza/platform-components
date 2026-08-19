@@ -6,8 +6,7 @@ import ReactSlider from '@/src/components/sliders'
 
 // import { useSettings } from "@/src/providers/settings/settings"
 import { useWeatherMap } from "@/src/providers/weather/weather"
-// import { useSyncTimebarPlaying, useTimestampMap } from "@/components/_webgl/context"
-import { useTimestampMap } from "@/src/redux/timestamps"
+import { useSyncTimebarPlaying, useTimestampMap } from "@/src/redux/timestamps"
 // import { useExperimental_MapWeatherContainer } from "@/context/_experimental/map/weather_container"
 
 import { formatTime } from '@/src/utilities/date'
@@ -71,7 +70,7 @@ interface SliderState {
 }
 
 interface MarkProps {
-    key: string
+    key: string | number
     style?: React.CSSProperties
     className?: string
 }
@@ -83,14 +82,14 @@ export default function MapControlTimebar({ language, timezone, small = false, o
     const state: { timeSkip?: number; frameSkip?: number } = { timeSkip: 0, frameSkip: 0 }
     const setPlaySync: (value: boolean) => void = () => {}
     const exportPreviewStep = () => {}
-    const { elementInfo } = useWeatherMap()
+    const { elementInfo, modelInfo } = useWeatherMap()
     const { timestamp, timestampsInfo, setTimestamp } = useTimestampMap()
 
     const [playingButton, setPlayingButton] = useState<boolean>(false)
     const [playingSpeed, setPlayingSpeed] = useStorageState<number>("play-speed", 1)
     const [autoplay, setAutoplay] = useState<boolean>(false)
 
-    // useSyncTimebarPlaying(playingButton || autoplay)
+    useSyncTimebarPlaying(playingButton || autoplay)
 
     const playing = useRef<boolean>(false)
     const playingTimeout = useRef<number | null>(null)
@@ -374,6 +373,10 @@ export default function MapControlTimebar({ language, timezone, small = false, o
         if (!nextStep){
             return
         }
+        // don't auto stop while nowcast is selected, keep it playing continuously.
+        if (modelInfo?.format === 'nowcast') {
+            return
+        }
         // auto stop playing when preloading is not available or not active on the next step.
         if (nextStep?.procent < 100 || !nextStep?.active){
         // if (!nextStep?.active){ 
@@ -383,7 +386,7 @@ export default function MapControlTimebar({ language, timezone, small = false, o
 
             stop()
         }
-    }, [mapTimestamps, index, playing.current])
+    }, [mapTimestamps, index, playing.current, modelInfo?.format])
 
     const getElements = useCallback((timestamps: TimestampInfo[], index: number, count: number = 10): TimestampInfo[] => {
         const len = timestamps.length
@@ -445,9 +448,6 @@ export default function MapControlTimebar({ language, timezone, small = false, o
         // }
     }, [mapTimestamps, index, onButtonPlay, autoplay, state.frameSkip, getElements])
 
-    const SliderComponent = ReactSlider as any
-
-
     const markStep = useCallback(
         (key: number): MarkStep | null => {
             const prev = formattedTimestamps[key - 1]
@@ -494,7 +494,7 @@ export default function MapControlTimebar({ language, timezone, small = false, o
     )
 
     const renderMarksHandler = useCallback((props: MarkProps) => {
-        const { subtitle, titleSM, titleMD } = markStep(parseInt(props.key)) || {}
+        const { subtitle, titleSM, titleMD } = markStep(parseInt(String(props.key))) || {}
 
         return (
             <div 
@@ -682,15 +682,19 @@ export default function MapControlTimebar({ language, timezone, small = false, o
                             /> */}
                         </div>
                         <div className={twMerge('ip:relative', [small ? 'ip:mt-4' : 'ip:mt-3 ip:md:mt-5'])} onWheel={onWheel}>
-                            <SliderComponent className="ip:bg-transparent ip:h-2 ip:w-full ip:rounded-full ip:relative ip:z-20 ip:focus:outline-none"
+                            <ReactSlider className="ip:bg-transparent ip:h-2 ip:w-full ip:rounded-full ip:relative ip:z-20 ip:focus:outline-none"
                                 trackClassName="ip:focus:outline-none slider-track"
                                 thumbClassName="ip:focus:outline-none ip:group"
                                 marks={marksType === 'days' ? marksDays : marksHours}
                                 min={0}
                                 max={(mapTimestamps || []).length - 1}
                                 step={1}
-                                value={index}
-                                onChange={onSliderChange}
+                                value={index ?? 0}
+                                onChange={(value) => {
+                                    if (typeof value === 'number') {
+                                        onSliderChange(value)
+                                    }
+                                }}
                                 moveDownByStep={onButtonPrev}
                                 moveUpByStep={onButtonNext}
                                 onSliderClick={stop}

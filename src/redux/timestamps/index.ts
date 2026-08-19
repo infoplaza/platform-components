@@ -6,3 +6,4 @@ export { selectTimestampState, selectTimestamp, selectTimestamps, selectPreloade
 export type { TimestampRootState } from './selectors'
 export { TimestampContext, TimestampProvider, useTimestampMap } from './provider'
 export type { TimestampContextValue } from './provider'
+export { useSyncTimebarPlaying } from './useSyncTimebarPlaying'

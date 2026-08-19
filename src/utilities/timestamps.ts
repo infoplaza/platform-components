@@ -1,5 +1,28 @@
 import { isEmpty } from "lodash"
 
+export interface TimestampRecord {
+    /** Unix seconds */
+    timestamp: number
+    index?: number
+    loaded?: boolean
+    active?: boolean
+}
+
+/** Find index of the nearest timestamp to target in an array of timestamp records. */
+export function findNearestIndex(records: TimestampRecord[], targetTs: number): number {
+    if (!records.length) return -1
+    let nearest = 0
+    let nearestDiff = Math.abs(records[0].timestamp - targetTs)
+    for (let i = 1; i < records.length; i++) {
+        const diff = Math.abs(records[i].timestamp - targetTs)
+        if (diff < nearestDiff) {
+            nearest = i
+            nearestDiff = diff
+        }
+    }
+    return nearest
+}
+
 /** Layer shape used when intersecting API `layers[].timestamp` across map layers. */
 export type LayerWithTimestampData = {
     data?: { layers?: Array<{ timestamp?: number }> } | null

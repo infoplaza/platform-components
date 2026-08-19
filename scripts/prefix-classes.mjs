@@ -19,6 +19,7 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const FILES = [
   'src/components/controls/hud.tsx',
   'src/components/controls/timebars/timebar.tsx',
+  'src/components/controls/timebars/mobileTimebar.tsx',
   'src/components/controls/element.tsx',
   'src/components/controls/element/card.tsx',
   'src/components/controls/element/modal.tsx',
