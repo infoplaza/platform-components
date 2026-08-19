@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 
-import { useMapLayerTexture } from "@/src/events/texture"
+import { useForecastLayerTexture } from "@/src/events/texture/forecast"
 import { useWeatherMap } from "@/src/providers/weather/weather"
 import { useLegendValues } from "@/src/providers/legend/legend"
 import { useTimestampMap } from "@/src/redux/timestamps/provider"
@@ -38,8 +38,8 @@ export default function SimpleEventsProvider({ children }: SimpleEventsProviderP
     const updateSettingsRef = useRef(updateSettings)
     updateSettingsRef.current = updateSettings
 
-    const { mapComponents, abortAll } = useMapLayerTexture(fetchedLayers, {
-        preloadAll: false,
+    const { mapComponents, abortAll } = useForecastLayerTexture(fetchedLayers, {
+        preloadAll: true,
     })
 
     const createGetLayersUrl = useCallback(

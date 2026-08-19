@@ -26,16 +26,6 @@ export type MapLayerTextureOptions = {
     preloadAll?: boolean
 }
 
-// function getStructuralLayersKey(layers: EnrichedMapLayer[]): string {
-//     return layers
-//         .map((layer) => `${layer.id ?? ''}|${layer.rendering ?? ''}|${layer.element ?? ''}|${layer.active ?? ''}`)
-//         .join(';')
-// }
-
-// function getDataLayersKey(layers: EnrichedMapLayer[]): string {
-//     return layers.map((layer) => layer.layersUrl ?? '').join(';')
-// }
-
 export function useMapLayerTexture(
     layers: EnrichedMapLayer[],
     options: MapLayerTextureOptions = {},
@@ -90,10 +80,7 @@ export function useMapLayerTexture(
     preloadedDataRef.current = preloadedData
     const prevTimebarPlayingRef = useRef(false)
     const prevLayersRef = useRef(textureLayers)
-
-    // const prevStructuralLayersKeyRef = useRef(getStructuralLayersKey(textureLayers))
     const prevTextureLoadModeRef = useRef(textureLoadMode)
-    // const componentSourceKeyRef = useRef('')
 
     const currentLoadPromiseRef = useRef<Promise<unknown>>(Promise.resolve())
     const currentLoadTsRef = useRef<number | null | undefined>(undefined)
@@ -133,7 +120,6 @@ export function useMapLayerTexture(
         if (options?.clearComponents) {
             setMapComponents({})
             mapComponentsRef.current = {}
-            // componentSourceKeyRef.current = ''
         }
 
         return {
@@ -169,17 +155,6 @@ export function useMapLayerTexture(
     }, [])
 
     const createLayer = useCallback(async (layer: EnrichedMapLayer, ts: number | undefined | null, request: TextureRequest) => {
-            // const VALID_RENDERINGS = ['IMAGE_V2', 'VALUES', 'PARTICLES', 'BARBS', 'DIRECTIONS', 'RANGE', 'CONTOURS', 'GEOJSON', 'STORMTRACKS', 'PLOT'] as const
-            // const isValidRendering = () => {
-            //     if (!layer.rendering) return false
-            //     const renderings = Array.isArray(layer.rendering) ? layer.rendering : [layer.rendering]
-            //     return renderings.some((r) => VALID_RENDERINGS.includes(r as typeof VALID_RENDERINGS[number]))
-            // }
-
-            // if (!isValidRendering()) {
-            //     return
-            // }
-
             const signal = request.signal
             const result = await layer.connection?.getTextures(layer, ts, textureLoadMode, { signal })
             if (!result || !isCurrentTextureRequest(request)) return
@@ -237,11 +212,6 @@ export function useMapLayerTexture(
                 return
             }
 
-            // const sourceKey = getDataLayersKey(layersRef.current)
-            // if (
-            //     Object.prototype.hasOwnProperty.call(mapComponentsRef.current, ts as PropertyKey) &&
-            //     componentSourceKeyRef.current === sourceKey
-            // ) {
             if (Object.prototype.hasOwnProperty.call(mapComponentsRef.current, ts as PropertyKey)) {
                 return
             }
@@ -257,7 +227,6 @@ export function useMapLayerTexture(
                     return prevState
                 }
 
-                // componentSourceKeyRef.current = sourceKey
                 return {
                     ...prevState,
                     [ts as number]: components,
@@ -273,7 +242,6 @@ export function useMapLayerTexture(
         }
 
         try {
-            // console.log('preloadUrl', urlToPreload)
             const res = await fetch(`${layer.layersApi}${rawLayer.url.replace(/%/ig, '%25')}`, { signal: request.signal })
             if (res.ok && isCurrentTextureRequest(request)) {
                 addUrlToPreload(rawLayer.url)
@@ -342,16 +310,7 @@ export function useMapLayerTexture(
                         continue
                     }
                     try {
-                        // if (frameSkip) {
-                        //     if (timebarPlaying) {
-                        //         void preDraw(Number(rawLayer.timestamp), request)
-                        //     } else {
-                        //         void preloadUrl({ layer, rawLayer, request })
-                        //     }
-                        // } else {
-                            // await preDraw(Number(rawLayer.timestamp))
-                            void preDraw(Number(rawLayer.timestamp), request)
-                        // }
+                        void preDraw(Number(rawLayer.timestamp), request)
                     } catch (e) {
                         if (e instanceof DOMException && e.name === 'AbortError') {
                             return
@@ -360,11 +319,7 @@ export function useMapLayerTexture(
                 }
             }
 
-            // if (frameSkip) {
-                activeLayers.forEach((layer) => void runLayer(layer))
-            // } else {
-            //     await Promise.all(activeLayers.map(runLayer))
-            // }
+            activeLayers.forEach((layer) => void runLayer(layer))
         },
         [preDraw, timebarPlaying, frameSkip, isCurrentTextureRequest, preloadUrl, preloadAll]
     )
@@ -402,8 +357,6 @@ export function useMapLayerTexture(
             currentLoadTsRef.current = ts
             currentLoadPromiseRef.current = pending.catch(() => undefined)
             await pending
-            // A newer current-frame load has started; let that one drive its
-            // own schedulePreload so we don't fire a stale forward fan-out.
             if (currentLoadTsRef.current !== ts || !isCurrentTextureRequest(request)) return
             schedulePreload(ts, request)
         },
@@ -420,31 +373,22 @@ export function useMapLayerTexture(
             
         const layersChanged = prevLayersRef.current !== textureLayers
 
-        // const structuralLayersKey = getStructuralLayersKey(textureLayers)
-        // const structuralChanged = prevStructuralLayersKeyRef.current !== structuralLayersKey
         const modeChanged = prevTextureLoadModeRef.current !== textureLoadMode
         prevLayersRef.current = textureLayers
 
-        // prevStructuralLayersKeyRef.current = structuralLayersKey
         prevTextureLoadModeRef.current = textureLoadMode
 
         let cancelled = false
-        // const request = beginTextureGeneration({ clearComponents: structuralChanged || modeChanged })
         const request = beginTextureGeneration({ clearComponents: layersChanged || modeChanged })
 
         const run = async () => {
             if (layersChanged || modeChanged) {
-            // if (structuralChanged || modeChanged) {
                 await scheduleCacheDispose()
                 if (cancelled || !isCurrentTextureRequest(request)) return
             }
 
             if (textureLayers.length > 0 && timestamp) {
                 onDrawRef.current(timestamp, request)
-            // } else if (structuralChanged || modeChanged) {
-            //     setMapComponents({})
-            //     mapComponentsRef.current = {}
-            //     componentSourceKeyRef.current = ''
             }
         }
 

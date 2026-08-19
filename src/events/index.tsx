@@ -1,7 +1,7 @@
 import React from "react"
-import DemandEventsProvider from "@/src/events/demand"
-import SimpleEventsProvider from "@/src/events/simple"
-import NowcastEventsProvider from "@/src/events/nowcast"
+import DemandEventsProvider from "@/src/events/handlers/demand"
+import SimpleEventsProvider from "@/src/events/handlers/simple"
+import NowcastEventsProvider from "@/src/events/handlers/nowcast"
 import { useWeatherMap } from "@/src/providers/weather/weather"
 
 export type EventHandlerType = "simple" | "demand" | "nowcast"
@@ -73,7 +73,7 @@ export function useEventHandlerType(override?: EventHandlerType): EventHandlerTy
 
 export default function MapEventsProvider({ handler, children }: MapEventsProviderProps) {
     const resolvedHandler = useEventHandlerType(handler)
-    const Provider = EVENT_HANDLERS[resolvedHandler]
+    const Provider = EVENT_HANDLERS[resolvedHandler] ?? EVENT_HANDLERS[DEFAULT_HANDLER]
     return <Provider>{children}</Provider>
 }
 
