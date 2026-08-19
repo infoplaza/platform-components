@@ -86,6 +86,20 @@ function hasLevel(levels: ModelLevels, level: string): boolean {
   return Array.isArray(levels) ? levels.includes(level) : Boolean(levels[level])
 }
 
+/**
+ * True when the model actually enumerates levels. An empty list (common for
+ * `windvector`) means "no restriction", not "no levels available".
+ */
+function hasRestrictedLevels(levels: ModelLevels | undefined): levels is ModelLevels {
+  if (!levels) return false
+  return Array.isArray(levels) ? levels.length > 0 : Object.keys(levels).length > 0
+}
+
+/**
+ * Item `levels` apply to layers that opt in with `selectableLevel`, and to
+ * layers that have no fixed `level` (the historical default). A layer with a
+ * configured `level` and no `selectableLevel` keeps that level as-is.
+ */
 function usesSelectableLevel(layer: Layer): boolean {
   return layer.selectableLevel === true || layer.level == null
 }
@@ -100,7 +114,7 @@ function getSupportedLevels(
     .filter(layer => layer.optional !== true && usesSelectableLevel(layer))
     .reduce((levels, layer) => {
       const modelLevels = elementsById.get(layer.element)?.levels
-      return modelLevels
+      return hasRestrictedLevels(modelLevels)
         ? levels.filter(level => hasLevel(modelLevels, level))
         : levels
     }, [...item.levels])
@@ -142,18 +156,14 @@ function resolveLayer(
 
   if (!element) return unavailable()
 
-  if (itemLevels && element.levels && usesSelectableLevel(layer)) {
-    const hasSupportedLevel = itemLevels.some(level => hasLevel(element.levels!, level))
-    if (!hasSupportedLevel && itemLevels.length > 0) return unavailable()
-  }
-
+  const modelLevels = element.levels
   if (
-    !usesSelectableLevel(layer) &&
-    layer.level &&
-    element.levels &&
-    !hasLevel(element.levels, layer.level)
+    usesSelectableLevel(layer) &&
+    itemLevels?.length &&
+    hasRestrictedLevels(modelLevels)
   ) {
-    return unavailable()
+    const hasSupportedLevel = itemLevels.some(level => hasLevel(modelLevels, level))
+    if (!hasSupportedLevel) return unavailable()
   }
 
   return {
