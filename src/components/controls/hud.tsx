@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 import ControlTimebar from '@/src/components/controls/timebars/timebar'
 import MapControlElement from '@/src/components/controls/element'
-// import MapControlLegend, { LegendTrigger, MapControlLegendDetails } from '@/src/components/controls/legend'
-// import MapControlLegendList from '@/src/components/controls/legend/list'
-// import { isMultiRowLegend } from '@/src/components/controls/legend/utils'
+import MapControlLegend, { LegendTrigger, MapControlLegendDetails } from '@/src/components/controls/legend'
+import MapControlLegendList from '@/src/components/controls/legend/list'
+import { isMultiRowLegend } from '@/src/components/controls/legend/utils'
 import MapControlModel from '@/src/components/controls/model'
 import MapControlRun from '@/src/components/controls/run'
 import MapControlMember from '@/src/components/controls/member'
 
 import { useWeatherMap } from '@/src/providers/weather/weather'
-// import { useLegendValues, useTimestampMap } from '@/src/components/_webgl/context'
 import { useLegendValues } from '@/src/providers/legend/legend'
 
 import MapControlZoom from '@/src/components/controls/zoom'
-// import MapControlMobileTimebar from '@/src/components/controls/timebars/mobileTimebar'
 import { twMerge } from '@/src/utilities/external/twMerge'
 import { isEmpty } from 'lodash'
 import MapControlInfo from './info'
@@ -36,11 +34,10 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsC
     const { models: contextModels, modelInfo, model, elementInfo, layersInfo, month } = useWeatherMap()
     const models = contextModels
     const { legends } = useLegendValues()
-    // const isMobileDevice = useIsIosAndroidPhoneOrTablet()
     const [legendDetailsOpen, setLegendDetailsOpen] = useState(false)
     const openLegendDetails = () => {
         if (!layersInfo?.layers.some(layer => layer.grayscale === true)) {
-            return 
+            return
         }
 
         return setLegendDetailsOpen(true)
@@ -51,7 +48,6 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsC
 
     return (
         <>
-        
             {/* CONTROLS: TOP LEFT */}
             <div className="ip:absolute ip:top-0 ip:left-0 ip:pointer-events-none ip:sm:w-auto ip:w-full">
                 <div className="ip:flex ip:flex-col ip:gap-1 ip:sm:gap-1 ip:p-3 ip:sm:p-1">
@@ -93,102 +89,80 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsC
                             hasLegends ? 'ip:sm:gap-1' : 'ip:sm:gap-0.5'
                         )}>
                             <div className="ip:flex ip:gap-1 ip:items-end">
-                                {/* {typeof viewState?.latitude === 'number' && typeof viewState?.longitude === 'number' && (
-                                    <div>
-                                        <CoordinateDisplay
-                                            latitude={viewState.latitude}
-                                            longitude={viewState.longitude}
-                                        />
-                                    </div>
-                                )} */}
                                 <MapControlZoom
                                     mapIndex={mapIndex}
                                     multiMapCount={mapsLength}
                                 />
                             </div>
-                            {/* <div className="flex sm:flex-row flex-col-reverse gap-1 items-end">
+                            <div className="ip:flex ip:sm:flex-row ip:flex-col-reverse ip:gap-1 ip:items-end">
                                 {hasLegends && legendListType && (
                                     <LegendTrigger
                                         onClick={openLegendDetails}
                                         expanded={legendDetailsOpen}
-                                        aria-label={'Show legend details'}
-                                        className="sm:block hidden"
+                                        aria-label="Show legend details"
+                                        className="ip:sm:block ip:hidden"
                                     >
-                                        <MapControlLegendList legends={legends as any}/>
+                                        <MapControlLegendList legends={legends} />
                                     </LegendTrigger>
                                 )}
-                            </div> */}
-                            {/* {hasLegends && !legendListType && (
-                                <div className={twMerge(
-                                    'hidden sm:block w-full',
-                                )}
-                                style={{ height: `${legends.length * (isMultiRowLegend(legends[0] as any) ? 24 * 2 : 24)}px` }}
+                            </div>
+                            {hasLegends && !legendListType && (
+                                <div
+                                    className="ip:hidden ip:sm:block ip:w-full"
+                                    style={{ height: `${legends.length * (isMultiRowLegend(legends[0]) ? 24 * 2 : 24)}px` }}
                                 >
                                     <LegendTrigger
                                         onClick={openLegendDetails}
                                         expanded={legendDetailsOpen}
-                                        aria-label={'Show legend details'}
-                                        className="absolute bottom-0 right-1 block w-full sm:max-w-sm lg:max-w-md xl:max-w-lg"
+                                        aria-label="Show legend details"
+                                        className="ip:absolute ip:bottom-0 ip:right-1 ip:block ip:w-full ip:sm:max-w-sm ip:lg:max-w-md ip:xl:max-w-lg"
                                     >
                                         <MapControlLegend
-                                            height={isMultiRowLegend(legends[0] as any) ? 24 * 2 : 24}
-                                            legends={legends as any}
+                                            height={isMultiRowLegend(legends[0]) ? 24 * 2 : 24}
+                                            legends={legends}
                                         />
                                     </LegendTrigger>
                                 </div>
-                            )} */}
+                            )}
                         </div>
                     </div>
 
                     {Boolean(modelInfo?.format) && ['nowcast', 'forecast'].includes(modelInfo?.format ?? '') && (
-                        // elementInfo?.slug === 'observations' ? (
-                        //     <ObservationTimebar />
-                        // ) : (
-                            <div className="ip:flex ip:flex-col">
-                                {/* { isMobileDevice ? (
-                                    <MapControlMobileTimebar />
-                                ) : ( */}
-                                    <ControlTimebar
-                                        small={isMultipleMapView}
-                                        options={elementInfo?.options?.timebar}
-                                    />
-                                {/* )} */}
-                            </div>
-                        // )
+                        <div className="ip:flex ip:flex-col">
+                            <ControlTimebar
+                                small={isMultipleMapView}
+                                options={elementInfo?.options?.timebar}
+                            />
+                        </div>
                     )}
-                    {/* {(['climate'].includes(modelInfo?.type)) && (
-                        <MapControlMonthTimebar small={isMultipleMapView} />
-                    )} */}
-                    {/* {(['tropicalweather'].includes(modelInfo?.type) && selectedStorm) && (
-                        <MapControlTropicalStormTrackTimeline onClose={onCloseTimeline} selectedStorm={selectedStorm} selectedTrackId={selectedTrackId} />
-                    )} */}
                 </div>
-                {/* {hasLegends && !legendListType && (
-                    <div className={twMerge(
-                        'sm:hidden block bottom-0 right-0 w-full sm:w-58 md:w-72 lg:w-96',
-                    )} style={{ height: `${legends.length * 24}px` }}>
+                {hasLegends && !legendListType && (
+                    <div
+                        className="ip:sm:hidden ip:block ip:bottom-0 ip:right-0 ip:w-full ip:sm:w-58 ip:md:w-72 ip:lg:w-96"
+                        style={{ height: `${legends.length * 24}px` }}
+                    >
                         <LegendTrigger
                             onClick={openLegendDetails}
                             expanded={legendDetailsOpen}
-                            aria-label={'Show legend details'}
-                            className="absolute bottom-0 right-0 block w-full"
+                            aria-label="Show legend details"
+                            className="ip:absolute ip:bottom-0 ip:right-0 ip:block ip:w-full"
                         >
                             <MapControlLegend
                                 height={24}
-                                legends={legends as any}
+                                legends={legends}
                             />
                         </LegendTrigger>
                     </div>
-                )} */}
+                )}
             </div>
-            {/* {hasLegends && (
+            {hasLegends && (
                 <MapControlLegendDetails
                     open={legendDetailsOpen}
                     onClose={closeLegendDetails}
                     legends={legends}
                     listType={legendListType}
                 />
-            )} */}
+            )}
         </>
     )
 }

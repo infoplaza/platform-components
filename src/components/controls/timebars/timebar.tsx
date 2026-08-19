@@ -527,7 +527,7 @@ export default function MapControlTimebar({ language, timezone, small = false, o
         <div
             ref={mainDivRef}
             tabIndex={0}
-            className={twMerge('ip:outline-none ip:focus:outline-none ip:select-none ip:pointer-events-auto ip:bg-white/80 ip:dark:bg-dark/80 ip:backdrop-blur-md ip:border ip:dark:border-white/10 ip:w-full ip:transition-all ip:duration-1000', [className, index != null && timestamp != null && elementInfo?.live !== true ? 'ip:max-h-screen' : 'ip:max-h-0'])}
+            className={twMerge('ip:outline-none ip:focus:outline-none ip:select-none ip:pointer-events-auto ip:bg-white/80 ip:dark:bg-dark/80 ip:backdrop-blur-md ip:border ip:border-white/10 ip:w-full ip:transition-all ip:duration-1000', [className, index != null && timestamp != null && elementInfo?.live !== true ? 'ip:max-h-screen' : 'ip:max-h-0'])}
         >
             {(index != null && timestamp != null && mapTimestamps.length > 1) ?
                 <div className='ip:flex ip:sm:gap-3 ip:gap-0'>
