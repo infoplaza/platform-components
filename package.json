@@ -82,7 +82,8 @@
     "proj4": "^2.20.9",
     "react-map-gl": "^8.1.1",
     "react-redux": "^9.3.0",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "to-smooth": "^2.2.0"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

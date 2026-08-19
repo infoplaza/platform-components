@@ -2,16 +2,17 @@ import { useMemo, useRef, type ReactNode } from "react"
 
 // ** Connectors Imports
 import { ImageLayerConnector } from "./connectors/image"
-// import { ImageAltLayerConnector } from "./connectors/image_alt"
+import { ImageAltLayerConnector } from "./connectors/image_alt"
 import { GridLayerConnector } from "./connectors/grid"
-// import { DirectionLayerConnector } from "./connectors/direction"
-// import { BarbLayerConnector } from "./connectors/barb"
-// import { ParticleLayerConnector } from "./connectors/particle"
-// import { ContourLayerConnector } from "./connectors/contour"
-// import { ContourGeoJsonLayerConnector } from "./connectors/contourgeojson"
-// import { StormtracksLayerConnector } from "./connectors/stormtracks"
-// import { PlotLayerConnector } from "./connectors/plot"
-// import { GradeLayerConnector } from "./connectors/grade"
+import { DirectionLayerConnector } from "./connectors/direction"
+import { BarbLayerConnector } from "./connectors/barb"
+import { ParticleLayerConnector } from "./connectors/particle"
+import { ContourLayerConnector } from "./connectors/contour"
+import { ContourGeoJsonLayerConnector } from "./connectors/contourgeojson"
+import { StormtracksLayerConnector } from "./connectors/stormtracks"
+import { PlotLayerConnector } from "./connectors/plot"
+import { GradeLayerConnector } from "./connectors/grade"
+import { RangeLayerConnector } from "./connectors/range"
 
 // ** Context Imports
 import { useLayerSettings } from "@/src/providers/settings/layer-settings"
@@ -20,8 +21,6 @@ import { useTimestampMap } from "@/src/redux/timestamps/provider"
 // import { LocationLayerConnector } from "./connectors/location"
 // import { useSettings } from "@/context/settings"
 import { GridStyle } from "./grid/style"
-// import { RangeLayerConnector } from "./connectors/range"
-// import { useMapLocation } from "@/components/_webgl/context"
 import type { Layer, LayerRendering } from "@/@types/layer.types"
 
 type ComposedLayer = Layer & Record<string, unknown>
@@ -39,6 +38,8 @@ type RenderingBuilder = {
 
 type ImageConnectorLayer = ComposedLayer & Parameters<typeof ImageLayerConnector>[0]
 type GridConnectorLayer = ComposedLayer & Parameters<typeof GridLayerConnector>[0]
+type ParticleConnectorLayer = ComposedLayer & Parameters<typeof ParticleLayerConnector>[0]
+type RangeConnectorLayer = ComposedLayer & Parameters<typeof RangeLayerConnector>[0]
 
 const hasRendering = (layer: Layer, type: LayerRendering): boolean =>
     layer.rendering === type ||
@@ -80,6 +81,12 @@ const isImageConnectorLayer = (layer: ComposedLayer): layer is ImageConnectorLay
 const isGridConnectorLayer = (layer: ComposedLayer): layer is GridConnectorLayer =>
     hasImageAndBounds(layer)
 
+const isParticleConnectorLayer = (layer: ComposedLayer): layer is ParticleConnectorLayer =>
+    hasImageAndBounds(layer)
+
+const isRangeConnectorLayer = (layer: ComposedLayer): layer is RangeConnectorLayer =>
+    hasImageAndBounds(layer)
+
 const LayerComposer = ({ children, beforeId, mapComponents }: LayerComposerProps) => {
     const { getLayerState } = useLayerSettings()
     const { timestamp, timebarPlaying } = useTimestampMap()
@@ -102,10 +109,18 @@ const LayerComposer = ({ children, beforeId, mapComponents }: LayerComposerProps
                     return ImageLayerConnector(layer, getLayerState(layer), beforeId)
                 },
             },
-            // {
-            //     condition: (layer: Layer) => hasRendering(layer, 'IMAGE_ALT') && getLayerState(layer).imageEnabled,
-            //     create: (layer: Layer) => ImageAltLayerConnector(layer, getLayerState(layer), beforeId),
-            // },
+            {
+                condition: (layer: ComposedLayer) =>
+                    hasRendering(layer, 'IMAGE_ALT') &&
+                    getLayerState(layer).imageEnabled &&
+                    isImageConnectorLayer(layer),
+                create: (layer: ComposedLayer) => {
+                    if (!isImageConnectorLayer(layer)) {
+                        return null
+                    }
+                    return ImageAltLayerConnector(layer, getLayerState(layer), beforeId)
+                },
+            },
             {
                 condition: (layer: ComposedLayer) =>
                     hasRendering(layer, 'VALUES') &&
@@ -122,56 +137,100 @@ const LayerComposer = ({ children, beforeId, mapComponents }: LayerComposerProps
                     }, getLayerState(layer), beforeId)
                 },
             },
-            // {
-            //     condition: (layer: Layer) => hasRendering(layer, 'PARTICLES') && getLayerState(layer).particleEnabled,
-            //     create: (layer: Layer) => ParticleLayerConnector(layer, getLayerState(layer), timebarPlaying, beforeId),
-            // },
-            // {
-            //     condition: (layer: Layer) => hasRendering(layer, 'BARBS') && getLayerState(layer).barbEnabled,
-            //     create: (layer: Layer) => BarbLayerConnector({
-            //         ...layer,
-            //         id: `${layer.id}-barbs`,
-            //     }, getLayerState(layer), beforeId),
-            // },
-            // {
-            //     condition: (layer: Layer) => hasRendering(layer, 'DIRECTIONS') && getLayerState(layer).directionEnabled,
-            //     create: (layer: Layer) => DirectionLayerConnector({
-            //         ...layer,
-            //         id: `${layer.id}-directions`,
-            //     }, getLayerState(layer), beforeId),
-            // },
-            // {
-            //     condition: (layer: Layer) => hasRendering(layer, 'CONTOURS') && getLayerState(layer).contourEnabled,
-            //     create: (layer: Layer) => ContourLayerConnector(layer, beforeId, getLayerState(layer)),
-            // },
-            // {
-            //     condition: (layer: Layer) => hasRendering(layer, 'RANGE'),
-            //     create: (layer: Layer) => RangeLayerConnector(layer),
-            // },
-            // {
-            //     condition: (layer: Layer) => hasRendering(layer, 'STORMTRACKS'),
-            //     create: (layer: Layer) => StormtracksLayerConnector(layer, beforeId, getLayerState(layer)),
-            // },
-            // {
-            //     condition: (layer: Layer) => hasRendering(layer, 'PLOT'),
-            //     create: (layer: Layer) => PlotLayerConnector({
-            //         ...layer,
-            //         id: `${layer.id}-plot`,
-            //         selectedPlotId: selectedPlot?.locationId ?? null,
-            //     }, getLayerState(layer)),
-            // },
-            // {
-            //     condition: (layer: Layer) => hasRendering(layer, 'GRADES') && getLayerState(layer).gradeEnabled,
-            //     create: (layer: Layer) => GradeLayerConnector({
-            //         ...layer,
-            //         id: `${layer.id}-grades`,
-            //         state: getLayerState(layer),
-            //     }, beforeId),
-            // },
-            // {
-            //     condition: (layer: Layer) => hasRendering(layer, 'CONTOURGEOJSON') && getLayerState(layer).contourGeoJsonEnabled,
-            //     create: (layer: Layer) => ContourGeoJsonLayerConnector(layer, beforeId, getLayerState(layer)),
-            // },
+            {
+                condition: (layer: ComposedLayer) =>
+                    hasRendering(layer, 'PARTICLES') &&
+                    getLayerState(layer).particleEnabled &&
+                    isParticleConnectorLayer(layer),
+                create: (layer: ComposedLayer) => {
+                    if (!isParticleConnectorLayer(layer)) {
+                        return null
+                    }
+                    return ParticleLayerConnector(layer, getLayerState(layer), timebarPlaying, beforeId)
+                },
+            },
+            {
+                condition: (layer: ComposedLayer) =>
+                    hasRendering(layer, 'BARBS') &&
+                    getLayerState(layer).barbEnabled &&
+                    isGridConnectorLayer(layer),
+                create: (layer: ComposedLayer) => {
+                    if (!isGridConnectorLayer(layer)) {
+                        return null
+                    }
+                    return BarbLayerConnector({
+                        ...layer,
+                        id: `${layer.id}-barbs`,
+                    }, getLayerState(layer), beforeId)
+                },
+            },
+            {
+                condition: (layer: ComposedLayer) =>
+                    hasRendering(layer, 'DIRECTIONS') &&
+                    getLayerState(layer).directionEnabled &&
+                    isGridConnectorLayer(layer),
+                create: (layer: ComposedLayer) => {
+                    if (!isGridConnectorLayer(layer)) {
+                        return null
+                    }
+                    return DirectionLayerConnector({
+                        ...layer,
+                        id: `${layer.id}-directions`,
+                    }, getLayerState(layer), beforeId)
+                },
+            },
+            {
+                condition: (layer: ComposedLayer) =>
+                    hasRendering(layer, 'CONTOURS') &&
+                    getLayerState(layer).contourEnabled &&
+                    isImageConnectorLayer(layer),
+                create: (layer: ComposedLayer) => {
+                    if (!isImageConnectorLayer(layer)) {
+                        return null
+                    }
+                    return ContourLayerConnector(layer, beforeId, getLayerState(layer))
+                },
+            },
+            {
+                condition: (layer: ComposedLayer) =>
+                    hasRendering(layer, 'RANGE') &&
+                    isRangeConnectorLayer(layer),
+                create: (layer: ComposedLayer) => {
+                    if (!isRangeConnectorLayer(layer)) {
+                        return null
+                    }
+                    return RangeLayerConnector(layer)
+                },
+            },
+            {
+                condition: (layer: ComposedLayer) => hasRendering(layer, 'STORMTRACKS'),
+                create: (layer: ComposedLayer) => StormtracksLayerConnector(layer, beforeId, getLayerState(layer)),
+            },
+            {
+                condition: (layer: ComposedLayer) => hasRendering(layer, 'PLOT'),
+                create: (layer: ComposedLayer) => PlotLayerConnector({
+                    ...layer,
+                    id: `${layer.id}-plot`,
+                    selectedPlotId: null,
+                    data: Array.isArray(layer.data) ? layer.data : [],
+                }, getLayerState(layer)),
+            },
+            {
+                condition: (layer: ComposedLayer) =>
+                    hasRendering(layer, 'GRADES') &&
+                    getLayerState(layer).gradeEnabled,
+                create: (layer: ComposedLayer) => GradeLayerConnector({
+                    ...layer,
+                    id: `${layer.id}-grades`,
+                    state: getLayerState(layer),
+                }, beforeId),
+            },
+            {
+                condition: (layer: ComposedLayer) =>
+                    hasRendering(layer, 'CONTOURGEOJSON') &&
+                    getLayerState(layer).contourGeoJsonEnabled,
+                create: (layer: ComposedLayer) => ContourGeoJsonLayerConnector(layer, beforeId, getLayerState(layer)),
+            },
         ]
     }, [beforeId, getLayerState, timebarPlaying])
 

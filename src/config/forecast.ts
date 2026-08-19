@@ -54,7 +54,7 @@ const FORECAST: LayerConfig = {
                         { element: 'temperature', connection: 'ImageConnection', rendering: [imageRendering, 'VALUES'], unit: '°C', level: '2m', selectableLevel: true, grayscale: true },
                         { element: 'windvector', connection: 'ImageConnection', rendering: 'PARTICLES', unit: 'km/h', name: 'Wind animation surface level', level: '300hPa', optional: true },
                     ],
-                    levels: ['2m', '50m', '100m', '200m', '300m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa', 'seasurface'],
+                    levels: ['surface', '2m', '50m', '100m', '200m', '300m', '925hPa', '850hPa', '700hPa', '500hPa', '300hPa', '250hPa', 'seasurface'],
                 },
                 {
                     slug: 'temperaturemin',
@@ -937,7 +937,7 @@ const FORECAST: LayerConfig = {
                     layers: [
                         { element: 'cloudcovertotal', name: 'Total cloud cov', connection: 'ImageConnection', rendering: [imageRendering], grayscale: true, isAlphaImage: true },
                         { element: 'precipitation', name: 'Precipitation', connection: 'ImageConnection', rendering: [imageRendering], unitKey: 'precipitation', grayscale: false },
-                        // { element: 'pressure_meansealevel', name: 'Mean sea level pressure', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
+                        { element: 'pressure_meansealevel', name: 'Mean sea level pressure', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
                     ],
                 },
                 {
@@ -948,8 +948,8 @@ const FORECAST: LayerConfig = {
                     layers: [
                         { element: 'thetaw', connection: 'ImageConnection', rendering: imageRendering, level: '850hPa', grayscale: true, settings: { image: { imageOpacity: 0.5 } } },
                         { element: 'precipitation', name: 'Precipitation', connection: 'ImageConnection', rendering: imageRendering, unitKey: 'precipitation', grayscale: false, settings: { image: { pickable: false } } },
-                        // { element: 'pressure_meansealevel', name: 'Mean sea level pressure', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
-                        // { element: 'thetaw', name: 'Theta-w', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], level: '850hPa' },
+                        { element: 'pressure_meansealevel', name: 'Mean sea level pressure', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
+                        { element: 'thetaw', name: 'Theta-w', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], level: '850hPa' },
                         // { element: 'thetaw', connection: 'ImageConnection', rendering: 'CONTOURS', level: '850hPa' },
                     ],
                 },
@@ -960,8 +960,8 @@ const FORECAST: LayerConfig = {
                     icon: 'IpClouds',
                     layers: [
                         { element: 'cloudcovermiddle', name: 'Mid level cloud cov', connection: 'ImageConnection', rendering: imageRendering, grayscale: true },
-                        // { element: 'pressure_meansealevel', name: 'Mean sea level pressure', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
-                        // { element: 'thetaw', name: 'Theta-w', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], level: '850hPa' },
+                        { element: 'pressure_meansealevel', name: 'Mean sea level pressure', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
+                        { element: 'thetaw', name: 'Theta-w', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], level: '850hPa' },
                     ],
                 },
                 {
@@ -980,7 +980,7 @@ const FORECAST: LayerConfig = {
                     icon: 'IpTachometerFastAlt',
                     layers: [
                         { element: 'pressure_meansealevel', connection: 'ImageConnection', rendering: [imageRendering], unit: 'hPa', grayscale: true, settings: { image: { imageOpacity: 0.5, pickable: false } } },
-                        // { element: 'pressure_meansealevel', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
+                        { element: 'pressure_meansealevel', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
                     ],
                 },
                 {
@@ -990,7 +990,7 @@ const FORECAST: LayerConfig = {
                     layers: [
                         // { element: 'pressure', connection: 'ImageConnection', rendering: [imageRendering, 'CONTOURS'], unit: 'hPa', grayscale: true },
                         { element: 'pressure', connection: 'ImageConnection', rendering: [imageRendering], unit: 'hPa', grayscale: true, settings: { image: { imageOpacity: 0.5, pickable: false } } },
-                        // { element: 'pressure', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
+                        { element: 'pressure', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unit: 'hPa' },
                     ],
                     levels: ['surface'],
                 },
@@ -1002,7 +1002,7 @@ const FORECAST: LayerConfig = {
                     layers: [
                         { element: 'temperature', connection: 'ImageConnection', rendering: imageRendering, unitKey: 'temperature', grayscale: true },
                         // { element: 'geopotential', connection: 'ImageConnection', rendering: 'CONTOURS', unitKey: 'visibility', unit: 'km', interval: null },
-                        // { element: 'geopotential', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unitKey: 'visibility', unit: 'km', },
+                        { element: 'geopotential', connection: 'ContourConnection', rendering: ['CONTOURGEOJSON'], unitKey: 'visibility', unit: 'km', },
                     ],
                     levels: ['300hPa', '250hPa', '500hPa', '700hPa', '850hPa', '925hPa'],
                 },
