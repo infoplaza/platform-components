@@ -27,8 +27,25 @@ const FILES = [
   'src/components/controls/element/group.tsx',
   'src/components/controls/zoom.tsx',
   'src/components/controls/level.tsx',
+  'src/components/controls/layer.tsx',
+  'src/components/controls/layer/modal.tsx',
+  'src/components/controls/layer/accordionSection.tsx',
+  'src/components/controls/layer/layerPickerTabs.tsx',
+  'src/components/controls/settings/imageSettings.tsx',
+  'src/components/controls/settings/gridValuesSettings.tsx',
+  'src/components/controls/settings/directionSettings.tsx',
+  'src/components/controls/settings/barbSettings.tsx',
+  'src/components/controls/settings/gradeSettings.tsx',
+  'src/components/controls/settings/particleSettings.tsx',
+  'src/components/controls/settings/contourSettings.tsx',
+  'src/components/controls/settings/contourGeoJsonSettings.tsx',
   'src/components/forms/dropdown.tsx',
+  'src/components/forms/slider-field.tsx',
+  'src/components/forms/range-slider-field.tsx',
+  'src/components/forms/color-field.tsx',
+  'src/components/forms/subheader.tsx',
   'src/components/modals/dialog.tsx',
+  'src/components/modals/drawer.tsx',
 ]
 
 // JSX attributes whose value is a class list in these components.
@@ -39,6 +56,7 @@ const CLASS_ATTRS = new Set([
   'thumbClassName',
   'thumbActiveClassName',
   'markClassName',
+  'labelClassName',
   'width',
 ])
 
@@ -46,6 +64,7 @@ const CLASS_ATTRS = new Set([
 const CLASS_BINDINGS = new Set([
   'CONTROL_GROUP_CLASSES',
   'CONTROL_BUTTON_CLASSES',
+  'RANGE_INPUT_CLASS',
   'width',
   'className',
 ])

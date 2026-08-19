@@ -3,6 +3,7 @@ import { Provider as ReduxProvider } from 'react-redux'
 import type { ModelsConfig, WeatherConfig } from '@/@types/weather.types'
 import { LegendValuesProvider, useLegendValues } from '@/src/providers/legend/legend'
 import { ModelsProvider, useModels } from '@/src/providers/models/models'
+import { DisplaySettingsProvider, useDisplaySettings } from '@/src/providers/settings/display-settings'
 import { LayerSettingsProvider, useLayerSettings } from '@/src/providers/settings/layer-settings'
 import { MapIndexProvider, useMapIndex } from '@/src/providers/timestamps/timestamp'
 import { WeatherMapProvider, useWeatherMap } from '@/src/providers/weather/weather'
@@ -28,15 +29,17 @@ export function Providers({ children, weatherConfig, modelsConfig, mapIndex = 0 
     <ReduxProvider store={store}>
       <MapIndexProvider value={mapIndex}>
         <LegendValuesProvider>
-          <LayerSettingsProvider>
-            <ModelsProvider {...modelsConfig}>
-              <WeatherMapProvider {...weatherConfig}>
-                <TimestampProvider>
-                  {children}
-                </TimestampProvider>
-              </WeatherMapProvider>
-            </ModelsProvider>
-          </LayerSettingsProvider>
+          <DisplaySettingsProvider>
+            <LayerSettingsProvider>
+              <ModelsProvider {...modelsConfig}>
+                <WeatherMapProvider {...weatherConfig}>
+                  <TimestampProvider>
+                    {children}
+                  </TimestampProvider>
+                </WeatherMapProvider>
+              </ModelsProvider>
+            </LayerSettingsProvider>
+          </DisplaySettingsProvider>
         </LegendValuesProvider>
       </MapIndexProvider>
     </ReduxProvider>
@@ -53,5 +56,6 @@ export function useProviders() {
     weather: useWeatherMap(),
     legend: useLegendValues(),
     layerSettings: useLayerSettings(),
+    displaySettings: useDisplaySettings(),
   }
 }

@@ -15,6 +15,7 @@ import { GradeLayerConnector } from "./connectors/grade"
 import { RangeLayerConnector } from "./connectors/range"
 
 // ** Context Imports
+import { useDisplaySettings } from "@/src/providers/settings/display-settings"
 import { useLayerSettings } from "@/src/providers/settings/layer-settings"
 import { useTimestampMap } from "@/src/redux/timestamps/provider"
 // import { useObservation } from "../context/observation/observation"
@@ -90,10 +91,11 @@ const isRangeConnectorLayer = (layer: ComposedLayer): layer is RangeConnectorLay
 const LayerComposer = ({ children, beforeId, mapComponents }: LayerComposerProps) => {
     const { getLayerState } = useLayerSettings()
     const { timestamp, timebarPlaying } = useTimestampMap()
+    const { state: displaySettingsState } = useDisplaySettings()
     // const { locations, locationMarker, theme, state: settingsState } = useSettings()
     // const { selectedPlot } = useObservation()
     // const { location } = useMapLocation()
-    const frameSkip = false
+    const frameSkip = displaySettingsState?.frameSkip ?? true
 
     const renderingBuilders = useMemo<RenderingBuilder[]>(() => {
         return [

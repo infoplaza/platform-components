@@ -50,6 +50,7 @@ export default function SimpleEventsProvider({ children }: SimpleEventsProviderP
     )
 
     const layerConfigs = useMemo(() => {
+        console.log("layersInfo", layersInfo)
         return (layersInfo?.layers ?? [])
             .filter((layer) => layer.active !== false)
             .map((layer): EnrichedMapLayer => {

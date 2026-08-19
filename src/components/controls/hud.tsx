@@ -18,6 +18,7 @@ import MapControlZoom from '@/src/components/controls/zoom'
 import { twMerge } from '@/src/utilities/external/twMerge'
 import { isEmpty } from 'lodash'
 import MapControlInfo from './info'
+import MapControlLayer from '@/src/components/controls/layer'
 
 export type MapControlHudProps = {
     mapIndex: number
@@ -54,11 +55,30 @@ export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsC
             {/* CONTROLS: TOP LEFT */}
             <div className="ip:absolute ip:top-0 ip:left-0 ip:pointer-events-none ip:sm:w-auto ip:w-full">
                 <div className="ip:flex ip:flex-col ip:gap-1 ip:sm:gap-1 ip:p-3 ip:sm:p-1">
-                    <MapControlInfo
-                        small={isMultipleMapView}
-                    />
+                    <div className="ip:flex ip:justify-between ip:gap-1 ip:items-start">
+                        <MapControlInfo
+                            small={isMultipleMapView}
+                        />
+                        {isMobileDevice && (
+                            <MapControlLayer
+                                vertical={false}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
+            {/* CONTROLS: TOP RIGHT */}
+            {!isMobileDevice && (
+                <div className="ip:absolute ip:top-0 ip:right-0 ip:pointer-events-none">
+                    <div className="ip:flex ip:flex-col ip:items-end">
+                        <div className="ip:p-1 ip:flex ip:gap-1.5 ip:flex-col">
+                            <MapControlLayer
+                                vertical={true}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* CONTROLS: BOTTOM */}
             <div className="ip:absolute ip:bottom-0 ip:inset-x-0 ip:z-10 ip:pointer-events-none">

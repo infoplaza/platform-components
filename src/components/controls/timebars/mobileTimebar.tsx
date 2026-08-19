@@ -713,7 +713,7 @@ export default function MapControlMobileTimebar({ language, timezone, small = fa
                                     >
                                         {showTooltip && (
                                             <div className={twMerge(
-                                                "ip:absolute ip:-top-2 ip:-left-[85px] ip:flex ip:items-center ip:gap-1 ip:z-50 ip:sm:hidden ip:text-gray-500 ip:dark:text-white ip:transition-opacity ip:duration-500",
+                                                "ip:absolute ip:-top-2 ip:-left-21.25 ip:flex ip:items-center ip:gap-1 ip:z-50 ip:sm:hidden ip:text-gray-500 ip:dark:text-white ip:transition-opacity ip:duration-500",
                                                 isFadingOut ? "ip:opacity-0" : "ip:opacity-100"
                                             )}>
                                                 <IpSwipeGestureIcon className={twMerge('ip:size-6 ip:animate-jiggle')} />
@@ -726,7 +726,7 @@ export default function MapControlMobileTimebar({ language, timezone, small = fa
                                             <div key={`${ts.timestamp}-${idx}`}
                                                 className={
                                                     twMerge(
-                                                        "ip:relative ip:flex-1 ip:min-w-[10px] ip:h-2 ip:w-full",
+                                                        "ip:relative ip:flex-1 ip:min-w-2.5 ip:h-2 ip:w-full",
                                                         idx == 0 && 'ip:w-3 ip:min-w-3 ip:-ml-3 ip:rounded-l-full',
                                                         idx === mapTimestamps.length - 1 && 'ip:w-3 ip:min-w-3 ip:-mr-3 ip:rounded-r-full',
                                                         ts.loaded && 'ip:bg-primary/75',
@@ -754,7 +754,7 @@ export default function MapControlMobileTimebar({ language, timezone, small = fa
                                         {(mapTimestamps).map((ts: TimestampInfo, idx: number) => (
                                             <div
                                                 key={ts.timestamp}
-                                                className="ip:relative ip:flex-1 ip:min-w-[10px]"
+                                                className="ip:relative ip:flex-1 ip:min-w-2.5"
                                             >
                                                 {((marksType === 'days' && marksDays.includes(idx)) ||
                                                   (marksType === 'hours' && marksHours.includes(idx))) && (

@@ -1,6 +1,6 @@
 {
   "name": "@infoplaza/platform",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "",
   "main": "./dist/index.js",
   "style": "./dist/styles.css",
@@ -80,6 +80,7 @@
     "geokdbush": "^2.1.0",
     "maplibre-gl": "^5.24.0",
     "proj4": "^2.20.9",
+    "react-colorful": "^5.8.0",
     "react-map-gl": "^8.1.1",
     "react-redux": "^9.3.0",
     "tailwind-merge": "^3.6.0",

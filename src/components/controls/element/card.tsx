@@ -40,7 +40,6 @@ const ElementCard = ({ item, activeModel, activeElement, onChangeHandler, isFavo
     const isAvailable = item.available !== false
     const probabilityElements = item.members?.includes("probabilities")
 
-    console.log(item)
     return (
         <div
             className={twMerge(

@@ -1,3 +1,5 @@
 export * from './models/models'
 export * from './weather'
 export * from './providers'
+export { useLayerSettings, LayerSettingsProvider } from './settings/layer-settings'
+export { useDisplaySettings, DisplaySettingsProvider } from './settings/display-settings'
