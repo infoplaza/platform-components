@@ -1,7 +1,5 @@
-export { default as BaseMap } from './base-map'
-export type {
-  BaseMapProps,
-  BaseMapStyle,
-  BaseMapModelInfo,
-  MapStyleVariant,
-} from './base-map'
+export { default as BaseMap } from './map/base'
+export type { BaseMapProps, BaseMapStyle, BaseMapModelInfo, MapStyleVariant, MapStyle, } from './map/base'
+export { MAP_STYLES } from '../config/styles'
+export { MapControlHud } from './controls/hud'
+export type { MapControlHudProps } from './controls/hud'

@@ -1,0 +1,28 @@
+@import "tailwindcss" prefix(ip);
+@config "../../tailwind.config.mjs";
+
+@source "../components";
+@source "../hooks";
+@source "../providers";
+@source "../layers";
+@source "../events";
+
+/*
+ * Host-agnostic icon hook. Opt-in via the `ip-icon` class so it never affects
+ * MapLibre / deck.gl SVGs. Color and size resolve from CSS variables and fall
+ * back to `currentColor` / `1em`, so icons stay visible even when the host does
+ * not provide Tailwind `text-*` utilities.
+ */
+@layer components {
+  .ip-platform {
+    @apply ip:font-sans;
+  }
+
+  .ip-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    width: var(--ip-icon-size, 1em);
+    height: var(--ip-icon-size, 1em);
+    fill: var(--ip-icon-color, currentColor);
+  }
+}
