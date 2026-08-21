@@ -51,11 +51,26 @@ export default function MapDemo() {
           <h1>Live map</h1>
           <p>BaseMap with weather layers, overlay and control HUD</p>
         </header>
-        <StylePicker
-          value={mapStyleKey}
-          options={mapStyles}
-          onChange={setMapStyleKey}
-        />
+        <div className="map-panel__actions">
+          <StylePicker
+            value={mapStyleKey}
+            options={mapStyles}
+            onChange={setMapStyleKey}
+          />
+          <button type="button" className="view-code-button">
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path
+                d="M5.5 3.5 1.75 8 5.5 12.5M10.5 3.5 14.25 8 10.5 12.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            View code
+          </button>
+        </div>
       </div>
 
       <div className="map-panel__canvas ip-platform">

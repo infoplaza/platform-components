@@ -212,11 +212,43 @@ body {
   color: var(--text-muted);
 }
 
+.map-panel__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
 .style-picker {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+}
+
+.view-code-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0369a1;
+  background: var(--accent-soft);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.view-code-button:hover {
+  background: #bae6fd;
+}
+
+.view-code-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
 }
 
 .style-picker__label {
