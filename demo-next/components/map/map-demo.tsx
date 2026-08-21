@@ -1,13 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { BaseMap, MAP_STYLES, MapControlHud } from '../../dist/components/index.js'
-import { Providers as ProvidersComponent } from '../../dist/providers/index.js'
-import MapEventsProvider from '../../dist/events/index.js'
-import LayerComposer from '../../dist/layers/composer.js'
-import Overlay from '../../dist/layers/overlay.js'
+import { BaseMap, MAP_STYLES, MapControlHud } from '@infoplaza/platform/components'
+import { Providers as ProvidersComponent } from '@infoplaza/platform/providers'
+import MapEventsProvider from '@infoplaza/platform/events'
+import LayerComposer from '@infoplaza/platform/layers/composer'
+import Overlay from '@infoplaza/platform/layers/overlay'
+import { StylePicker } from './style-picker'
 
-// Example of extending the built-in styling options with a custom one.
 const customStyle = {
   key: 'demotiles',
   title: 'MapLibre Demo',
@@ -25,6 +25,17 @@ const customStyle = {
 
 const mapStyles = [...MAP_STYLES, customStyle]
 
+function formatCoord(value: number, northSouth: boolean) {
+  const hemisphere = northSouth
+    ? value >= 0
+      ? 'N'
+      : 'S'
+    : value >= 0
+      ? 'E'
+      : 'W'
+  return `${Math.abs(value).toFixed(4)}° ${hemisphere}`
+}
+
 export default function MapDemo() {
   const [viewState, setViewState] = useState({
     longitude: 4.9041,
@@ -34,29 +45,35 @@ export default function MapDemo() {
   const [mapStyleKey, setMapStyleKey] = useState('dark')
 
   return (
-    <div className="page">
-      <div className="toolbar">
-        <header className="header">
-          <h1>Distribution Test Page (Next.js)</h1>
-          <p>Rendering BaseMap from dist/components/index.js</p>
+    <section className="map-panel">
+      <div className="map-panel__toolbar">
+        <header className="map-panel__intro">
+          <h1>Live map</h1>
+          <p>BaseMap with weather layers, overlay and control HUD</p>
         </header>
-        <label className="style-picker">
-          <span className="style-picker__label">Map style</span>
-          <select
-            className="style-picker__select"
+        <div className="map-panel__actions">
+          <StylePicker
             value={mapStyleKey}
-            onChange={(event) => setMapStyleKey(event.target.value)}
-          >
-            {mapStyles.map((option) => (
-              <option key={option.key} value={option.key}>
-                {option.title}
-              </option>
-            ))}
-          </select>
-        </label>
+            options={mapStyles}
+            onChange={setMapStyleKey}
+          />
+          <button type="button" className="view-code-button">
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path
+                d="M5.5 3.5 1.75 8 5.5 12.5M10.5 3.5 14.25 8 10.5 12.5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            View code
+          </button>
+        </div>
       </div>
 
-      <div className="map-shell ip-platform">
+      <div className="map-panel__canvas ip-platform">
         <ProvidersComponent
           weatherConfig={{
             model: 'optimal',
@@ -98,6 +115,16 @@ export default function MapDemo() {
           </BaseMap>
         </ProvidersComponent>
       </div>
-    </div>
+
+      <footer className="map-panel__status">
+        <span>
+          {formatCoord(viewState.latitude, true)}
+          {'  '}
+          {formatCoord(viewState.longitude, false)}
+        </span>
+        <span>Zoom {viewState.zoom.toFixed(1)}</span>
+        <span className="map-panel__status-source">@infoplaza/platform</span>
+      </footer>
+    </section>
   )
 }

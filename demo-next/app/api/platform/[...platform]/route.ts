@@ -1,4 +1,4 @@
-import PlatformAuth from '../../../../../dist/auth/index.js'
+import PlatformAuth from '@infoplaza/platform/auth'
 
 // NextAuth-style setup: mount PlatformAuth once on a catch-all route and every
 // platform endpoint (e.g. `/api/platform/models`) is served automatically. New

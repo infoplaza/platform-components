@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import '../../dist/styles.css'
+import '@infoplaza/platform/styles.css'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Platform Components Next Demo',
-  description: 'Next.js distribution demo for @infoplaza/platform',
+  title: 'Map viewer · Infoplaza Platform',
+  description: 'Next.js demo of @infoplaza/platform map components',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
