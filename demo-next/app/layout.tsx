@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import '../../dist/styles.css'
+import '@infoplaza/platform/styles.css'
 import './globals.css'
 
 export const metadata: Metadata = {

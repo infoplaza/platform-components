@@ -50,9 +50,9 @@
     "build:css:embed": "tailwindcss -i ./src/styles/tailwind.embed.css -o ./dist/styles.embed.css --minify",
     "demo": "vite --config demo/vite.config.ts",
     "demo:build": "vite build --config demo/vite.config.ts",
-    "demo:next": "next dev demo-next",
-    "demo:next:build": "next build demo-next",
-    "demo:next:start": "next start demo-next",
+    "demo:next": "npm run dev -w platform-components-demo-next",
+    "demo:next:build": "npm run build -w platform-components-demo-next",
+    "demo:next:start": "npm run start -w platform-components-demo-next",
     "test": "echo \"Error: no test specified\" && exit 1",
     "publish": "npm publish",
     "publish:dry-run": "npm publish --dry-run"
@@ -61,6 +61,12 @@
   "author": "",
   "license": "ISC",
   "type": "module",
+  "workspaces": [
+    "demo-next"
+  ],
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "files": [
     "dist"
   ],

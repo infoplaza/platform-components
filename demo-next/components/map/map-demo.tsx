@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { BaseMap, MAP_STYLES, MapControlHud } from '../../../dist/components/index.js'
-import { Providers as ProvidersComponent } from '../../../dist/providers/index.js'
-import MapEventsProvider from '../../../dist/events/index.js'
-import LayerComposer from '../../../dist/layers/composer.js'
-import Overlay from '../../../dist/layers/overlay.js'
+import { BaseMap, MAP_STYLES, MapControlHud } from '@infoplaza/platform/components'
+import { Providers as ProvidersComponent } from '@infoplaza/platform/providers'
+import MapEventsProvider from '@infoplaza/platform/events'
+import LayerComposer from '@infoplaza/platform/layers/composer'
+import Overlay from '@infoplaza/platform/layers/overlay'
 import { StylePicker } from './style-picker'
 
 const customStyle = {
@@ -123,7 +123,7 @@ export default function MapDemo() {
           {formatCoord(viewState.longitude, false)}
         </span>
         <span>Zoom {viewState.zoom.toFixed(1)}</span>
-        <span className="map-panel__status-source">dist/components</span>
+        <span className="map-panel__status-source">@infoplaza/platform</span>
       </footer>
     </section>
   )
