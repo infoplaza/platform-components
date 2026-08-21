@@ -7,6 +7,7 @@ import MapEventsProvider from '@infoplaza/platform/events'
 import LayerComposer from '@infoplaza/platform/layers/composer'
 import Overlay from '@infoplaza/platform/layers/overlay'
 import { StylePicker } from './style-picker'
+import { ViewCodeButton } from './view-code-dialog'
 
 const customStyle = {
   key: 'demotiles',
@@ -48,8 +49,12 @@ export default function MapDemo() {
     <section className="map-panel">
       <div className="map-panel__toolbar">
         <header className="map-panel__intro">
-          <h1>Live map</h1>
-          <p>BaseMap with weather layers, overlay and control HUD</p>
+          <p className="map-panel__eyebrow">Live demo</p>
+          <h1>Weather on the map</h1>
+          <p>
+            A live BaseMap with Infoplaza weather layers, overlay, and control HUD —
+            the same composition you would drop into your own app.
+          </p>
         </header>
         <div className="map-panel__actions">
           <StylePicker
@@ -57,19 +62,7 @@ export default function MapDemo() {
             options={mapStyles}
             onChange={setMapStyleKey}
           />
-          <button type="button" className="view-code-button">
-            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-              <path
-                d="M5.5 3.5 1.75 8 5.5 12.5M10.5 3.5 14.25 8 10.5 12.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            View code
-          </button>
+          <ViewCodeButton />
         </div>
       </div>
 

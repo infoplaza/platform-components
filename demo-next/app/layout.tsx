@@ -3,16 +3,23 @@ import type { ReactNode } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import '@infoplaza/platform/styles.css'
 import './globals.css'
+import { AppShell } from '../components/layouts'
+import { TopNav } from '../components/navigation'
 
 export const metadata: Metadata = {
-  title: 'Map viewer · Infoplaza Platform',
+  title: {
+    default: 'Demo · Infoplaza Platform',
+    template: '%s · Infoplaza Platform',
+  },
   description: 'Next.js demo of @infoplaza/platform map components',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AppShell header={<TopNav />}>{children}</AppShell>
+      </body>
     </html>
   )
 }
