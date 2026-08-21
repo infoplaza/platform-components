@@ -2,6 +2,10 @@
 
 React components and providers for rendering Infoplaza weather layers on a MapLibre map.
 
+## Demo
+
+A hosted Next.js demo of the map viewer (BaseMap, weather layers, and HUD) is available at [https://platform-components.vercel.app/](https://platform-components.vercel.app/). The source lives in `demo-next/`.
+
 ## Install
 
 ```bash
@@ -77,7 +81,8 @@ URL (see [`modelsConfig`](#configuring-the-models-request)).
 
 ## Quick Start
 
-This example follows the same flow as `demo-next/app/map-demo.tsx`: wrap your map
+This example follows the same flow as the [live demo](https://platform-components.vercel.app/)
+(`demo-next/components/map/map-demo.tsx`): wrap your map
 with providers, compose layers, render an overlay, and mount the control HUD.
 Note there is **no** client-side models fetch — `Providers` handles it.
 
