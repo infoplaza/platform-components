@@ -46,17 +46,21 @@ export default function MapDemo() {
   const [mapStyleKey, setMapStyleKey] = useState('dark')
 
   return (
-    <section className="map-panel">
-      <div className="map-panel__toolbar">
-        <header className="map-panel__intro">
-          <p className="map-panel__eyebrow">Live demo</p>
-          <h1>Weather on the map</h1>
-          <p>
+    <section className="flex h-full min-h-0 flex-col gap-4 p-4 md:p-6">
+      <div className="flex flex-wrap items-end justify-between gap-5">
+        <header className="max-w-xl">
+          <p className="mb-1.5 text-2xs font-semibold uppercase tracking-widest text-primary">
+            Live demo
+          </p>
+          <h1 className="mb-1.5 text-2xl font-bold tracking-tight text-dark">
+            Weather on the map
+          </h1>
+          <p className="m-0 text-sm leading-relaxed text-dark/60">
             A live BaseMap with Infoplaza weather layers, overlay, and control HUD —
             the same composition you would drop into your own app.
           </p>
         </header>
-        <div className="map-panel__actions">
+        <div className="inline-flex shrink-0 items-center gap-3">
           <StylePicker
             value={mapStyleKey}
             options={mapStyles}
@@ -66,7 +70,7 @@ export default function MapDemo() {
         </div>
       </div>
 
-      <div className="map-panel__canvas ip-platform">
+      <div className="ip-platform min-h-70 flex-1 overflow-hidden rounded-2xl border border-dark/10 bg-dark-200">
         <ProvidersComponent
           weatherConfig={{
             model: 'optimal',
@@ -109,14 +113,14 @@ export default function MapDemo() {
         </ProvidersComponent>
       </div>
 
-      <footer className="map-panel__status">
+      <footer className="flex flex-wrap items-center gap-4 px-0.5 text-xs tabular-nums text-dark/60">
         <span>
           {formatCoord(viewState.latitude, true)}
           {'  '}
           {formatCoord(viewState.longitude, false)}
         </span>
         <span>Zoom {viewState.zoom.toFixed(1)}</span>
-        <span className="map-panel__status-source">@infoplaza/platform</span>
+        <span className="ml-auto">@infoplaza/platform</span>
       </footer>
     </section>
   )
