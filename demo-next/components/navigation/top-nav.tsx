@@ -8,24 +8,20 @@ export function TopNav() {
   const pathname = usePathname()
 
   return (
-    <div className="top-nav">
-      <Link className="top-nav__brand" href="/">
-        <span className="top-nav__mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-            <path
-              d="M4 16.5 12 6l8 10.5H4Z"
-              fill="currentColor"
-              opacity="0.35"
-            />
-            <path d="M6.5 19 12 11.5 17.5 19H6.5Z" fill="currentColor" />
-          </svg>
+    <div className="flex h-full items-center justify-between gap-4 px-3 md:px-6">
+      <Link className="inline-flex min-w-0 items-center gap-2.5 text-inherit no-underline" href="/">
+        <span
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary"
+          aria-hidden="true"
+        >
+          <img src="/logo.svg" alt="" className="h-5 w-5" />
         </span>
-        <span className="top-nav__titles">
-          <span className="top-nav__name">Infoplaza</span>
-          <span className="top-nav__product">Platform Components</span>
+        <span className="flex min-w-0 flex-col leading-tight">
+          <span className="text-sm font-semibold tracking-tight">Infoplaza</span>
+          <span className="hidden text-xs text-dark/60 sm:block">Platform Components</span>
         </span>
       </Link>
-      <nav className="top-nav__links" aria-label="Primary">
+      <nav className="inline-flex shrink-0 items-center gap-1" aria-label="Primary">
         {NAV_ITEMS.map((item) => {
           const isActive = isNavItemActive(item.href, pathname)
           return (
@@ -33,7 +29,9 @@ export function TopNav() {
               key={item.href}
               href={item.href}
               className={
-                isActive ? 'top-nav__link top-nav__link--active' : 'top-nav__link'
+                isActive
+                  ? 'rounded-md px-2.5 py-1.5 text-sm font-medium text-primary'
+                  : 'rounded-md px-2.5 py-1.5 text-sm font-medium text-dark/60 hover:text-primary'
               }
               aria-current={isActive ? 'page' : undefined}
             >

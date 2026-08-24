@@ -7,9 +7,9 @@ type AppShellProps = {
 
 export function AppShell({ header, children }: AppShellProps) {
   return (
-    <div className="app-shell">
-      <header className="app-shell__header">{header}</header>
-      <main className="app-shell__main">{children}</main>
+    <div className="grid h-full min-h-full grid-rows-[3.5rem_1fr]">
+      <header className="z-20 border-b border-dark/10 bg-white">{header}</header>
+      <main className="min-h-0 min-w-0 overflow-hidden">{children}</main>
     </div>
   )
 }
