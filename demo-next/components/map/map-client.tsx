@@ -9,13 +9,13 @@ const MapDemo = dynamic(() => import('./map-demo'), {
       <div className="flex flex-wrap items-end justify-between gap-5">
         <header className="max-w-xl">
           <p className="mb-1.5 text-2xs font-semibold uppercase tracking-widest text-primary">
-            ImWeather
+            I'm Weather
           </p>
           <h1 className="mb-1.5 text-2xl font-bold tracking-tight text-dark">
             Weather on the map
           </h1>
           <p className="m-0 text-sm leading-relaxed text-dark/60">
-            Loading MapLibre and weather layers…
+            Loading I'm Weather map components…
           </p>
         </header>
       </div>
