@@ -2,6 +2,8 @@ import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { Map } from 'react-map-gl/maplibre'
 import { MAP_STYLES } from '../../config/styles'
 import type { MapStyle } from '@/@types/map-style.types'
+import { useWeatherMap } from '@/src/providers/weather/weather'
+import type { ModelInfo } from '@/@types/weather.types'
 
 export type { MapStyle }
 
@@ -14,12 +16,6 @@ export type BaseMapStyle = {
   styles?: {
     default?: MapStyleVariant
     marine?: MapStyleVariant
-  }
-}
-
-export type BaseMapModelInfo = {
-  description?: {
-    category?: string
   }
 }
 
@@ -44,7 +40,6 @@ export type BaseMapProps = {
    * `mapStyles={[...MAP_STYLES, myCustomStyle]}`.
    */
   mapStyles?: MapStyle[]
-  modelInfo?: BaseMapModelInfo
 }
 
 const marineStyles = ['wave', 'ocean']
@@ -95,8 +90,8 @@ function getSelectedMapStyle(
   return mapStyles[0]
 }
 
-function getResolvedMapStyle(mapStyle?: BaseMapStyle, modelInfo?: BaseMapModelInfo) {
-  const category = modelInfo?.description?.category?.toLowerCase()
+function getResolvedMapStyle(mapStyle?: BaseMapStyle, modelInfo?: ModelInfo | null) {
+  const category = modelInfo?.category?.toLowerCase()
   const isMarineModel = category ? marineStyles.includes(category) : false
   const fallbackStyle = mapStyle?.styles?.default
 
@@ -116,8 +111,8 @@ export default function BaseMap({
   mapStyle,
   mapStyleKey,
   mapStyles = MAP_STYLES,
-  modelInfo,
 }: BaseMapProps) {
+  const { modelInfo } = useWeatherMap()
   const [device, setDevice] = useState<{ ready: boolean; isMobile: boolean }>({
     ready: false,
     isMobile: false,
@@ -126,6 +121,10 @@ export default function BaseMap({
   useIsomorphicLayoutEffect(() => {
     setDevice({ ready: true, isMobile: detectIosAndroidPhoneOrTablet() })
   }, [])
+
+  useEffect(() => {
+    console.log('modelInfo', modelInfo)
+  }, [modelInfo])
 
   const selectedMapStyle = getSelectedMapStyle(mapStyles, mapStyleKey, mapStyle)
   const resolvedMapStyle = getResolvedMapStyle(selectedMapStyle, modelInfo)
