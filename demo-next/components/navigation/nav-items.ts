@@ -1,8 +1,13 @@
 export const NAV_ITEMS = [
   {
     href: '/',
-    label: 'Demo',
+    label: 'Map',
     hint: 'BaseMap, weather layers and HUD',
+  },
+  {
+    href: '/timeseries',
+    label: 'Timeseries',
+    hint: 'Forecast table',
   },
   {
     href: '/documentation',

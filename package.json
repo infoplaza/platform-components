@@ -37,6 +37,10 @@
       "types": "./dist/layers/overlay.d.ts",
       "default": "./dist/layers/overlay.js"
     },
+    "./timeseries": {
+      "types": "./dist/timeseries/index.d.ts",
+      "default": "./dist/timeseries/index.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./styles.embed.css": "./dist/styles.embed.css"
   },
