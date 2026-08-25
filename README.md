@@ -281,7 +281,7 @@ Each one provides both a `default` and a `marine` variant.
 
 ### Marine auto-switching
 
-When you pass `modelInfo` to `BaseMap`, marine models (where
+`BaseMap` reads `modelInfo` from weather map context. Marine models (where
 `modelInfo.description.category` is `wave` or `ocean`) automatically use the
 style's `marine` variant; all other models use `default`. If a style has no
 `marine` variant, it falls back to `default`.
