@@ -1,6 +1,6 @@
 {
   "name": "@infoplaza/platform",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "",
   "main": "./dist/index.js",
   "style": "./dist/styles.css",
@@ -36,6 +36,10 @@
     "./layers/overlay": {
       "types": "./dist/layers/overlay.d.ts",
       "default": "./dist/layers/overlay.js"
+    },
+    "./timeseries": {
+      "types": "./dist/timeseries/index.d.ts",
+      "default": "./dist/timeseries/index.js"
     },
     "./styles.css": "./dist/styles.css",
     "./styles.embed.css": "./dist/styles.embed.css"
