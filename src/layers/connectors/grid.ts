@@ -173,6 +173,7 @@ export function GridLayerConnector(
         ...((layer.style === GridStyle.VALUE && layer.isLogScale) || (!layer.grayscale && legendConfig) ? { 
             legend: legendConfig ? getCachedLegend(legendConfig) : undefined,
         } : {}),
+        beforeId,
     })
 }
 

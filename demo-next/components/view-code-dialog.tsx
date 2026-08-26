@@ -2,12 +2,23 @@
 
 import { useEffect, useId, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { MAP_DEMO_FILENAME, MAP_DEMO_SOURCE } from './map-example'
 
 const actionButtonClass =
   'inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60'
 
-export function ViewCodeButton() {
+export type ViewCodeButtonProps = {
+  title: string
+  description?: string
+  filename: string
+  source: string
+}
+
+export function ViewCodeButton({
+  title,
+  description = 'Composition used by this demo',
+  filename,
+  source,
+}: ViewCodeButtonProps) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const titleId = useId()
@@ -36,7 +47,7 @@ export function ViewCodeButton() {
   }, [copied])
 
   async function copySource() {
-    await navigator.clipboard.writeText(MAP_DEMO_SOURCE)
+    await navigator.clipboard.writeText(source)
     setCopied(true)
   }
 
@@ -73,9 +84,9 @@ export function ViewCodeButton() {
                 <header className="flex shrink-0 items-start justify-between gap-4 p-4">
                   <div>
                     <h2 id={titleId} className="m-0 text-base font-semibold tracking-tight text-dark">
-                      Map code
+                      {title}
                     </h2>
-                    <p className="m-0 text-sm text-dark/60">Composition used by this demo</p>
+                    <p className="m-0 text-sm text-dark/60">{description}</p>
                   </div>
                   <div className="inline-flex shrink-0 items-center gap-2">
                     <button type="button" className={actionButtonClass} onClick={copySource}>
@@ -101,10 +112,10 @@ export function ViewCodeButton() {
                 </header>
                 <div className="mx-4 mb-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-dark/10 bg-cloud">
                   <div className="shrink-0 border-b border-dark/10 bg-white px-3.5 py-2 text-xs font-semibold text-dark/60">
-                    {MAP_DEMO_FILENAME}
+                    {filename}
                   </div>
                   <pre className="m-0 min-h-0 flex-1 overflow-auto p-3.5 font-mono text-xs leading-relaxed text-dark">
-                    <code>{MAP_DEMO_SOURCE}</code>
+                    <code>{source}</code>
                   </pre>
                 </div>
               </div>
