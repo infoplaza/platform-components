@@ -1,5 +1,9 @@
 import { formatDate, type SupportedLocale } from '@/src/utilities/date'
-import type { TimeseriesDirectionView } from './types'
+import type {
+  TimeseriesDirectionView,
+  TimeseriesModel,
+  TimeseriesRun,
+} from './types'
 
 const COMPASS = [
   'N',
@@ -121,4 +125,14 @@ export function formatPressureMeanSeaLevel(
     fixed = fixed.slice(1)
   }
   return fixed
+}
+
+export function latestRuntime(
+  models: TimeseriesModel[],
+  slug: string | undefined,
+): TimeseriesRun | undefined {
+  if (!slug) return undefined
+  const selected = models.find((item) => item.slug === slug)
+  if (!selected?.runtimes.length) return undefined
+  return Math.max(...selected.runtimes)
 }

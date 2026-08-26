@@ -1,29 +1,41 @@
 import { useMemo } from 'react'
 import { formatRun, type SupportedLocale } from '@/src/utilities/date'
+import { useTimeseriesContext } from './context'
 import TimeseriesPills from './pills'
 import type { TimeseriesModel, TimeseriesRun } from './types'
 import { toSupportedLocale } from './utils'
 
 export type TimeseriesToolbarProps = {
-  models: TimeseriesModel[]
-  model: string
-  onModelChange: (slug: string) => void
-  run: TimeseriesRun
-  onRunChange: (run: TimeseriesRun) => void
+  models?: TimeseriesModel[]
+  model?: string
+  onModelChange?: (slug: string) => void
+  run?: TimeseriesRun
+  onRunChange?: (run: TimeseriesRun) => void
   locale?: string
 }
 
 export default function TimeseriesToolbar({
-  models,
-  model,
-  onModelChange,
-  run,
-  onRunChange,
-  locale = 'en',
+  models: modelsProp,
+  model: modelProp,
+  onModelChange: onModelChangeProp,
+  run: runProp,
+  onRunChange: onRunChangeProp,
+  locale: localeProp,
 }: TimeseriesToolbarProps) {
+  const ctx = useTimeseriesContext()
+  const models = modelsProp ?? ctx?.models
+  const model = modelProp ?? ctx?.model
+  const onModelChange = onModelChangeProp ?? ctx?.onModelChange
+  const run = runProp ?? ctx?.run
+  const onRunChange = onRunChangeProp ?? ctx?.onRunChange
+  const locale = localeProp ?? ctx?.locale ?? 'en'
+
   const supportedLocale: SupportedLocale = toSupportedLocale(locale)
 
   const modelItems = useMemo(() => {
+    if (!models || model == null) {
+      return []
+    }
     return [...models]
       .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))
       .map((item) => ({
@@ -35,7 +47,7 @@ export default function TimeseriesToolbar({
       }))
   }, [model, models])
 
-  const selectedModel = models.find((item) => item.slug === model)
+  const selectedModel = models?.find((item) => item.slug === model)
   const runtimes = selectedModel?.runtimes ?? []
 
   const runItems = useMemo(() => {
@@ -57,6 +69,16 @@ export default function TimeseriesToolbar({
       })),
     ]
   }, [run, runtimes, supportedLocale])
+
+  if (
+    !models ||
+    model == null ||
+    !onModelChange ||
+    run === undefined ||
+    !onRunChange
+  ) {
+    return null
+  }
 
   return (
     <div className="ip:flex ip:items-center ip:justify-between ip:gap-2 ip:bg-white ip:px-2 ip:py-2 ip:dark:bg-dark ip:md:px-4">

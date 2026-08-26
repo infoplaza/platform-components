@@ -113,7 +113,14 @@ export type TimeseriesTableProps = {
   onDirectionViewChange?: (view: TimeseriesDirectionView) => void
 }
 
-export type TimeseriesForecastProps = {
+export type TimeseriesGetBlocksOptions = {
+  model: string
+  run: TimeseriesRun
+  elementGroup: string
+  models: TimeseriesModel[]
+}
+
+export type TimeseriesContextValue = {
   models: TimeseriesModel[]
   model: string
   onModelChange: (slug: string) => void
@@ -123,6 +130,34 @@ export type TimeseriesForecastProps = {
   elementGroup: string
   onElementGroupChange: (key: string) => void
   blocks: TimeseriesBlock[]
+  loading: boolean
+  locale: string
+  timezone: string | null
+  headerFormat?: string[]
+  timestamp: number | null
+  timestamps: number[]
+  onTimestampChange?: (timestamp: number) => void
+  scrollToCurrentTime?: boolean
+  views?: TimeseriesCellViewMap
+  getIconSrc?: (value: number | null) => string | null
+  directionView: TimeseriesDirectionView
+  onDirectionViewChange: (view: TimeseriesDirectionView) => void
+}
+
+export type TimeseriesProviderProps = {
+  models?: TimeseriesModel[]
+  model?: string
+  defaultModel?: string
+  onModelChange?: (slug: string) => void
+  run?: TimeseriesRun
+  defaultRun?: TimeseriesRun
+  onRunChange?: (run: TimeseriesRun) => void
+  elementGroups?: TimeseriesElementGroup[]
+  elementGroup?: string
+  defaultElementGroup?: string
+  onElementGroupChange?: (key: string) => void
+  blocks?: TimeseriesBlock[]
+  getBlocks?: (options: TimeseriesGetBlocksOptions) => TimeseriesBlock[]
   locale?: string
   timezone?: string | null
   headerFormat?: string[]
@@ -133,8 +168,20 @@ export type TimeseriesForecastProps = {
   views?: TimeseriesCellViewMap
   getIconSrc?: (value: number | null) => string | null
   directionView?: TimeseriesDirectionView
+  defaultDirectionView?: TimeseriesDirectionView
   onDirectionViewChange?: (view: TimeseriesDirectionView) => void
   loading?: boolean
-  className?: string
   children?: ReactNode
 }
+
+export type TimeseriesForecastProps = TimeseriesProviderProps & {
+  showToolbar?: boolean
+  showFooter?: boolean
+  className?: string
+}
+
+export type TimeseriesBuilderProps = {
+  children?: ReactNode
+}
+
+export type TimeseriesChartProps = Partial<TimeseriesTableProps>

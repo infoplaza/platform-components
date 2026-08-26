@@ -6,8 +6,9 @@ import { Providers as ProvidersComponent } from '@infoplaza/platform/providers'
 import MapEventsProvider from '@infoplaza/platform/events'
 import LayerComposer from '@infoplaza/platform/layers/composer'
 import Overlay from '@infoplaza/platform/layers/overlay'
+import { ViewCodeButton } from '../view-code-dialog'
+import { MAP_DEMO_FILENAME, MAP_DEMO_SOURCE } from './map-example'
 import { StylePicker } from './style-picker'
-import { ViewCodeButton } from './view-code-dialog'
 
 const customStyle = {
   key: 'demotiles',
@@ -66,7 +67,11 @@ export default function MapDemo() {
             options={mapStyles}
             onChange={setMapStyleKey}
           />
-          <ViewCodeButton />
+          <ViewCodeButton
+            title="Map code"
+            filename={MAP_DEMO_FILENAME}
+            source={MAP_DEMO_SOURCE}
+          />
         </div>
       </div>
 

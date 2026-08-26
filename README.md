@@ -1,10 +1,15 @@
 # @infoplaza/platform
 
-React components and providers for rendering Infoplaza weather layers on a MapLibre map.
+React components and providers for rendering Infoplaza weather layers on a MapLibre map, plus a portable timeseries forecast table.
 
 ## Demo
 
-A hosted Next.js demo of the map viewer (BaseMap, weather layers, and HUD) is available at [https://platform-components.vercel.app/](https://platform-components.vercel.app/). The source lives in `demo-next/`.
+A hosted Next.js demo lives at [https://platform-components.vercel.app/](https://platform-components.vercel.app/). The source is in `demo-next/`.
+
+| Page | URL |
+| --- | --- |
+| Map (BaseMap, weather layers, HUD) | [https://platform-components.vercel.app/](https://platform-components.vercel.app/) |
+| Timeseries forecast table | [https://platform-components.vercel.app/timeseries](https://platform-components.vercel.app/timeseries) |
 
 ## Install
 
@@ -208,6 +213,7 @@ function ModelCount() {
 - `Overlay` (`@infoplaza/platform`): mounts Deck.gl layers on top of the map.
 - `MapControlHud` (`@infoplaza/platform/components`): built-in map controls for model/element/time interactions.
 - `MapEventsProvider` (`@infoplaza/platform/events`): bridges map interaction events into the layer pipeline.
+- Timeseries (`@infoplaza/platform/timeseries`): packaged `TimeseriesForecast` or compose `TimeseriesProvider`, `TimeseriesToolbar`, `TimeseriesBuilder`, `TimeseriesChart`, and `TimeseriesFooter`. See the [timeseries demo](https://platform-components.vercel.app/timeseries) for packaged, chart-only, and composed examples.
 
 ## Map styles
 
@@ -325,6 +331,7 @@ const mapStyles = [...MAP_STYLES, customStyle]
 | `@infoplaza/platform/providers` | `Providers`, `useModels`, `useProviders` |
 | `@infoplaza/platform/auth` | `PlatformAuth` (server-side route handler) |
 | `@infoplaza/platform/events` | `MapEventsProvider` |
+| `@infoplaza/platform/timeseries` | `TimeseriesForecast`, `TimeseriesProvider`, toolbar / builder / chart / footer |
 | `@infoplaza/platform/layers/composer` · `/layers/overlay` | Individual layer building blocks |
 | `@infoplaza/platform/styles.css` | Full stylesheet (includes Tailwind preflight) — for standalone apps |
 | `@infoplaza/platform/styles.embed.css` | Utilities only, **no preflight** — for host apps that already run Tailwind / have global styles |
