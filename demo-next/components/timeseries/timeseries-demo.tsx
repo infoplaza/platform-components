@@ -57,7 +57,7 @@ function ExampleSection({
         </div>
         <ViewCodeButton title={`${title} code`} filename={filename} source={source} />
       </div>
-      <div className="ip-platform min-h-70 overflow-auto rounded-2xl border border-cloud/10 bg-white">
+      <div className="ip-platform  overflow-auto rounded-2xl border border-cloud/10 bg-white">
         {children}
       </div>
     </article>

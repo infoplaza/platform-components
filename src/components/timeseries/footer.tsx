@@ -48,7 +48,7 @@ export default function TimeseriesFooter({
   }
 
   return (
-    <div className="ip:flex ip:bg-white/90 ip:px-2 ip:py-2 ip:backdrop-blur-xl ip:dark:bg-dark ip:md:px-4">
+    <div className="ip:flex ip:bg-white/90 ip:px-2 ip:py-2 ip:backdrop-blur-xl ip:dark:bg-dark">
       <TimeseriesPills
         items={items}
         onChange={onElementGroupChange}

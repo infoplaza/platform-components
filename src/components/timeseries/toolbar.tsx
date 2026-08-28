@@ -81,7 +81,7 @@ export default function TimeseriesToolbar({
   }
 
   return (
-    <div className="ip:flex ip:items-center ip:justify-between ip:gap-2 ip:bg-white ip:px-2 ip:py-2 ip:dark:bg-dark ip:md:px-4">
+    <div className="ip:flex ip:items-center ip:justify-between ip:gap-2 ip:bg-white ip:px-2 ip:py-2 ip:dark:bg-dark">
       <TimeseriesPills
         items={modelItems}
         onChange={onModelChange}

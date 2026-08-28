@@ -200,7 +200,7 @@ export default function TimeseriesTable({
         >
           <div
             style={{ height: `${Math.max(headerRows.length, 1) * 1.5}rem` }}
-            className="ip:flex ip:flex-col ip:place-content-start ip:items-start ip:p-1 ip:text-xs ip:font-bold ip:uppercase ip:dark:text-gray-300"
+            className="ip:flex ip:flex-col ip:place-content-start ip:items-start ip:p-1 ip:text-xs ip:font-bold ip:uppercase ip:dark:text-gray-300 ip:px-2"
           >
             <div className="ip:min-w-56 ip:overflow-hidden ip:truncate">
               {title ?? ''}
