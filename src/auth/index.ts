@@ -14,13 +14,41 @@ export type {
 } from './types'
 import { proxyUpstream } from './proxy'
 import { transformModelsResponse } from './dto/models-transform'
+import { transformTimeseriesModelsResponse } from './dto/timeseries-models-transform'
 
 export { proxyUpstream } from './proxy'
 
 const DEFAULT_BASE_PATH = '/api/platform'
 const DEFAULT_BASE_URL = 'https://api.infoplaza.com/weather/v1'
+const DEFAULT_TIMESERIES_BASE_URL =
+  'https://api.infoplaza.dev/v1/weather/timeseries'
 // Upstream expects the key as `?token=<apiKey>` rather than an auth header.
 const DEFAULT_API_KEY_QUERY_PARAM = 'token'
+
+function resolveTimeseriesBaseUrl(
+  baseUrl: string | undefined,
+  override?: string,
+): string {
+  if (override) {
+    return override.replace(/\/+$/, '')
+  }
+  const base = (baseUrl ?? '').replace(/\/+$/, '')
+  if (base.includes('/weather/maps')) {
+    return base.replace('/weather/maps', '/weather/timeseries')
+  }
+  return DEFAULT_TIMESERIES_BASE_URL
+}
+
+function parseCoordinate(
+  params: URLSearchParams,
+  key: 'lat' | 'lon',
+): number | null {
+  if (!params.has(key)) {
+    return null
+  }
+  const value = Number(params.get(key))
+  return Number.isFinite(value) ? value : null
+}
 
 /** Resolves the `apiEnv` query parameter to a supported environment. */
 function resolveApiEnv(req: PlatformRequest): 'prod' | 'test' {
@@ -70,6 +98,38 @@ async function dispatch(
       // from the FORECAST layer configuration.
       await proxyUpstream(req, res, options, 'models', (data) =>
         transformModelsResponse(data),
+      )
+      return
+    }
+    case 'timeseries-models': {
+      const [pathname, queryString] = (req.url ?? '').split('?')
+      const params = new URLSearchParams(queryString)
+      const lat = parseCoordinate(params, 'lat')
+      const lon = parseCoordinate(params, 'lon')
+      if (lat == null || lon == null) {
+        res.status(400).json({ error: 'lat and lon are required' })
+        return
+      }
+
+      const filteredReq: PlatformRequest = {
+        ...req,
+        url: `${pathname}?lat=${lat}&lon=${lon}`,
+      }
+      const timeseriesOptions: PlatformAuthOptions = {
+        ...options,
+        baseUrl: resolveTimeseriesBaseUrl(
+          options.baseUrl,
+          options.timeseriesBaseUrl,
+        ),
+        apiKeyQueryParam: 'api_key',
+      }
+
+      await proxyUpstream(
+        filteredReq,
+        res,
+        timeseriesOptions,
+        'models',
+        transformTimeseriesModelsResponse,
       )
       return
     }

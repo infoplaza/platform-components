@@ -65,20 +65,43 @@ export type TimeseriesCellViewMap = Partial<
   Record<TimeseriesCellView, ComponentType<TimeseriesCellComponentProps>>
 >
 
+export type TimeseriesModelElement = {
+  id: string
+  name?: string
+  units?: string[]
+  levels?: string[]
+  unitDefault?: string
+}
+
 export type TimeseriesModel = {
   slug: string
   title: string
-  runtimes: number[]
+  runtimes: readonly number[]
   available?: boolean
   isBeta?: boolean
   sort?: number
+  type?: string
+  region?: string
+  category?: string
+  elements?: readonly TimeseriesModelElement[]
+}
+
+export type TimeseriesElementItem = {
+  slug: string
+  title: string
+  element?: string
+  level?: string
+  unit?: string
+  unitKey?: string
+  view?: TimeseriesCellView
+  decimals?: number
 }
 
 export type TimeseriesElementGroup = {
   key: string
   title: string
   icon?: ComponentType<{ className?: string; style?: CSSProperties }>
-  items?: Array<{ slug: string; title: string }>
+  items?: TimeseriesElementItem[]
 }
 
 export type TimeseriesRun = number | 'all'
@@ -117,11 +140,12 @@ export type TimeseriesGetBlocksOptions = {
   model: string
   run: TimeseriesRun
   elementGroup: string
-  models: TimeseriesModel[]
+  models: readonly TimeseriesModel[]
+  elementGroups: TimeseriesElementGroup[]
 }
 
 export type TimeseriesContextValue = {
-  models: TimeseriesModel[]
+  models: readonly TimeseriesModel[]
   model: string
   onModelChange: (slug: string) => void
   run: TimeseriesRun
@@ -131,6 +155,7 @@ export type TimeseriesContextValue = {
   onElementGroupChange: (key: string) => void
   blocks: TimeseriesBlock[]
   loading: boolean
+  error: Error | null
   locale: string
   timezone: string | null
   headerFormat?: string[]
@@ -144,8 +169,20 @@ export type TimeseriesContextValue = {
   onDirectionViewChange: (view: TimeseriesDirectionView) => void
 }
 
+export type TimeseriesModelsContextValue = {
+  models: readonly TimeseriesModel[]
+  loading: boolean
+  error: Error | null
+}
+
+export type TimeseriesModelsProviderProps = {
+  lat: number
+  lon: number
+  basePath?: string
+  children?: ReactNode
+}
+
 export type TimeseriesProviderProps = {
-  models?: TimeseriesModel[]
   model?: string
   defaultModel?: string
   onModelChange?: (slug: string) => void
@@ -170,11 +207,13 @@ export type TimeseriesProviderProps = {
   directionView?: TimeseriesDirectionView
   defaultDirectionView?: TimeseriesDirectionView
   onDirectionViewChange?: (view: TimeseriesDirectionView) => void
-  loading?: boolean
   children?: ReactNode
 }
 
 export type TimeseriesForecastProps = TimeseriesProviderProps & {
+  lat: number
+  lon: number
+  basePath?: string
   showToolbar?: boolean
   showFooter?: boolean
   className?: string

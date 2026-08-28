@@ -2,11 +2,10 @@ import { useMemo } from 'react'
 import { formatRun, type SupportedLocale } from '@/src/utilities/date'
 import { useTimeseriesContext } from './context'
 import TimeseriesPills from './pills'
-import type { TimeseriesModel, TimeseriesRun } from './types'
+import type { TimeseriesRun } from './types'
 import { toSupportedLocale } from './utils'
 
 export type TimeseriesToolbarProps = {
-  models?: TimeseriesModel[]
   model?: string
   onModelChange?: (slug: string) => void
   run?: TimeseriesRun
@@ -15,7 +14,6 @@ export type TimeseriesToolbarProps = {
 }
 
 export default function TimeseriesToolbar({
-  models: modelsProp,
   model: modelProp,
   onModelChange: onModelChangeProp,
   run: runProp,
@@ -23,7 +21,7 @@ export default function TimeseriesToolbar({
   locale: localeProp,
 }: TimeseriesToolbarProps) {
   const ctx = useTimeseriesContext()
-  const models = modelsProp ?? ctx?.models
+  const models = ctx?.models
   const model = modelProp ?? ctx?.model
   const onModelChange = onModelChangeProp ?? ctx?.onModelChange
   const run = runProp ?? ctx?.run
