@@ -4,12 +4,11 @@ export const PACKAGED_SOURCE = `'use client'
 
 import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
 
-export default function PackagedTimeseries({ getBlocks }) {
+export default function PackagedTimeseries() {
   return (
     <TimeseriesForecast
       lat={52.3676}
       lon={4.9041}
-      getBlocks={getBlocks}
       locale="en"
       headerFormat={['EEEEEE d MMM', 'HH']}
       scrollToCurrentTime
@@ -24,12 +23,11 @@ export const CHART_ONLY_SOURCE = `'use client'
 
 import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
 
-export default function ChartOnlyTimeseries({ getBlocks }) {
+export default function ChartOnlyTimeseries() {
   return (
     <TimeseriesForecast
       lat={52.3676}
       lon={4.9041}
-      getBlocks={getBlocks}
       locale="en"
       headerFormat={['EEEEEE d MMM', 'HH']}
       scrollToCurrentTime
@@ -53,11 +51,10 @@ import {
   TimeseriesToolbar,
 } from '@infoplaza/platform/timeseries'
 
-export default function ComposedTimeseries({ getBlocks }) {
+export default function ComposedTimeseries() {
   return (
     <TimeseriesModelsProvider lat={52.3676} lon={4.9041}>
       <TimeseriesProvider
-        getBlocks={getBlocks}
         locale="en"
         headerFormat={['EEEEEE d MMM', 'HH']}
         scrollToCurrentTime

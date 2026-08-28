@@ -15,6 +15,7 @@ export type {
 import { proxyUpstream } from './proxy'
 import { transformModelsResponse } from './dto/models-transform'
 import { transformTimeseriesModelsResponse } from './dto/timeseries-models-transform'
+import { transformTimeseriesPointForecastResponse } from './dto/timeseries-point-forecast-transform'
 
 export { proxyUpstream } from './proxy'
 
@@ -22,8 +23,20 @@ const DEFAULT_BASE_PATH = '/api/platform'
 const DEFAULT_BASE_URL = 'https://api.infoplaza.com/weather/v1'
 const DEFAULT_TIMESERIES_BASE_URL =
   'https://api.infoplaza.dev/v1/weather/timeseries'
+const DEFAULT_MAPS_BASE_URL = 'https://api.infoplaza.dev/v1/weather/maps'
 // Upstream expects the key as `?token=<apiKey>` rather than an auth header.
 const DEFAULT_API_KEY_QUERY_PARAM = 'token'
+
+const POINT_FORECAST_QUERY_KEYS = [
+  'lat',
+  'lon',
+  'model',
+  'elements',
+  'levels',
+  'runtime',
+  'units',
+  'members',
+] as const
 
 function resolveTimeseriesBaseUrl(
   baseUrl: string | undefined,
@@ -37,6 +50,35 @@ function resolveTimeseriesBaseUrl(
     return base.replace('/weather/maps', '/weather/timeseries')
   }
   return DEFAULT_TIMESERIES_BASE_URL
+}
+
+function resolveMapsBaseUrl(baseUrl: string | undefined): string {
+  const base = (baseUrl ?? '').replace(/\/+$/, '')
+  if (base.includes('/weather/timeseries')) {
+    return base.replace('/weather/timeseries', '/weather/maps')
+  }
+  if (base.includes('/weather/maps')) {
+    return base
+  }
+  return DEFAULT_MAPS_BASE_URL
+}
+
+function requireParam(params: URLSearchParams, key: string): string | null {
+  const value = params.get(key)?.trim() ?? ''
+  return value ? value : null
+}
+
+function timeseriesAuthOptions(
+  options: PlatformAuthOptions,
+): PlatformAuthOptions {
+  return {
+    ...options,
+    baseUrl: resolveTimeseriesBaseUrl(
+      options.baseUrl,
+      options.timeseriesBaseUrl,
+    ),
+    apiKeyQueryParam: 'api_key',
+  }
 }
 
 function parseCoordinate(
@@ -115,21 +157,58 @@ async function dispatch(
         ...req,
         url: `${pathname}?lat=${lat}&lon=${lon}`,
       }
-      const timeseriesOptions: PlatformAuthOptions = {
-        ...options,
-        baseUrl: resolveTimeseriesBaseUrl(
-          options.baseUrl,
-          options.timeseriesBaseUrl,
-        ),
-        apiKeyQueryParam: 'api_key',
+
+      await proxyUpstream(
+        filteredReq,
+        res,
+        timeseriesAuthOptions(options),
+        'models',
+        transformTimeseriesModelsResponse,
+      )
+      return
+    }
+    case 'timeseries-point-forecast': {
+      const [pathname, queryString] = (req.url ?? '').split('?')
+      const params = new URLSearchParams(queryString)
+      const lat = parseCoordinate(params, 'lat')
+      const lon = parseCoordinate(params, 'lon')
+      const model = requireParam(params, 'model')
+      const elements = requireParam(params, 'elements')
+      const levels = requireParam(params, 'levels')
+      if (lat == null || lon == null || !model || !elements || !levels) {
+        res.status(400).json({
+          error: 'lat, lon, model, elements, and levels are required',
+        })
+        return
+      }
+
+      const forwarded = new URLSearchParams()
+      for (const key of POINT_FORECAST_QUERY_KEYS) {
+        const value = params.get(key)
+        if (value != null && value !== '') {
+          forwarded.set(key, value)
+        }
+      }
+
+      const filteredReq: PlatformRequest = {
+        ...req,
+        url: `${pathname}?${forwarded.toString()}`,
       }
 
       await proxyUpstream(
         filteredReq,
         res,
-        timeseriesOptions,
-        'models',
-        transformTimeseriesModelsResponse,
+        timeseriesAuthOptions(options),
+        'point',
+        (data) =>
+          transformTimeseriesPointForecastResponse(data, {
+            mapsBaseUrl: resolveMapsBaseUrl(options.baseUrl),
+            apiKey: options.apiKey,
+            lat,
+            lon,
+            model,
+            runtime: params.get('runtime') ?? undefined,
+          }),
       )
       return
     }

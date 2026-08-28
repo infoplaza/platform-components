@@ -173,6 +173,9 @@ export type TimeseriesModelsContextValue = {
   models: readonly TimeseriesModel[]
   loading: boolean
   error: Error | null
+  lat: number
+  lon: number
+  basePath: string
 }
 
 export type TimeseriesModelsProviderProps = {

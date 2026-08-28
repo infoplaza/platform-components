@@ -8,7 +8,7 @@ alwaysApply: false
 
 ## Goal
 
-Ship a **portable forecast table** that other platforms can import without the map stack, ImWeather fetch layer, or app chrome. The models **catalog** is loaded through PlatformAuth. Chart rows stay host-owned.
+Ship a **portable forecast table** that other platforms can import without the map stack, ImWeather fetch layer, or app chrome. The models **catalog** and point-forecast **rows** are loaded through PlatformAuth. Hosts may still override rows with `blocks` / `getBlocks`.
 
 It is a **sibling product** to the map (`src/components/map`). Own folder, own package export, own demo route (`/timeseries`). Do not nest it under map or re-export it from `src/components/index.ts`.
 
@@ -18,9 +18,9 @@ A compound API. The models list is not host-supplied.
 
 | Piece | Role |
 |---|---|
-| `TimeseriesModelsProvider` | Required `lat`/`lon`. Fetches `GET /api/platform/timeseries-models`. Read-only `{ models, loading, error }` — no setter. |
+| `TimeseriesModelsProvider` | Required `lat`/`lon`. Fetches `GET /api/platform/timeseries-models`. Read-only `{ models, loading, error, lat, lon, basePath }` — no setter. |
 | `TimeseriesForecast` | Packaged: ModelsProvider + Provider + optional Toolbar + Builder/Chart + optional Footer. Requires `lat`/`lon`. |
-| `TimeseriesProvider` | Holds selection, blocks, display settings, direction view. Reads the catalog from `TimeseriesModelsProvider`. No `models` prop. |
+| `TimeseriesProvider` | Holds selection, blocks, display settings, direction view. Reads the catalog from `TimeseriesModelsProvider`. Fetches `GET /api/platform/timeseries-point-forecast` when `blocks` / `getBlocks` are omitted. No `models` prop. |
 | `TimeseriesToolbar` | Model + run pills (catalog only) |
 | `TimeseriesBuilder` | Presentational: loading skeleton, `ScrollSync`, one block context per `TimeseriesBlock` |
 | `TimeseriesChart` | Reads the current block (or explicit table props) and renders `TimeseriesTable` |
@@ -33,13 +33,12 @@ Built-in cell views: `VALUE`, `VALUE_ROUND`, `DIRECTION`, `PRECIPITATION_TYPE`, 
 
 Import only from `@infoplaza/platform/timeseries`. Wrap host UI in `.ip-platform` and use `ip:` utilities.
 
-**Packaged** — default chrome on; hide with flags. `lat` and `lon` are required:
+**Packaged** — default chrome on; hide with flags. `lat` and `lon` are required. Chart rows load from the point-forecast endpoint unless `blocks` / `getBlocks` is passed:
 
 ```tsx
 <TimeseriesForecast
   lat={52.3676}
   lon={4.9041}
-  blocks={blocks}           // or getBlocks
   showToolbar={false}       // default true
   showFooter={false}       // default true
 />
@@ -49,7 +48,7 @@ Import only from `@infoplaza/platform/timeseries`. Wrap host UI in `.ip-platform
 
 ```tsx
 <TimeseriesModelsProvider lat={52.3676} lon={4.9041}>
-  <TimeseriesProvider getBlocks={getBlocks}>
+  <TimeseriesProvider>
     <TimeseriesToolbar />
     <TimeseriesBuilder>
       <TimeseriesChart />
@@ -59,19 +58,19 @@ Import only from `@infoplaza/platform/timeseries`. Wrap host UI in `.ip-platform
 </TimeseriesModelsProvider>
 ```
 
-Selection is hybrid: `model` + `onModelChange` (controlled) or `defaultModel` / omit (provider-owned). Same for `run`, `elementGroup`, `directionView`. Unknown slugs/runtimes are clamped to the fetched catalog. If `blocks` is passed it wins; otherwise `getBlocks({ model, run, elementGroup, models, elementGroups })` receives the catalog. `elementGroups` defaults to `DEFAULT_TIMESERIES_ELEMENT_GROUPS`.
+Selection is hybrid: `model` + `onModelChange` (controlled) or `defaultModel` / omit (provider-owned). Same for `run`, `elementGroup`, `directionView`. Unknown slugs/runtimes are clamped to the fetched catalog. If `blocks` is passed it wins; otherwise `getBlocks({ model, run, elementGroup, models, elementGroups })` is used when provided; otherwise the Provider fetches point-forecast rows. `elementGroups` defaults to `DEFAULT_TIMESERIES_ELEMENT_GROUPS`.
 
 Demo patterns live in `demo-next/components/timeseries/` (packaged, chart-only, composed). Prefer updating those examples over inventing a fourth usage mode.
 
 ## Rules
 
 - **Catalog is API-only.** Do not pass a `models` array into Provider or Forecast. `TimeseriesModelsProvider` is the only writer.
-- **Host supplies chart rows.** Shape `TimeseriesBlock[]` (rows with `timestamp`, `value`, `im_color`, `im_textcolor`). Do not import ImWeather `TIMESERIES` config, BFF routes, or grid APIs into this package.
-- **Builder does not fetch.** It maps context `blocks` onto Chart. Forecast point-fetch, land-cover filters, compare, ensemble members, custom elements, and run expansion stay in the host.
-- **`run === 'all'`:** the host (or `getBlocks`) returns one block per runtime. The library does not expand runs.
+- **Provider loads chart rows by default.** Shape `TimeseriesBlock[]` (rows with `timestamp`, `value`, `im_color`, `im_textcolor`). `blocks` / `getBlocks` remain a host override. Do not import ImWeather `TIMESERIES` config, BFF routes, or grid APIs into this package.
+- **Builder does not fetch.** It maps context `blocks` onto Chart. The Provider fetches point forecast. Land-cover filters, compare, ensemble members, and custom elements stay in the host.
+- **`run === 'all'`:** the Provider fetches one point-forecast request per catalog runtime and returns one block per runtime. A host `getBlocks` may still return that shape itself.
 - **Toolbar / Footer** resolve `props ?? context` and return `null` if neither exists — do not throw. `useTimeseries()` throws outside the provider; `useTimeseriesContext()` is nullable for standalone pieces. `useTimeseriesModels()` throws outside `TimeseriesModelsProvider`.
 - **ICON** cells take `getIconSrc(value)` from the host. Do not bundle weather icon assets.
-- **Keep map and timeseries separate.** No timeseries in the map barrel; no map HUD/Deck.gl in timeseries. Toolbar/footer use timeseries pills, not map controls. Coordinates live on `TimeseriesModelsProvider` (and packaged Forecast), not on `TimeseriesProvider`.
+- **Keep map and timeseries separate.** No timeseries in the map barrel; no map HUD/Deck.gl in timeseries. Toolbar/footer use timeseries pills, not map controls. Coordinates live on `TimeseriesModelsProvider` (and packaged Forecast), not as props on `TimeseriesProvider`.
 - **Stay presentational for the table.** No next-intl, next-auth, `#main-header` sticky offsets, react-tooltip, or paywall/compare chrome. Titles and group labels are already-resolved strings. Locale is for date headers (`en`/`nl`/`de`/`it`/`es`/`fr`).
 - **Direction view** is shared across stacked tables via provider state (click-to-cycle arrow / degrees / compass). Compass labels stay English (`N`, `NE`, …).
-- **Out of scope until the UI contract is stable:** live fetch of chart/forecast rows, switching ImWeather onto this package, compare / element / custom / ensemble views.
+- **Out of scope:** switching ImWeather onto this package, compare / element / custom / ensemble views.

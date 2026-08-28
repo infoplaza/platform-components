@@ -34,7 +34,8 @@ handler once so this endpoint exists — without it the models request (and
 therefore the weather layers) will not load.
 
 The handler is NextAuth-style: mount it once on a catch-all route and every
-platform endpoint (e.g. `/api/platform/models`, `/api/platform/timeseries-models`)
+platform endpoint (e.g. `/api/platform/models`, `/api/platform/timeseries-models`,
+`/api/platform/timeseries-point-forecast`)
 is served automatically. Your API key stays server-side; the browser only ever
 talks to `/api/platform/*`.
 
@@ -73,7 +74,7 @@ Only `apiKey` is required. The rest are optional:
 | `baseUrl` | `'https://api.infoplaza.com/weather/v1'` | Upstream API that requests are proxied to. |
 | `apiKeyQueryParam` | `'token'` | Query param the key is sent as for map `/models`. Timeseries models use `api_key`. Set to `''` to use header auth instead. |
 | `basePath` | `'/api/platform'` | Public path this handler is mounted on. |
-| `timeseriesBaseUrl` | derived from `baseUrl` | Upstream for `GET /api/platform/timeseries-models`. If `baseUrl` contains `/weather/maps`, it is swapped to `/weather/timeseries`. |
+| `timeseriesBaseUrl` | derived from `baseUrl` | Upstream for timeseries routes (`timeseries-models`, `timeseries-point-forecast`). If `baseUrl` contains `/weather/maps`, it is swapped to `/weather/timeseries`. |
 
 ### Environment variables
 
@@ -204,10 +205,13 @@ Timeseries does **not** accept a `models` array. `TimeseriesModelsProvider`
 (or packaged `TimeseriesForecast`) requires `lat` and `lon` and loads
 `GET /api/platform/timeseries-models?lat=&lon=`. The catalog is read-only.
 
+Chart rows load from `GET /api/platform/timeseries-point-forecast` unless the
+host passes `blocks` or `getBlocks`.
+
 ```tsx
 import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
 
-<TimeseriesForecast lat={52.3676} lon={4.9041} getBlocks={getBlocks} />
+<TimeseriesForecast lat={52.3676} lon={4.9041} />
 ```
 
 ## What You Need
@@ -227,7 +231,7 @@ import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
 - `Overlay` (`@infoplaza/platform`): mounts Deck.gl layers on top of the map.
 - `MapControlHud` (`@infoplaza/platform/components`): built-in map controls for model/element/time interactions.
 - `MapEventsProvider` (`@infoplaza/platform/events`): bridges map interaction events into the layer pipeline.
-- Timeseries (`@infoplaza/platform/timeseries`): `TimeseriesModelsProvider` loads the location-filtered catalog; packaged `TimeseriesForecast` (requires `lat`/`lon`) or compose Provider, Toolbar, Builder, Chart, and Footer. See the [timeseries demo](https://platform-components.vercel.app/timeseries).
+- Timeseries (`@infoplaza/platform/timeseries`): `TimeseriesModelsProvider` loads the location-filtered catalog; `TimeseriesProvider` loads point-forecast rows by default. Packaged `TimeseriesForecast` (requires `lat`/`lon`) or compose Provider, Toolbar, Builder, Chart, and Footer. See the [timeseries demo](https://platform-components.vercel.app/timeseries).
 
 ## Map styles
 

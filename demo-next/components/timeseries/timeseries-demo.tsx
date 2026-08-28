@@ -9,7 +9,7 @@ import {
   TimeseriesModelsProvider,
   TimeseriesProvider,
   TimeseriesToolbar,
-  useTimeseriesModels,
+  useTimeseries,
 } from '@infoplaza/platform/timeseries'
 import { ViewCodeButton } from '../view-code-dialog'
 import {
@@ -20,7 +20,7 @@ import {
   PACKAGED_FILENAME,
   PACKAGED_SOURCE,
 } from './examples'
-import { AMSTERDAM, getTimeseriesBlocks } from './fixtures'
+import { AMSTERDAM } from './fixtures'
 
 function ExampleSection({
   title,
@@ -60,7 +60,6 @@ function PackagedExample() {
     <TimeseriesForecast
       lat={AMSTERDAM.lat}
       lon={AMSTERDAM.lon}
-      getBlocks={getTimeseriesBlocks}
       locale="en"
       timezone={null}
       headerFormat={['EEEEEE d MMM', 'HH']}
@@ -74,7 +73,6 @@ function ChartOnlyExample() {
     <TimeseriesForecast
       lat={AMSTERDAM.lat}
       lon={AMSTERDAM.lon}
-      getBlocks={getTimeseriesBlocks}
       locale="en"
       timezone={null}
       headerFormat={['EEEEEE d MMM', 'HH']}
@@ -85,31 +83,36 @@ function ChartOnlyExample() {
   )
 }
 
-function ComposedInner() {
-  const { error } = useTimeseriesModels()
+function ComposedBody() {
+  const { error } = useTimeseries()
 
   return (
+    <div className="flex h-full min-h-0 w-full flex-col bg-white dark:bg-dark/90">
+      {error ? (
+        <div className="px-3 py-2 text-xs text-red-600 dark:text-red-400">
+          {error.message}
+        </div>
+      ) : null}
+      <TimeseriesToolbar />
+      <div className="min-h-0 flex-1 overflow-auto">
+        <TimeseriesBuilder>
+          <TimeseriesChart />
+        </TimeseriesBuilder>
+      </div>
+      <TimeseriesFooter />
+    </div>
+  )
+}
+
+function ComposedInner() {
+  return (
     <TimeseriesProvider
-      getBlocks={getTimeseriesBlocks}
       locale="en"
       timezone={null}
       headerFormat={['EEEEEE d MMM', 'HH']}
       scrollToCurrentTime
     >
-      <div className="flex h-full min-h-0 w-full flex-col bg-white dark:bg-dark/90">
-        {error ? (
-          <div className="px-3 py-2 text-xs text-red-600 dark:text-red-400">
-            {error.message}
-          </div>
-        ) : null}
-        <TimeseriesToolbar />
-        <div className="min-h-0 flex-1 overflow-auto">
-          <TimeseriesBuilder>
-            <TimeseriesChart />
-          </TimeseriesBuilder>
-        </div>
-        <TimeseriesFooter />
-      </div>
+      <ComposedBody />
     </TimeseriesProvider>
   )
 }
@@ -136,7 +139,7 @@ export default function TimeseriesDemo() {
           <p className="m-0 text-sm leading-relaxed text-dark/60">
             Use the packaged forecast, hide the toolbar and footer, or compose
             ModelsProvider, Provider, Toolbar, Builder, Chart, and Footer.
-            The models catalog is loaded for Amsterdam.
+            Models and chart rows are loaded for Amsterdam.
           </p>
         </header>
 

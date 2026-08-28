@@ -75,7 +75,8 @@ export interface PlatformAuthOptions {
    */
   apiKeyQueryParam?: string
   /**
-   * Upstream base for `GET /api/platform/timeseries-models`.
+   * Upstream base for timeseries routes (`GET /api/platform/timeseries-models`,
+   * `GET /api/platform/timeseries-point-forecast`).
    * When omitted, `/weather/maps` on `baseUrl` is swapped to `/weather/timeseries`,
    * otherwise `https://api.infoplaza.dev/v1/weather/timeseries`.
    */

@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -16,6 +17,7 @@ import type {
 } from './types'
 import { DEFAULT_TIMESERIES_ELEMENT_GROUPS } from './defaults'
 import { useTimeseriesModels } from './models'
+import { fetchTimeseriesBlocks } from './point-forecast'
 import { DEFAULT_DIRECTION_VIEW, latestRuntime } from './utils'
 
 const TimeseriesContext = createContext<TimeseriesContextValue | null>(null)
@@ -91,10 +93,14 @@ export function TimeseriesProvider({
 }: TimeseriesProviderProps) {
   const {
     models,
-    loading,
-    error,
+    loading: catalogLoading,
+    error: catalogError,
+    lat,
+    lon,
+    basePath,
   } = useTimeseriesModels()
   const elementGroups = elementGroupsProp ?? DEFAULT_TIMESERIES_ELEMENT_GROUPS
+  const hostOwned = blocksProp !== undefined || Boolean(getBlocks)
 
   const modelControlled = modelProp !== undefined
   const runControlled = runProp !== undefined
@@ -188,6 +194,79 @@ export function TimeseriesProvider({
     [directionControlled, onDirectionViewChangeProp],
   )
 
+  const [forecastBlocks, setForecastBlocks] = useState<TimeseriesBlock[]>([])
+  const [forecastLoading, setForecastLoading] = useState(() => !hostOwned)
+  const [forecastError, setForecastError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (hostOwned) {
+      return
+    }
+
+    if (catalogLoading) {
+      return
+    }
+
+    const selected = models.find((item) => item.slug === model)
+    const group =
+      elementGroups.find((entry) => entry.key === elementGroup) ??
+      elementGroups[0]
+
+    if (
+      !selected ||
+      !group ||
+      !model ||
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lon)
+    ) {
+      setForecastBlocks([])
+      setForecastLoading(false)
+      setForecastError(null)
+      return
+    }
+
+    const controller = new AbortController()
+    setForecastLoading(true)
+    setForecastError(null)
+
+    fetchTimeseriesBlocks({
+      basePath,
+      lat,
+      lon,
+      model: selected,
+      run,
+      group,
+      signal: controller.signal,
+    })
+      .then((next) => {
+        setForecastBlocks(next)
+        setForecastLoading(false)
+      })
+      .catch((err) => {
+        if (err?.name === 'AbortError') {
+          return
+        }
+        setForecastError(err instanceof Error ? err : new Error(String(err)))
+        setForecastBlocks([])
+        setForecastLoading(false)
+      })
+
+    return () => {
+      controller.abort()
+    }
+  }, [
+    basePath,
+    catalogLoading,
+    elementGroup,
+    elementGroups,
+    hostOwned,
+    lat,
+    lon,
+    model,
+    models,
+    run,
+  ])
+
   const blocks = useMemo(() => {
     if (blocksProp !== undefined) {
       return blocksProp
@@ -195,8 +274,20 @@ export function TimeseriesProvider({
     if (getBlocks) {
       return getBlocks({ model, run, elementGroup, models, elementGroups })
     }
-    return []
-  }, [blocksProp, elementGroup, elementGroups, getBlocks, model, models, run])
+    return forecastBlocks
+  }, [
+    blocksProp,
+    elementGroup,
+    elementGroups,
+    forecastBlocks,
+    getBlocks,
+    model,
+    models,
+    run,
+  ])
+
+  const loading = catalogLoading || (!hostOwned && forecastLoading)
+  const error = catalogError ?? forecastError
 
   const value = useMemo<TimeseriesContextValue>(
     () => ({

@@ -105,8 +105,8 @@ export function TimeseriesModelsProvider({
   }, [basePath, lat, lon])
 
   const value = useMemo<TimeseriesModelsContextValue>(
-    () => ({ models, loading, error }),
-    [error, loading, models],
+    () => ({ models, loading, error, lat, lon, basePath }),
+    [basePath, error, lat, loading, lon, models],
   )
 
   return (
