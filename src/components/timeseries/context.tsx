@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -10,31 +11,44 @@ import type {
   TimeseriesBlock,
   TimeseriesContextValue,
   TimeseriesDirectionView,
+  TimeseriesModel,
   TimeseriesProviderProps,
   TimeseriesRun,
 } from './types'
+import { DEFAULT_TIMESERIES_ELEMENT_GROUPS } from './defaults'
+import { useTimeseriesModels } from './models'
+import { fetchTimeseriesBlocks } from './point-forecast'
 import { DEFAULT_DIRECTION_VIEW, latestRuntime } from './utils'
 
 const TimeseriesContext = createContext<TimeseriesContextValue | null>(null)
 const TimeseriesBlockContext = createContext<TimeseriesBlock | null>(null)
 
-type TimeseriesModelList = NonNullable<TimeseriesProviderProps['models']>
-
-function resolveInitialModel(
-  models: TimeseriesModelList,
-  model: string | undefined,
-  defaultModel: string | undefined,
+function catalogSlug(
+  models: readonly TimeseriesModel[],
+  slug: string | undefined,
 ): string {
-  return model ?? defaultModel ?? models[0]?.slug ?? ''
+  if (slug && models.some((item) => item.slug === slug)) {
+    return slug
+  }
+  return models[0]?.slug ?? ''
 }
 
-function resolveInitialRun(
-  models: TimeseriesModelList,
-  model: string,
+function catalogRun(
+  models: readonly TimeseriesModel[],
+  slug: string,
   run: TimeseriesRun | undefined,
-  defaultRun: TimeseriesRun | undefined,
 ): TimeseriesRun {
-  return run ?? defaultRun ?? latestRuntime(models, model) ?? 'all'
+  const selected = models.find((item) => item.slug === slug)
+  if (!selected?.runtimes.length) {
+    return 'all'
+  }
+  if (run === 'all') {
+    return 'all'
+  }
+  if (typeof run === 'number' && selected.runtimes.includes(run)) {
+    return run
+  }
+  return latestRuntime(models, slug) ?? 'all'
 }
 
 function resolveInitialElementGroup(
@@ -51,7 +65,6 @@ function resolveInitialElementGroup(
 }
 
 export function TimeseriesProvider({
-  models: modelsProp,
   model: modelProp,
   defaultModel,
   onModelChange: onModelChangeProp,
@@ -76,26 +89,35 @@ export function TimeseriesProvider({
   directionView: directionViewProp,
   defaultDirectionView,
   onDirectionViewChange: onDirectionViewChangeProp,
-  loading = false,
   children,
 }: TimeseriesProviderProps) {
-  const models = modelsProp ?? []
-  const elementGroups = elementGroupsProp ?? []
+  const {
+    models,
+    loading: catalogLoading,
+    error: catalogError,
+    lat,
+    lon,
+    basePath,
+  } = useTimeseriesModels()
+  const elementGroups = elementGroupsProp ?? DEFAULT_TIMESERIES_ELEMENT_GROUPS
+  const hostOwned = blocksProp !== undefined || Boolean(getBlocks)
 
   const modelControlled = modelProp !== undefined
   const runControlled = runProp !== undefined
   const elementGroupControlled = elementGroupProp !== undefined
   const directionControlled = directionViewProp !== undefined
 
-  const [internalModel, setInternalModel] = useState(() =>
-    resolveInitialModel(models, modelProp, defaultModel),
+  const [internalModel, setInternalModel] = useState(
+    () => modelProp ?? defaultModel ?? '',
   )
-  const model = modelControlled ? modelProp : internalModel
+  const requestedModel = modelControlled ? modelProp : internalModel
+  const model = catalogSlug(models, requestedModel)
 
-  const [internalRun, setInternalRun] = useState<TimeseriesRun>(() =>
-    resolveInitialRun(models, model, runProp, defaultRun),
+  const [internalRun, setInternalRun] = useState<TimeseriesRun | undefined>(
+    () => runProp ?? defaultRun,
   )
-  const run = runControlled ? runProp : internalRun
+  const requestedRun = runControlled ? runProp : internalRun
+  const run = catalogRun(models, model, requestedRun)
 
   const [internalElementGroup, setInternalElementGroup] = useState(() =>
     resolveInitialElementGroup(
@@ -118,6 +140,9 @@ export function TimeseriesProvider({
 
   const onModelChange = useCallback(
     (slug: string) => {
+      if (!models.some((item) => item.slug === slug)) {
+        return
+      }
       if (!modelControlled) {
         setInternalModel(slug)
         if (!runControlled) {
@@ -134,12 +159,19 @@ export function TimeseriesProvider({
 
   const onRunChange = useCallback(
     (next: TimeseriesRun) => {
+      const selected = models.find((item) => item.slug === model)
+      if (
+        next !== 'all' &&
+        (typeof next !== 'number' || !selected?.runtimes.includes(next))
+      ) {
+        return
+      }
       if (!runControlled) {
         setInternalRun(next)
       }
       onRunChangeProp?.(next)
     },
-    [onRunChangeProp, runControlled],
+    [model, models, onRunChangeProp, runControlled],
   )
 
   const onElementGroupChange = useCallback(
@@ -162,15 +194,100 @@ export function TimeseriesProvider({
     [directionControlled, onDirectionViewChangeProp],
   )
 
+  const [forecastBlocks, setForecastBlocks] = useState<TimeseriesBlock[]>([])
+  const [forecastLoading, setForecastLoading] = useState(() => !hostOwned)
+  const [forecastError, setForecastError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (hostOwned) {
+      return
+    }
+
+    if (catalogLoading) {
+      return
+    }
+
+    const selected = models.find((item) => item.slug === model)
+    const group =
+      elementGroups.find((entry) => entry.key === elementGroup) ??
+      elementGroups[0]
+
+    if (
+      !selected ||
+      !group ||
+      !model ||
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lon)
+    ) {
+      setForecastBlocks([])
+      setForecastLoading(false)
+      setForecastError(null)
+      return
+    }
+
+    const controller = new AbortController()
+    setForecastLoading(true)
+    setForecastError(null)
+
+    fetchTimeseriesBlocks({
+      basePath,
+      lat,
+      lon,
+      model: selected,
+      run,
+      group,
+      signal: controller.signal,
+    })
+      .then((next) => {
+        setForecastBlocks(next)
+        setForecastLoading(false)
+      })
+      .catch((err) => {
+        if (err?.name === 'AbortError') {
+          return
+        }
+        setForecastError(err instanceof Error ? err : new Error(String(err)))
+        setForecastBlocks([])
+        setForecastLoading(false)
+      })
+
+    return () => {
+      controller.abort()
+    }
+  }, [
+    basePath,
+    catalogLoading,
+    elementGroup,
+    elementGroups,
+    hostOwned,
+    lat,
+    lon,
+    model,
+    models,
+    run,
+  ])
+
   const blocks = useMemo(() => {
     if (blocksProp !== undefined) {
       return blocksProp
     }
     if (getBlocks) {
-      return getBlocks({ model, run, elementGroup, models })
+      return getBlocks({ model, run, elementGroup, models, elementGroups })
     }
-    return []
-  }, [blocksProp, elementGroup, getBlocks, model, models, run])
+    return forecastBlocks
+  }, [
+    blocksProp,
+    elementGroup,
+    elementGroups,
+    forecastBlocks,
+    getBlocks,
+    model,
+    models,
+    run,
+  ])
+
+  const loading = catalogLoading || (!hostOwned && forecastLoading)
+  const error = catalogError ?? forecastError
 
   const value = useMemo<TimeseriesContextValue>(
     () => ({
@@ -184,6 +301,7 @@ export function TimeseriesProvider({
       onElementGroupChange,
       blocks,
       loading,
+      error,
       locale,
       timezone,
       headerFormat,
@@ -201,6 +319,7 @@ export function TimeseriesProvider({
       directionView,
       elementGroup,
       elementGroups,
+      error,
       getIconSrc,
       headerFormat,
       loading,

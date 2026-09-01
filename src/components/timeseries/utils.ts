@@ -128,7 +128,7 @@ export function formatPressureMeanSeaLevel(
 }
 
 export function latestRuntime(
-  models: TimeseriesModel[],
+  models: readonly TimeseriesModel[],
   slug: string | undefined,
 ): TimeseriesRun | undefined {
   if (!slug) return undefined

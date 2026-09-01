@@ -34,8 +34,10 @@ handler once so this endpoint exists — without it the models request (and
 therefore the weather layers) will not load.
 
 The handler is NextAuth-style: mount it once on a catch-all route and every
-platform endpoint (e.g. `/api/platform/models`) is served automatically. Your
-API key stays server-side; the browser only ever talks to `/api/platform/*`.
+platform endpoint (e.g. `/api/platform/models`, `/api/platform/timeseries-models`,
+`/api/platform/timeseries-point-forecast`)
+is served automatically. Your API key stays server-side; the browser only ever
+talks to `/api/platform/*`.
 
 ### App Router — `app/api/platform/[...platform]/route.ts`
 
@@ -70,8 +72,9 @@ Only `apiKey` is required. The rest are optional:
 | --- | --- | --- |
 | `apiKey` | — (required) | Secret key attached to every proxied upstream request. |
 | `baseUrl` | `'https://api.infoplaza.com/weather/v1'` | Upstream API that requests are proxied to. |
-| `apiKeyQueryParam` | `'token'` | Query param the key is sent as. Set to `''` to use header auth instead. |
+| `apiKeyQueryParam` | `'token'` | Query param the key is sent as for map `/models`. Timeseries models use `api_key`. Set to `''` to use header auth instead. |
 | `basePath` | `'/api/platform'` | Public path this handler is mounted on. |
+| `timeseriesBaseUrl` | derived from `baseUrl` | Upstream for timeseries routes (`timeseries-models`, `timeseries-point-forecast`). If `baseUrl` contains `/weather/maps`, it is swapped to `/weather/timeseries`. |
 
 ### Environment variables
 
@@ -196,6 +199,21 @@ function ModelCount() {
 }
 ```
 
+### Timeseries models catalog
+
+Timeseries does **not** accept a `models` array. `TimeseriesModelsProvider`
+(or packaged `TimeseriesForecast`) requires `lat` and `lon` and loads
+`GET /api/platform/timeseries-models?lat=&lon=`. The catalog is read-only.
+
+Chart rows load from `GET /api/platform/timeseries-point-forecast` unless the
+host passes `blocks` or `getBlocks`.
+
+```tsx
+import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
+
+<TimeseriesForecast lat={52.3676} lon={4.9041} />
+```
+
 ## What You Need
 
 - A React application with an element like `<div id="root"></div>`.
@@ -213,7 +231,7 @@ function ModelCount() {
 - `Overlay` (`@infoplaza/platform`): mounts Deck.gl layers on top of the map.
 - `MapControlHud` (`@infoplaza/platform/components`): built-in map controls for model/element/time interactions.
 - `MapEventsProvider` (`@infoplaza/platform/events`): bridges map interaction events into the layer pipeline.
-- Timeseries (`@infoplaza/platform/timeseries`): packaged `TimeseriesForecast` or compose `TimeseriesProvider`, `TimeseriesToolbar`, `TimeseriesBuilder`, `TimeseriesChart`, and `TimeseriesFooter`. See the [timeseries demo](https://platform-components.vercel.app/timeseries) for packaged, chart-only, and composed examples.
+- Timeseries (`@infoplaza/platform/timeseries`): `TimeseriesModelsProvider` loads the location-filtered catalog; `TimeseriesProvider` loads point-forecast rows by default. Packaged `TimeseriesForecast` (requires `lat`/`lon`) or compose Provider, Toolbar, Builder, Chart, and Footer. See the [timeseries demo](https://platform-components.vercel.app/timeseries).
 
 ## Map styles
 
@@ -331,7 +349,7 @@ const mapStyles = [...MAP_STYLES, customStyle]
 | `@infoplaza/platform/providers` | `Providers`, `useModels`, `useProviders` |
 | `@infoplaza/platform/auth` | `PlatformAuth` (server-side route handler) |
 | `@infoplaza/platform/events` | `MapEventsProvider` |
-| `@infoplaza/platform/timeseries` | `TimeseriesForecast`, `TimeseriesProvider`, toolbar / builder / chart / footer |
+| `@infoplaza/platform/timeseries` | `TimeseriesForecast`, `TimeseriesModelsProvider`, `TimeseriesProvider`, toolbar / builder / chart / footer |
 | `@infoplaza/platform/layers/composer` · `/layers/overlay` | Individual layer building blocks |
 | `@infoplaza/platform/styles.css` | Full stylesheet (includes Tailwind preflight) — for standalone apps |
 | `@infoplaza/platform/styles.embed.css` | Utilities only, **no preflight** — for host apps that already run Tailwind / have global styles |

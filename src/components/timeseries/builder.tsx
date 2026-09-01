@@ -8,7 +8,7 @@ export default function TimeseriesBuilder({ children }: TimeseriesBuilderProps) 
   if (loading) {
     return (
       <div className="ip:flex ip:flex-col ip:px-5">
-        <div className="ip:h-[232px] ip:w-full ip:animate-pulse ip:self-center ip:rounded-md ip:bg-gray-100 ip:dark:bg-white/10" />
+        <div className="ip:h-58 ip:w-full ip:animate-pulse ip:self-center ip:rounded-md ip:bg-gray-100 ip:dark:bg-white/10" />
       </div>
     )
   }

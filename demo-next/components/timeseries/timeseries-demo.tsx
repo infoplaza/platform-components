@@ -1,15 +1,15 @@
 'use client'
 
-import { useMemo, useState, type ReactNode } from 'react'
+import { type ReactNode, useState } from 'react'
 import {
   TimeseriesBuilder,
   TimeseriesChart,
   TimeseriesFooter,
   TimeseriesForecast,
+  TimeseriesModelsProvider,
   TimeseriesProvider,
   TimeseriesToolbar,
-  type TimeseriesModel,
-  type TimeseriesRun,
+  useTimeseries,
 } from '@infoplaza/platform/timeseries'
 import { ViewCodeButton } from '../view-code-dialog'
 import {
@@ -20,16 +20,7 @@ import {
   PACKAGED_FILENAME,
   PACKAGED_SOURCE,
 } from './examples'
-import {
-  getTimeseriesBlocks,
-  TIMESERIES_ELEMENT_GROUPS,
-  TIMESERIES_MODELS,
-  withRuntimes,
-} from './fixtures'
-
-function useFixtureModels() {
-  return useMemo(() => withRuntimes(TIMESERIES_MODELS), [])
-}
+import { AMSTERDAM } from './fixtures'
 
 function ExampleSection({
   title,
@@ -57,43 +48,18 @@ function ExampleSection({
         </div>
         <ViewCodeButton title={`${title} code`} filename={filename} source={source} />
       </div>
-      <div className="ip-platform min-h-70 overflow-auto rounded-2xl border border-cloud/10 bg-white">
+      <div className="ip-platform  overflow-auto rounded-2xl border border-cloud/10 bg-white">
         {children}
       </div>
     </article>
   )
 }
 
-function PackagedExample({ models }: { models: TimeseriesModel[] }) {
-  const [model, setModel] = useState(models[0]?.slug ?? 'harmonie')
-  const [run, setRun] = useState<TimeseriesRun>(
-    models[0]?.runtimes[0] ?? 'all',
-  )
-  const [elementGroup, setElementGroup] = useState(
-    TIMESERIES_ELEMENT_GROUPS[0]?.key ?? 'overview',
-  )
-  const blocks = useMemo(
-    () => getTimeseriesBlocks({ model, run, elementGroup, models }),
-    [elementGroup, model, models, run],
-  )
-
+function PackagedExample() {
   return (
     <TimeseriesForecast
-      models={models}
-      model={model}
-      onModelChange={(slug: string) => {
-        setModel(slug)
-        const next = models.find((item) => item.slug === slug)
-        if (next?.runtimes[0]) {
-          setRun(next.runtimes[0])
-        }
-      }}
-      run={run}
-      onRunChange={setRun}
-      elementGroups={TIMESERIES_ELEMENT_GROUPS}
-      elementGroup={elementGroup}
-      onElementGroupChange={setElementGroup}
-      blocks={blocks}
+      lat={AMSTERDAM.lat}
+      lon={AMSTERDAM.lon}
       locale="en"
       timezone={null}
       headerFormat={['EEEEEE d MMM', 'HH']}
@@ -102,30 +68,11 @@ function PackagedExample({ models }: { models: TimeseriesModel[] }) {
   )
 }
 
-function ChartOnlyExample({ models }: { models: TimeseriesModel[] }) {
-  const [model, setModel] = useState(models[0]?.slug ?? 'harmonie')
-  const [run, setRun] = useState<TimeseriesRun>(
-    models[0]?.runtimes[0] ?? 'all',
-  )
-  const [elementGroup, setElementGroup] = useState(
-    TIMESERIES_ELEMENT_GROUPS[0]?.key ?? 'overview',
-  )
-  const blocks = useMemo(
-    () => getTimeseriesBlocks({ model, run, elementGroup, models }),
-    [elementGroup, model, models, run],
-  )
-
+function ChartOnlyExample() {
   return (
     <TimeseriesForecast
-      models={models}
-      model={model}
-      onModelChange={setModel}
-      run={run}
-      onRunChange={setRun}
-      elementGroups={TIMESERIES_ELEMENT_GROUPS}
-      elementGroup={elementGroup}
-      onElementGroupChange={setElementGroup}
-      blocks={blocks}
+      lat={AMSTERDAM.lat}
+      lon={AMSTERDAM.lon}
       locale="en"
       timezone={null}
       headerFormat={['EEEEEE d MMM', 'HH']}
@@ -136,49 +83,130 @@ function ChartOnlyExample({ models }: { models: TimeseriesModel[] }) {
   )
 }
 
-function ComposedExample({ models }: { models: TimeseriesModel[] }) {
+function ComposedBody() {
+  const { error } = useTimeseries()
+
+  return (
+    <div className="flex h-full min-h-0 w-full flex-col bg-white dark:bg-dark/90">
+      {error ? (
+        <div className="px-3 py-2 text-xs text-red-600 dark:text-red-400">
+          {error.message}
+        </div>
+      ) : null}
+      <TimeseriesToolbar />
+      <div className="min-h-0 flex-1 overflow-auto">
+        <TimeseriesBuilder>
+          <TimeseriesChart />
+        </TimeseriesBuilder>
+      </div>
+      <TimeseriesFooter />
+    </div>
+  )
+}
+
+function ComposedInner() {
   return (
     <TimeseriesProvider
-      models={models}
-      elementGroups={TIMESERIES_ELEMENT_GROUPS}
-      getBlocks={getTimeseriesBlocks}
       locale="en"
       timezone={null}
       headerFormat={['EEEEEE d MMM', 'HH']}
       scrollToCurrentTime
     >
-      <div className="flex h-full min-h-0 w-full flex-col bg-white dark:bg-dark/90">
-        <TimeseriesToolbar />
-        <div className="min-h-0 flex-1 overflow-auto">
-          <TimeseriesBuilder>
-            <TimeseriesChart />
-          </TimeseriesBuilder>
-        </div>
-        <TimeseriesFooter />
-      </div>
+      <ComposedBody />
     </TimeseriesProvider>
   )
 }
 
+function ComposedExample() {
+  return (
+    <TimeseriesModelsProvider lat={AMSTERDAM.lat} lon={AMSTERDAM.lon}>
+      <ComposedInner />
+    </TimeseriesModelsProvider>
+  )
+}
+
 export default function TimeseriesDemo() {
-  const models = useFixtureModels()
+  const [fullWidth, setFullWidth] = useState(false)
 
   return (
     <section className="h-full overflow-auto p-4 md:p-6">
-      <div className="mx-auto flex max-w-5xl flex-col gap-10">
-        <header className="max-w-xl">
-          <p className="mb-1.5 text-2xs font-semibold uppercase tracking-widest text-primary">
-            I&apos;m Weather
+      <div
+        className={
+          fullWidth
+            ? 'mx-auto flex w-full flex-col gap-10'
+            : 'mx-auto flex max-w-7xl flex-col gap-10'
+        }
+      >
+        <div className="flex flex-wrap items-end justify-between gap-5">
+          <header className="max-w-xl">
+            <p className="mb-1.5 text-2xs font-semibold uppercase tracking-widest text-primary">
+              I&apos;m Weather
+            </p>
+            <h1 className="mb-1.5 text-2xl font-bold tracking-tight text-dark">
+              Timeseries table
+            </h1>
+            <p className="m-0 text-sm leading-relaxed text-dark/60">
+              Use the packaged forecast, hide the toolbar and footer, or compose
+              ModelsProvider, Provider, Toolbar, Builder, Chart, and Footer.
+              Models and chart rows are loaded for Amsterdam.
+            </p>
+          </header>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={fullWidth}
+            onClick={() => setFullWidth((value) => !value)}
+            className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+          >
+            <span className="text-sm font-medium text-dark">Full width</span>
+            <span
+              className={
+                fullWidth
+                  ? 'relative h-6 w-10 rounded-full bg-primary'
+                  : 'relative h-6 w-10 rounded-full bg-cloud-200'
+              }
+            >
+              <span
+                className={
+                  fullWidth
+                    ? 'absolute top-0.5 left-0.5 h-5 w-5 translate-x-4 rounded-full bg-white'
+                    : 'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white'
+                }
+              />
+            </span>
+          </button>
+        </div>
+
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-xl border border-gold/35 bg-gold/10 px-4 py-3 text-sm leading-relaxed text-dark"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            width="16"
+            height="16"
+            aria-hidden="true"
+            className="mt-0.5 shrink-0 text-gold"
+          >
+            <path
+              d="M8 1.75a6.25 6.25 0 1 1 0 12.5 6.25 6.25 0 0 1 0-12.5Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M8 7.25V11M8 5.25v.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+          <p className="m-0">
+            Visualization data color is in progress and will be available in the
+            next release.
           </p>
-          <h1 className="mb-1.5 text-2xl font-bold tracking-tight text-dark">
-            Timeseries table
-          </h1>
-          <p className="m-0 text-sm leading-relaxed text-dark/60">
-            Use the packaged forecast, hide the toolbar and footer, or compose
-            Provider, Toolbar, Builder, Chart, and Footer yourself. Hosts
-            supply already-shaped rows.
-          </p>
-        </header>
+        </div>
 
         <ExampleSection
           title="Packaged"
@@ -186,7 +214,7 @@ export default function TimeseriesDemo() {
           filename={PACKAGED_FILENAME}
           source={PACKAGED_SOURCE}
         >
-          <PackagedExample models={models} />
+          <PackagedExample />
         </ExampleSection>
 
         <ExampleSection
@@ -195,20 +223,20 @@ export default function TimeseriesDemo() {
           filename={CHART_ONLY_FILENAME}
           source={CHART_ONLY_SOURCE}
         >
-          <ChartOnlyExample models={models} />
+          <ChartOnlyExample />
         </ExampleSection>
 
         <ExampleSection
           title="Composed"
-          description="TimeseriesProvider with Toolbar, Builder, Chart, and Footer assembled by the host."
+          description="TimeseriesModelsProvider with Toolbar, Builder, Chart, and Footer assembled by the host."
           filename={COMPOSED_FILENAME}
           source={COMPOSED_SOURCE}
         >
-          <ComposedExample models={models} />
+          <ComposedExample />
         </ExampleSection>
 
         <footer className="flex flex-wrap items-center gap-4 px-0.5 pb-2 text-xs text-dark/60">
-          <span>Fixture data · Amsterdam</span>
+          <span>Amsterdam · 52.3676, 4.9041</span>
           <span className="ml-auto">@infoplaza/platform/timeseries</span>
         </footer>
       </div>

@@ -13,12 +13,20 @@ export {
   useTimeseriesBlock,
   useTimeseriesBlockContext,
 } from './context'
+export {
+  TimeseriesModelsProvider,
+  useTimeseriesModels,
+  useTimeseriesModelsContext,
+} from './models'
 export type {
   TimeseriesContextValue,
   TimeseriesGetBlocksOptions,
+  TimeseriesModelsContextValue,
+  TimeseriesModelsProviderProps,
   TimeseriesProviderProps,
 } from './types'
 export { TIMESERIES_CELL_VIEWS } from './cells/registry'
+export { DEFAULT_TIMESERIES_ELEMENT_GROUPS } from './defaults'
 export { default as TimeseriesPills } from './pills'
 export { default as TimeseriesToolbar } from './toolbar'
 export type { TimeseriesToolbarProps } from './toolbar'
@@ -32,8 +40,10 @@ export type {
   TimeseriesCellViewMap,
   TimeseriesDirectionView,
   TimeseriesElementGroup,
+  TimeseriesElementItem,
   TimeseriesHiddenRow,
   TimeseriesModel,
+  TimeseriesModelElement,
   TimeseriesPillItem,
   TimeseriesRow,
   TimeseriesRun,
