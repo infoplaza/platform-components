@@ -113,8 +113,8 @@ export function TimeseriesProvider({
   const requestedModel = modelControlled ? modelProp : internalModel
   const model = catalogSlug(models, requestedModel)
 
-  const [internalRun, setInternalRun] = useState<TimeseriesRun>(
-    () => runProp ?? defaultRun ?? 'all',
+  const [internalRun, setInternalRun] = useState<TimeseriesRun | undefined>(
+    () => runProp ?? defaultRun,
   )
   const requestedRun = runControlled ? runProp : internalRun
   const run = catalogRun(models, model, requestedRun)

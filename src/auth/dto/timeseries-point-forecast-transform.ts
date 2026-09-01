@@ -20,6 +20,7 @@ type Palette = {
 
 type UpstreamPointDatum = {
   time?: unknown
+  timestamp?: unknown
   value?: unknown
 }
 
@@ -69,6 +70,23 @@ function toPaletteColors(value: unknown): string[] {
     return []
   }
   return value.filter((entry): entry is string => typeof entry === 'string')
+}
+
+function extractPointForecastRecord(
+  payload: unknown,
+): Record<string, unknown> | null {
+  const record = asRecord(payload)
+  if (!record) {
+    return null
+  }
+  if (Array.isArray(record.elements)) {
+    return record
+  }
+  const nested = asRecord(record.data)
+  if (nested && Array.isArray(nested.elements)) {
+    return nested
+  }
+  return null
 }
 
 function extractPalette(payload: unknown): Palette | null {
@@ -160,7 +178,7 @@ function transformCells(
   }
 
   return data.map((entry: UpstreamPointDatum) => {
-    const timestamp = asNumber(entry?.time) ?? 0
+    const timestamp = asNumber(entry?.time) ?? asNumber(entry?.timestamp) ?? 0
     const raw = entry?.value
     const value =
       raw == null || raw === ''
@@ -190,8 +208,8 @@ export async function transformTimeseriesPointForecastResponse(
   payload: unknown,
   context: TimeseriesPointTransformContext,
 ): Promise<unknown> {
-  const record = asRecord(payload)
-  if (!record || !Array.isArray(record.elements)) {
+  const record = extractPointForecastRecord(payload)
+  if (!record) {
     return payload
   }
 

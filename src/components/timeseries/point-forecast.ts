@@ -11,6 +11,7 @@ import type {
 } from './types'
 
 const HIDDEN_REASON = 'Not available for this model'
+const NO_DATA_REASON = 'No data'
 
 export type TimeseriesPointSeries = {
   element: string
@@ -104,33 +105,90 @@ function partitionGroupItems(
   return { available, hidden }
 }
 
+function normalizeLevel(level: string | null | undefined): string {
+  if (level == null || level === '-' || level === 'null') {
+    return ''
+  }
+  return String(level)
+}
+
 function findSeries(
   elements: TimeseriesPointSeries[],
   element: string,
   level: string,
 ): TimeseriesPointSeries | undefined {
+  const wanted = normalizeLevel(level)
   const exact = elements.find(
-    (series) => series.element === element && series.level === level,
+    (series) =>
+      series.element === element && normalizeLevel(series.level) === wanted,
   )
   if (exact) {
     return exact
   }
-  if (!level) {
+  if (!wanted) {
     return elements.find((series) => series.element === element)
   }
   return undefined
+}
+
+const CELL_COLOR_FALLBACK = {
+  im_color: 'transparent',
+  im_textcolor: '#111111',
+} as const
+
+function forecastRecord(payload: unknown): Record<string, unknown> {
+  const record =
+    payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>)
+      : {}
+  const nested =
+    record.data && typeof record.data === 'object' && !Array.isArray(record.data)
+      ? (record.data as Record<string, unknown>)
+      : null
+  if (nested && Array.isArray(nested.elements)) {
+    return nested
+  }
+  return record
 }
 
 function toCells(value: unknown): TimeseriesCell[] {
   if (!Array.isArray(value)) {
     return []
   }
-  return value.filter(
-    (entry): entry is TimeseriesCell =>
-      Boolean(entry) &&
-      typeof entry === 'object' &&
-      Number.isFinite(Number(    (entry as TimeseriesCell).timestamp)),
-  )
+
+  const cells: TimeseriesCell[] = []
+  for (const entry of value) {
+    if (!entry || typeof entry !== 'object') {
+      continue
+    }
+    const record = entry as Record<string, unknown>
+    const timestamp = Number(record.timestamp ?? record.time)
+    if (!Number.isFinite(timestamp)) {
+      continue
+    }
+
+    const raw = record.value
+    const cellValue =
+      raw == null || raw === ''
+        ? null
+        : Number.isFinite(Number(raw))
+          ? Number(raw)
+          : null
+
+    cells.push({
+      timestamp,
+      value: cellValue,
+      im_color:
+        typeof record.im_color === 'string'
+          ? record.im_color
+          : CELL_COLOR_FALLBACK.im_color,
+      im_textcolor:
+        typeof record.im_textcolor === 'string'
+          ? record.im_textcolor
+          : CELL_COLOR_FALLBACK.im_textcolor,
+    })
+  }
+  return cells
 }
 
 async function pointForecastErrorMessage(response: Response): Promise<string> {
@@ -158,10 +216,7 @@ async function pointForecastErrorMessage(response: Response): Promise<string> {
 }
 
 function parsePointForecast(payload: unknown): TimeseriesPointForecast {
-  const record =
-    payload && typeof payload === 'object'
-      ? (payload as Record<string, unknown>)
-      : {}
+  const record = forecastRecord(payload)
   const runtime = Number(record.runtime)
 
   return {
@@ -202,13 +257,17 @@ function assembleBlock(options: {
     if (!series?.data.length) {
       hiddenRows.push({
         title: requested.item.title,
-        reason: HIDDEN_REASON,
+        reason: series ? NO_DATA_REASON : HIDDEN_REASON,
       })
       continue
     }
 
+    const level =
+      normalizeLevel(requested.level) || normalizeLevel(series.level)
+
     rows.push({
       title: requested.item.title,
+      titleExtra: level || undefined,
       view: requested.item.view,
       unit: series.unit || requested.item.unit,
       config: {
