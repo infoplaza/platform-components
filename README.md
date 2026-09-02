@@ -11,6 +11,15 @@ A hosted Next.js demo lives at [https://platform-components.vercel.app/](https:/
 | Map (BaseMap, weather layers, HUD) | [https://platform-components.vercel.app/](https://platform-components.vercel.app/) |
 | Timeseries forecast table | [https://platform-components.vercel.app/timeseries](https://platform-components.vercel.app/timeseries) |
 
+A fixture-only [Storybook](https://storybook.js.org/docs) catalog for timeseries lives in `demo-next/`. It does not run the Next.js API routes and does not need `PLATFORM_API_KEY`. Build the package first so `@infoplaza/platform` styles and exports are available:
+
+```bash
+npm run build
+npm run demo:storybook
+```
+
+Or `npm run storybook` from `demo-next/`.
+
 ## Install
 
 ```bash

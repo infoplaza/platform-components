@@ -2,3 +2,4 @@
 @config "../tailwind.config.mjs";
 @source "../app";
 @source "../components";
+@source "../stories";

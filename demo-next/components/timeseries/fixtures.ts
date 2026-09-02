@@ -106,6 +106,32 @@ function offsetFor(model: string): number {
 
 export const AMSTERDAM = { lat: 52.3676, lon: 4.9041 }
 
+function hourTimestamp(hoursAgo: number): number {
+  return Math.floor(Date.now() / 3_600_000) * 3_600 - hoursAgo * 3600
+}
+
+export const DEMO_MODELS: TimeseriesModel[] = [
+  {
+    slug: 'harmonie',
+    title: 'HARMONIE',
+    runtimes: [hourTimestamp(0), hourTimestamp(1), hourTimestamp(3)],
+    sort: 0,
+  },
+  {
+    slug: 'ecmwf',
+    title: 'ECMWF IFS',
+    runtimes: [hourTimestamp(0), hourTimestamp(6), hourTimestamp(12)],
+    sort: 1,
+  },
+  {
+    slug: 'gfs',
+    title: 'GFS',
+    runtimes: [hourTimestamp(0), hourTimestamp(6)],
+    sort: 2,
+    isBeta: true,
+  },
+]
+
 export const DEMO_LOCATIONS = [
   { label: 'Amsterdam', lat: 52.3676, lon: 4.9041 },
   { label: 'Rotterdam', lat: 51.9225, lon: 4.4792 },
