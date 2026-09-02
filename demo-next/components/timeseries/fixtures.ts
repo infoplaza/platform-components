@@ -2,6 +2,7 @@ import {
   DEFAULT_TIMESERIES_ELEMENT_GROUPS,
   type TimeseriesBlock,
   type TimeseriesCell,
+  type TimeseriesCellColor,
   type TimeseriesElementGroup,
   type TimeseriesElementItem,
   type TimeseriesModel,
@@ -29,16 +30,15 @@ function textColor(r: number, g: number, b: number): string {
 
 function cellsFromValues(
   values: number[],
-  colorFor: (value: number) => { im_color: string; im_textcolor: string },
+  colorFor: (value: number) => TimeseriesCellColor,
 ): TimeseriesCell[] {
   const start = startOfCurrentHourSeconds()
   return values.map((value, index) => {
-    const { im_color, im_textcolor } = colorFor(value)
+    const color = colorFor(value)
     return {
       timestamp: start + index * 3600,
       value,
-      im_color,
-      im_textcolor,
+      color,
     }
   })
 }
@@ -48,7 +48,7 @@ function temperatureColor(value: number) {
   const r = lerp(80, 220, t)
   const g = lerp(160, 70, t)
   const b = lerp(220, 60, t)
-  return { im_color: rgb(r, g, b), im_textcolor: textColor(r, g, b) }
+  return { background: rgb(r, g, b), text: textColor(r, g, b) }
 }
 
 function windColor(value: number) {
@@ -56,7 +56,7 @@ function windColor(value: number) {
   const r = lerp(230, 40, t)
   const g = lerp(240, 90, t)
   const b = lerp(250, 160, t)
-  return { im_color: rgb(r, g, b), im_textcolor: textColor(r, g, b) }
+  return { background: rgb(r, g, b), text: textColor(r, g, b) }
 }
 
 function precipColor(value: number) {
@@ -64,7 +64,7 @@ function precipColor(value: number) {
   const r = lerp(240, 30, t)
   const g = lerp(248, 90, t)
   const b = lerp(255, 180, t)
-  return { im_color: rgb(r, g, b), im_textcolor: textColor(r, g, b) }
+  return { background: rgb(r, g, b), text: textColor(r, g, b) }
 }
 
 function percentColor(value: number) {
@@ -72,7 +72,7 @@ function percentColor(value: number) {
   const r = lerp(230, 50, t)
   const g = lerp(240, 90, t)
   const b = lerp(250, 140, t)
-  return { im_color: rgb(r, g, b), im_textcolor: textColor(r, g, b) }
+  return { background: rgb(r, g, b), text: textColor(r, g, b) }
 }
 
 function pressureColor(value: number) {
@@ -80,7 +80,7 @@ function pressureColor(value: number) {
   const r = lerp(80, 180, t)
   const g = lerp(140, 80, t)
   const b = lerp(220, 60, t)
-  return { im_color: rgb(r, g, b), im_textcolor: textColor(r, g, b) }
+  return { background: rgb(r, g, b), text: textColor(r, g, b) }
 }
 
 function series(base: number, amplitude: number, offset: number): number[] {
@@ -117,7 +117,7 @@ export const DEMO_LOCATIONS = [
 function colorForItem(item: TimeseriesElementItem) {
   const element = item.element ?? ''
   if (item.view === 'ICON') {
-    return () => ({ im_color: 'transparent', im_textcolor: '#111' })
+    return () => ({ background: 'transparent', text: '#111' })
   }
   if (
     element.includes('temperature') ||

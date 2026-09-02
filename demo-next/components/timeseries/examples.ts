@@ -128,3 +128,36 @@ export default function ComposedTimeseries() {
   )
 }
 `
+
+export const PALETTE_FILENAME = 'palette.tsx'
+
+export const PALETTE_SOURCE = `'use client'
+
+import { useState } from 'react'
+import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
+
+export default function PaletteTimeseries() {
+  const [showPalette, setShowPalette] = useState(true)
+
+  return (
+    <div>
+      <label>
+        <input
+          type="checkbox"
+          checked={showPalette}
+          onChange={(event) => setShowPalette(event.target.checked)}
+        />
+        Palette colors
+      </label>
+      <TimeseriesForecast
+        lat={52.3676}
+        lon={4.9041}
+        locale="en"
+        headerFormat={['EEEEEE d MMM', 'HH']}
+        scrollToCurrentTime
+        showPalette={showPalette}
+      />
+    </div>
+  )
+}
+`

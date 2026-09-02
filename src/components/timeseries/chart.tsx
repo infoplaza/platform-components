@@ -21,6 +21,7 @@ export default function TimeseriesChart({
   getIconSrc: getIconSrcProp,
   directionView: directionViewProp,
   onDirectionViewChange: onDirectionViewChangeProp,
+  showPalette: showPaletteProp,
 }: TimeseriesChartProps) {
   const block = useTimeseriesBlockContext()
   const ctx = useTimeseriesContext()
@@ -54,6 +55,7 @@ export default function TimeseriesChart({
       onDirectionViewChange={
         onDirectionViewChangeProp ?? ctx?.onDirectionViewChange
       }
+      showPalette={showPaletteProp ?? ctx?.showPalette}
     />
   )
 }

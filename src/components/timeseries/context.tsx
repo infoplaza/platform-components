@@ -89,6 +89,7 @@ export function TimeseriesProvider({
   directionView: directionViewProp,
   defaultDirectionView,
   onDirectionViewChange: onDirectionViewChangeProp,
+  showPalette,
   children,
 }: TimeseriesProviderProps) {
   const {
@@ -313,6 +314,7 @@ export function TimeseriesProvider({
       getIconSrc,
       directionView,
       onDirectionViewChange,
+      showPalette,
     }),
     [
       blocks,
@@ -333,6 +335,7 @@ export function TimeseriesProvider({
       onTimestampChange,
       run,
       scrollToCurrentTime,
+      showPalette,
       timestamp,
       timestamps,
       timezone,

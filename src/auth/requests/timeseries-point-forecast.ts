@@ -5,7 +5,6 @@ import {
   parseCoordinate,
   parseRequestUrl,
   requireParam,
-  resolveMapsBaseUrl,
   timeseriesAuthOptions,
   withQuery,
 } from './utils'
@@ -50,8 +49,6 @@ const handle: PlatformEndpointHandler = async (req, res, options) => {
     'point',
     (data) =>
       transformTimeseriesPointForecastResponse(data, {
-        mapsBaseUrl: resolveMapsBaseUrl(options.baseUrl),
-        apiKey: options.apiKey,
         lat,
         lon,
         model,

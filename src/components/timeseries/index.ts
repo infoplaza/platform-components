@@ -36,6 +36,7 @@ export { ScrollSync, ScrollSyncPane } from './scroll-sync'
 export type {
   TimeseriesBlock,
   TimeseriesCell,
+  TimeseriesCellColor,
   TimeseriesCellView,
   TimeseriesCellViewMap,
   TimeseriesDirectionView,

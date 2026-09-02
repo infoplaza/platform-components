@@ -49,6 +49,7 @@ export default function TimeseriesTable({
   getIconSrc,
   directionView,
   onDirectionViewChange,
+  showPalette = true,
 }: TimeseriesTableProps) {
   const [scrolled, setScrolled] = useState(false)
   const [dragScrolling, setDragScrolling] = useState(false)
@@ -413,6 +414,7 @@ export default function TimeseriesTable({
                             getIconSrc={getIconSrc}
                             directionView={resolvedDirectionView}
                             onDirectionViewChange={changeDirectionView}
+                            showPalette={showPalette}
                           />
                         ) : null}
                         {cell.timestamp === timestamp && timestamp != null ? (

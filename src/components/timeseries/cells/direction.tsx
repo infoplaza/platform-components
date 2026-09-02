@@ -1,4 +1,5 @@
 import { IpLocationArrowAlt } from '@/src/components/icons'
+import { twMerge } from '@/src/utilities/external/twMerge'
 import {
   DEFAULT_DIRECTION_VIEW,
   degreesToCompass,
@@ -10,6 +11,7 @@ export default function TimeseriesDirectionCell({
   data,
   directionView,
   onDirectionViewChange,
+  showPalette = true,
 }: TimeseriesCellComponentProps) {
   const view = directionView ?? DEFAULT_DIRECTION_VIEW
 
@@ -21,11 +23,18 @@ export default function TimeseriesDirectionCell({
 
   return (
     <div
-      className="ip:flex ip:h-full ip:cursor-pointer ip:flex-col ip:place-content-center ip:items-center ip:gap-0.5"
-      style={{
-        color: data.im_textcolor,
-        backgroundColor: `color-mix(in srgb, ${data.im_color} 80%, transparent)`,
-      }}
+      className={twMerge(
+        'ip:flex ip:h-full ip:cursor-pointer ip:flex-col ip:place-content-center ip:items-center ip:gap-0.5',
+        !showPalette && 'ip:text-dark ip:dark:text-gray-300',
+      )}
+      style={
+        showPalette
+          ? {
+              color: data.color.text,
+              backgroundColor: `color-mix(in srgb, ${data.color.background} 80%, transparent)`,
+            }
+          : undefined
+      }
       onClick={() => onDirectionViewChange?.(nextDirectionView(view))}
       title={`${compass} — ${Math.round(data.value)}°`}
       role={onDirectionViewChange ? 'button' : undefined}

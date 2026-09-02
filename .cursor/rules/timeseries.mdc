@@ -65,7 +65,7 @@ Demo patterns live in `demo-next/components/timeseries/` (packaged, chart-only, 
 ## Rules
 
 - **Catalog is API-only.** Do not pass a `models` array into Provider or Forecast. `TimeseriesModelsProvider` is the only writer.
-- **Provider loads chart rows by default.** Shape `TimeseriesBlock[]` (rows with `timestamp`, `value`, `im_color`, `im_textcolor`). `blocks` / `getBlocks` remain a host override. Do not import ImWeather `TIMESERIES` config, BFF routes, or grid APIs into this package.
+- **Provider loads chart rows by default.** Shape `TimeseriesBlock[]` (rows with `timestamp`, `value`, `color: { background, text }`). `blocks` / `getBlocks` remain a host override. Do not import ImWeather `TIMESERIES` config, BFF routes, or grid APIs into this package.
 - **Builder does not fetch.** It maps context `blocks` onto Chart. The Provider fetches point forecast. Land-cover filters, compare, ensemble members, and custom elements stay in the host.
 - **`run === 'all'`:** the Provider fetches one point-forecast request per catalog runtime and returns one block per runtime. A host `getBlocks` may still return that shape itself.
 - **Toolbar / Footer** resolve `props ?? context` and return `null` if neither exists — do not throw. `useTimeseries()` throws outside the provider; `useTimeseriesContext()` is nullable for standalone pieces. `useTimeseriesModels()` throws outside `TimeseriesModelsProvider`.

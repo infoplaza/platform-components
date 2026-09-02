@@ -7,11 +7,15 @@ export type TimeseriesCellView =
   | 'PRECIPITATION_TYPE'
   | 'ICON'
 
+export type TimeseriesCellColor = {
+  background: string
+  text: string
+}
+
 export type TimeseriesCell = {
   timestamp: number
   value: number | null
-  im_color: string
-  im_textcolor: string
+  color: TimeseriesCellColor
 }
 
 export type TimeseriesRowConfig = {
@@ -59,6 +63,7 @@ export type TimeseriesCellComponentProps = {
   getIconSrc?: (value: number | null) => string | null
   directionView?: TimeseriesDirectionView
   onDirectionViewChange?: (view: TimeseriesDirectionView) => void
+  showPalette?: boolean
 }
 
 export type TimeseriesCellViewMap = Partial<
@@ -134,6 +139,7 @@ export type TimeseriesTableProps = {
   getIconSrc?: (value: number | null) => string | null
   directionView?: TimeseriesDirectionView
   onDirectionViewChange?: (view: TimeseriesDirectionView) => void
+  showPalette?: boolean
 }
 
 export type TimeseriesGetBlocksOptions = {
@@ -167,6 +173,7 @@ export type TimeseriesContextValue = {
   getIconSrc?: (value: number | null) => string | null
   directionView: TimeseriesDirectionView
   onDirectionViewChange: (view: TimeseriesDirectionView) => void
+  showPalette?: boolean
 }
 
 export type TimeseriesModelsContextValue = {
@@ -210,6 +217,7 @@ export type TimeseriesProviderProps = {
   directionView?: TimeseriesDirectionView
   defaultDirectionView?: TimeseriesDirectionView
   onDirectionViewChange?: (view: TimeseriesDirectionView) => void
+  showPalette?: boolean
   children?: ReactNode
 }
 
