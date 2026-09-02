@@ -1,6 +1,6 @@
 {
   "name": "@infoplaza/platform",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "description": "",
   "main": "./dist/index.js",
   "style": "./dist/styles.css",
