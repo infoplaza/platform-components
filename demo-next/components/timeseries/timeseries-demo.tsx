@@ -17,22 +17,29 @@ import {
   CHART_ONLY_SOURCE,
   COMPOSED_FILENAME,
   COMPOSED_SOURCE,
+  CUSTOM_LOCATION_FILENAME,
+  CUSTOM_LOCATION_SOURCE,
   PACKAGED_FILENAME,
   PACKAGED_SOURCE,
+  PALETTE_FILENAME,
+  PALETTE_SOURCE,
 } from './examples'
 import { AMSTERDAM } from './fixtures'
+import { LocationFields } from './location-fields'
 
 function ExampleSection({
   title,
   description,
   filename,
   source,
+  controls,
   children,
 }: {
   title: string
   description: string
   filename: string
   source: string
+  controls?: ReactNode
   children: ReactNode
 }) {
   return (
@@ -48,6 +55,7 @@ function ExampleSection({
         </div>
         <ViewCodeButton title={`${title} code`} filename={filename} source={source} />
       </div>
+      {controls}
       <div className="ip-platform  overflow-auto rounded-2xl border border-cloud/10 bg-white">
         {children}
       </div>
@@ -125,6 +133,91 @@ function ComposedExample() {
   )
 }
 
+function PaletteToggle({
+  checked,
+  onChange,
+}: {
+  checked: boolean
+  onChange: (checked: boolean) => void
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+    >
+      <span className="text-sm font-medium text-dark">Palette colors</span>
+      <span
+        className={
+          checked
+            ? 'relative h-6 w-10 rounded-full bg-primary'
+            : 'relative h-6 w-10 rounded-full bg-cloud-200'
+        }
+      >
+        <span
+          className={
+            checked
+              ? 'absolute top-0.5 left-0.5 h-5 w-5 translate-x-4 rounded-full bg-white'
+              : 'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white'
+          }
+        />
+      </span>
+    </button>
+  )
+}
+
+function PaletteExample() {
+  const [showPalette, setShowPalette] = useState(true)
+
+  return (
+    <ExampleSection
+      title="Palette"
+      description="Turn cell palette colors off to use the default table text and background. showPalette defaults to true."
+      filename={PALETTE_FILENAME}
+      source={PALETTE_SOURCE}
+      controls={
+        <PaletteToggle checked={showPalette} onChange={setShowPalette} />
+      }
+    >
+      <TimeseriesForecast
+        lat={AMSTERDAM.lat}
+        lon={AMSTERDAM.lon}
+        locale="en"
+        timezone={null}
+        headerFormat={['EEEEEE d MMM', 'HH']}
+        scrollToCurrentTime
+        showPalette={showPalette}
+      />
+    </ExampleSection>
+  )
+}
+
+function CustomLocationExample() {
+  const [location, setLocation] = useState(AMSTERDAM)
+
+  return (
+    <ExampleSection
+      title="Custom location"
+      description="Host-owned lat and lon. Pick a place or enter coordinates, then load the forecast for that point."
+      filename={CUSTOM_LOCATION_FILENAME}
+      source={CUSTOM_LOCATION_SOURCE}
+      controls={<LocationFields value={location} onChange={setLocation} />}
+    >
+      <TimeseriesForecast
+        key={`${location.lat},${location.lon}`}
+        lat={location.lat}
+        lon={location.lon}
+        locale="en"
+        timezone={null}
+        headerFormat={['EEEEEE d MMM', 'HH']}
+        scrollToCurrentTime
+      />
+    </ExampleSection>
+  )
+}
+
 export default function TimeseriesDemo() {
   const [fullWidth, setFullWidth] = useState(false)
 
@@ -146,9 +239,11 @@ export default function TimeseriesDemo() {
               Timeseries table
             </h1>
             <p className="m-0 text-sm leading-relaxed text-dark/60">
-              Use the packaged forecast, hide the toolbar and footer, or compose
-              ModelsProvider, Provider, Toolbar, Builder, Chart, and Footer.
-              Models and chart rows are loaded for Amsterdam.
+              Use the packaged forecast, hide the toolbar and footer, compose
+              ModelsProvider, Provider, Toolbar, Builder, Chart, and Footer, or
+              pass your own lat and lon. Toggle palette colors when you want
+              default table text and backgrounds. Models and chart rows load
+              for the selected point.
             </p>
           </header>
           <button
@@ -177,37 +272,6 @@ export default function TimeseriesDemo() {
           </button>
         </div>
 
-        <div
-          role="status"
-          className="flex items-start gap-3 rounded-xl border border-gold/35 bg-gold/10 px-4 py-3 text-sm leading-relaxed text-dark"
-        >
-          <svg
-            viewBox="0 0 16 16"
-            width="16"
-            height="16"
-            aria-hidden="true"
-            className="mt-0.5 shrink-0 text-gold"
-          >
-            <path
-              d="M8 1.75a6.25 6.25 0 1 1 0 12.5 6.25 6.25 0 0 1 0-12.5Z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            />
-            <path
-              d="M8 7.25V11M8 5.25v.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-          <p className="m-0">
-            Visualization data color is in progress and will be available in the
-            next release.
-          </p>
-        </div>
-
         <ExampleSection
           title="Packaged"
           description="TimeseriesForecast with toolbar, table, and footer in one component."
@@ -216,6 +280,10 @@ export default function TimeseriesDemo() {
         >
           <PackagedExample />
         </ExampleSection>
+
+        <PaletteExample />
+
+        <CustomLocationExample />
 
         <ExampleSection
           title="Chart only"
@@ -236,7 +304,7 @@ export default function TimeseriesDemo() {
         </ExampleSection>
 
         <footer className="flex flex-wrap items-center gap-4 px-0.5 pb-2 text-xs text-dark/60">
-          <span>Amsterdam · 52.3676, 4.9041</span>
+          <span>lat and lon are required · catalog is location-filtered</span>
           <span className="ml-auto">@infoplaza/platform/timeseries</span>
         </footer>
       </div>

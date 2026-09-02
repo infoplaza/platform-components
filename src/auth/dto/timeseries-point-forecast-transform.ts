@@ -5,8 +5,6 @@ import {
 } from './timeseries-cell-color'
 
 export type TimeseriesPointTransformContext = {
-  mapsBaseUrl: string
-  apiKey: string
   lat: number
   lon: number
   model: string
@@ -29,11 +27,14 @@ type UpstreamPointElement = {
   level?: unknown
   unit?: unknown
   data?: unknown
+  palette?: unknown
+  pallete?: unknown
 }
 
-type TransformedPointCell = TimeseriesCellColor & {
+type TransformedPointCell = {
   timestamp: number
   value: number | null
+  color: TimeseriesCellColor
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -89,9 +90,9 @@ function extractPointForecastRecord(
   return null
 }
 
-function extractPalette(payload: unknown): Palette | null {
-  const record = asRecord(payload)
-  const palette = asRecord(record?.palette)
+function extractPalette(element: unknown): Palette | null {
+  const record = asRecord(element)
+  const palette = asRecord(record?.palette) ?? asRecord(record?.pallete)
   if (!palette) {
     return null
   }
@@ -103,70 +104,6 @@ function extractPalette(payload: unknown): Palette | null {
   }
 
   return { colors, values }
-}
-
-function clampLat(value: number): number {
-  return Math.min(90, Math.max(-90, value))
-}
-
-function clampLon(value: number): number {
-  return Math.min(180, Math.max(-180, value))
-}
-
-async function fetchElementPalette(
-  context: TimeseriesPointTransformContext,
-  element: string,
-  run: string,
-): Promise<Palette | null> {
-  const base = context.mapsBaseUrl.replace(/\/+$/, '')
-  const target = new URL(`${base}/layers`)
-  target.searchParams.set('model', context.model)
-  target.searchParams.set('run', run)
-  target.searchParams.set('element', element)
-  target.searchParams.set('zoom', '3')
-  target.searchParams.set('north', String(clampLat(context.lat + 0.5)))
-  target.searchParams.set('south', String(clampLat(context.lat - 0.5)))
-  target.searchParams.set('east', String(clampLon(context.lon + 0.5)))
-  target.searchParams.set('west', String(clampLon(context.lon - 0.5)))
-  target.searchParams.set('api_key', context.apiKey)
-
-  try {
-    const response = await fetch(target.toString())
-    if (!response.ok) {
-      return null
-    }
-    return extractPalette(await response.json())
-  } catch {
-    return null
-  }
-}
-
-async function loadPalettesByElement(
-  payload: Record<string, unknown>,
-  context: TimeseriesPointTransformContext,
-): Promise<Map<string, Palette | null>> {
-  const elements = Array.isArray(payload.elements) ? payload.elements : []
-  const unique = [
-    ...new Set(
-      elements
-        .map((entry) => asString(asRecord(entry)?.element))
-        .filter(Boolean),
-    ),
-  ]
-
-  const run =
-    asString(payload.runtime) ||
-    context.runtime ||
-    'latest'
-
-  const entries = await Promise.all(
-    unique.map(async (element) => {
-      const palette = await fetchElementPalette(context, element, run)
-      return [element, palette] as const
-    }),
-  )
-
-  return new Map(entries)
 }
 
 function transformCells(
@@ -193,38 +130,24 @@ function transformCells(
     return {
       timestamp,
       value,
-      im_color: color.im_color,
-      im_textcolor: color.im_textcolor,
+      color,
     }
   })
 }
 
 /**
  * Maps the v1 weather timeseries point payload onto colored cells the
- * timeseries table can render. Palettes come from maps layers for the same
- * model + element.
+ * timeseries table can render. Palettes come from each element's
+ * `palette` / `pallete` (`colors` + `values`).
  */
-export async function transformTimeseriesPointForecastResponse(
+export function transformTimeseriesPointForecastResponse(
   payload: unknown,
   context: TimeseriesPointTransformContext,
-): Promise<unknown> {
+): unknown {
   const record = extractPointForecastRecord(payload)
   if (!record) {
     return payload
   }
-
-  const palettes = await loadPalettesByElement(
-    {
-      ...record,
-      runtime: record.runtime ?? context.runtime,
-    },
-    {
-      ...context,
-      model: asString(record.model) || context.model,
-      lat: asNumber(record.latitude) ?? context.lat,
-      lon: asNumber(record.longitude) ?? context.lon,
-    },
-  )
 
   const elements = Array.isArray(record.elements)
     ? (record.elements as UpstreamPointElement[])
@@ -235,14 +158,11 @@ export async function transformTimeseriesPointForecastResponse(
     runtime: asNumber(record.runtime),
     latitude: asNumber(record.latitude) ?? context.lat,
     longitude: asNumber(record.longitude) ?? context.lon,
-    elements: elements.map((entry) => {
-      const element = asString(entry.element)
-      return {
-        element,
-        level: asString(entry.level),
-        unit: asString(entry.unit),
-        data: transformCells(entry.data, palettes.get(element) ?? null),
-      }
-    }),
+    elements: elements.map((entry) => ({
+      element: asString(entry.element),
+      level: asString(entry.level),
+      unit: asString(entry.unit),
+      data: transformCells(entry.data, extractPalette(entry)),
+    })),
   }
 }

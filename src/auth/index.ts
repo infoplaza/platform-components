@@ -12,92 +12,14 @@ export type {
   PlatformResponse,
   PlatformRouteHandler,
 } from './types'
-import { proxyUpstream } from './proxy'
-import { transformModelsResponse } from './dto/models-transform'
-import { transformTimeseriesModelsResponse } from './dto/timeseries-models-transform'
-import { transformTimeseriesPointForecastResponse } from './dto/timeseries-point-forecast-transform'
+import { endpoints } from './requests'
 
 export { proxyUpstream } from './proxy'
 
 const DEFAULT_BASE_PATH = '/api/platform'
 const DEFAULT_BASE_URL = 'https://api.infoplaza.com/weather/v1'
-const DEFAULT_TIMESERIES_BASE_URL =
-  'https://api.infoplaza.dev/v1/weather/timeseries'
-const DEFAULT_MAPS_BASE_URL = 'https://api.infoplaza.dev/v1/weather/maps'
 // Upstream expects the key as `?token=<apiKey>` rather than an auth header.
 const DEFAULT_API_KEY_QUERY_PARAM = 'token'
-
-const POINT_FORECAST_QUERY_KEYS = [
-  'lat',
-  'lon',
-  'model',
-  'elements',
-  'levels',
-  'runtime',
-  'units',
-  'members',
-] as const
-
-function resolveTimeseriesBaseUrl(
-  baseUrl: string | undefined,
-  override?: string,
-): string {
-  if (override) {
-    return override.replace(/\/+$/, '')
-  }
-  const base = (baseUrl ?? '').replace(/\/+$/, '')
-  if (base.includes('/weather/maps')) {
-    return base.replace('/weather/maps', '/weather/timeseries')
-  }
-  return DEFAULT_TIMESERIES_BASE_URL
-}
-
-function resolveMapsBaseUrl(baseUrl: string | undefined): string {
-  const base = (baseUrl ?? '').replace(/\/+$/, '')
-  if (base.includes('/weather/timeseries')) {
-    return base.replace('/weather/timeseries', '/weather/maps')
-  }
-  if (base.includes('/weather/maps')) {
-    return base
-  }
-  return DEFAULT_MAPS_BASE_URL
-}
-
-function requireParam(params: URLSearchParams, key: string): string | null {
-  const value = params.get(key)?.trim() ?? ''
-  return value ? value : null
-}
-
-function timeseriesAuthOptions(
-  options: PlatformAuthOptions,
-): PlatformAuthOptions {
-  return {
-    ...options,
-    baseUrl: resolveTimeseriesBaseUrl(
-      options.baseUrl,
-      options.timeseriesBaseUrl,
-    ),
-    apiKeyQueryParam: 'api_key',
-  }
-}
-
-function parseCoordinate(
-  params: URLSearchParams,
-  key: 'lat' | 'lon',
-): number | null {
-  if (!params.has(key)) {
-    return null
-  }
-  const value = Number(params.get(key))
-  return Number.isFinite(value) ? value : null
-}
-
-/** Resolves the `apiEnv` query parameter to a supported environment. */
-function resolveApiEnv(req: PlatformRequest): 'prod' | 'test' {
-  const queryString = (req.url ?? '').split('?')[1]
-  const value = new URLSearchParams(queryString).get('apiEnv')
-  return value === 'test' ? 'test' : 'prod'
-}
 
 /**
  * Resolves the endpoint segments that follow the mounted base path.
@@ -120,8 +42,9 @@ function resolveSegments(req: PlatformRequest, basePath: string): string[] {
 
 /**
  * Routes a normalized request to the matching platform endpoint. New endpoints
- * are added here and become available automatically under the mounted catch-all
- * route (e.g. adding a `layers` case exposes `/api/platform/layers`).
+ * are registered in `requests/` and become available automatically under the
+ * mounted catch-all route (e.g. adding a `layers` handler exposes
+ * `/api/platform/layers`).
  */
 async function dispatch(
   req: PlatformRequest,
@@ -130,94 +53,16 @@ async function dispatch(
   basePath: string,
 ): Promise<void> {
   const segments = resolveSegments(req, basePath)
-  const endpoint = segments[0] ?? ''
+  const handler = endpoints[segments[0] ?? '']
 
-  switch (endpoint) {
-    case 'models': {
-      // Proxies to `${baseUrl}/models` (e.g.
-      // https://api.infoplaza.com/weather/v1/models?token=<apiKey>) and
-      // enriches each model with a computed `elementGroups` collection derived
-      // from the FORECAST layer configuration.
-      await proxyUpstream(req, res, options, 'models', (data) =>
-        transformModelsResponse(data),
-      )
-      return
-    }
-    case 'timeseries-models': {
-      const [pathname, queryString] = (req.url ?? '').split('?')
-      const params = new URLSearchParams(queryString)
-      const lat = parseCoordinate(params, 'lat')
-      const lon = parseCoordinate(params, 'lon')
-      if (lat == null || lon == null) {
-        res.status(400).json({ error: 'lat and lon are required' })
-        return
-      }
-
-      const filteredReq: PlatformRequest = {
-        ...req,
-        url: `${pathname}?lat=${lat}&lon=${lon}`,
-      }
-
-      await proxyUpstream(
-        filteredReq,
-        res,
-        timeseriesAuthOptions(options),
-        'models',
-        transformTimeseriesModelsResponse,
-      )
-      return
-    }
-    case 'timeseries-point-forecast': {
-      const [pathname, queryString] = (req.url ?? '').split('?')
-      const params = new URLSearchParams(queryString)
-      const lat = parseCoordinate(params, 'lat')
-      const lon = parseCoordinate(params, 'lon')
-      const model = requireParam(params, 'model')
-      const elements = requireParam(params, 'elements')
-      const levels = requireParam(params, 'levels')
-      if (lat == null || lon == null || !model || !elements || !levels) {
-        res.status(400).json({
-          error: 'lat, lon, model, elements, and levels are required',
-        })
-        return
-      }
-
-      const forwarded = new URLSearchParams()
-      for (const key of POINT_FORECAST_QUERY_KEYS) {
-        const value = params.get(key)
-        if (value != null && value !== '') {
-          forwarded.set(key, value)
-        }
-      }
-
-      const filteredReq: PlatformRequest = {
-        ...req,
-        url: `${pathname}?${forwarded.toString()}`,
-      }
-
-      await proxyUpstream(
-        filteredReq,
-        res,
-        timeseriesAuthOptions(options),
-        'point',
-        (data) =>
-          transformTimeseriesPointForecastResponse(data, {
-            mapsBaseUrl: resolveMapsBaseUrl(options.baseUrl),
-            apiKey: options.apiKey,
-            lat,
-            lon,
-            model,
-            runtime: params.get('runtime') ?? undefined,
-          }),
-      )
-      return
-    }
-    default: {
-      res
-        .status(404)
-        .json({ error: `Unknown platform endpoint: /${segments.join('/')}` })
-    }
+  if (!handler) {
+    res
+      .status(404)
+      .json({ error: `Unknown platform endpoint: /${segments.join('/')}` })
+    return
   }
+
+  await handler(req, res, options, segments)
 }
 
 /**

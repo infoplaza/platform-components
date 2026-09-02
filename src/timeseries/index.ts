@@ -33,6 +33,7 @@ export type {
   TimeseriesFooterProps,
   TimeseriesBlock,
   TimeseriesCell,
+  TimeseriesCellColor,
   TimeseriesCellView,
   TimeseriesCellViewMap,
   TimeseriesDirectionView,

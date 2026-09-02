@@ -38,6 +38,65 @@ export default function ChartOnlyTimeseries() {
 }
 `
 
+export const CUSTOM_LOCATION_FILENAME = 'custom-location.tsx'
+
+export const CUSTOM_LOCATION_SOURCE = `'use client'
+
+import { type FormEvent, useState } from 'react'
+import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
+
+export default function CustomLocationTimeseries() {
+  const [lat, setLat] = useState(52.3676)
+  const [lon, setLon] = useState(4.9041)
+  const [latInput, setLatInput] = useState('52.3676')
+  const [lonInput, setLonInput] = useState('4.9041')
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const nextLat = Number(latInput)
+    const nextLon = Number(lonInput)
+    if (!Number.isFinite(nextLat) || !Number.isFinite(nextLon)) {
+      return
+    }
+    setLat(nextLat)
+    setLon(nextLon)
+  }
+
+  return (
+    <div>
+      <form onSubmit={onSubmit}>
+        <label>
+          Latitude
+          <input
+            type="number"
+            step="any"
+            value={latInput}
+            onChange={(event) => setLatInput(event.target.value)}
+          />
+        </label>
+        <label>
+          Longitude
+          <input
+            type="number"
+            step="any"
+            value={lonInput}
+            onChange={(event) => setLonInput(event.target.value)}
+          />
+        </label>
+        <button type="submit">Load forecast</button>
+      </form>
+      <TimeseriesForecast
+        lat={lat}
+        lon={lon}
+        locale="en"
+        headerFormat={['EEEEEE d MMM', 'HH']}
+        scrollToCurrentTime
+      />
+    </div>
+  )
+}
+`
+
 export const COMPOSED_FILENAME = 'composed.tsx'
 
 export const COMPOSED_SOURCE = `'use client'
@@ -66,6 +125,39 @@ export default function ComposedTimeseries() {
         <TimeseriesFooter />
       </TimeseriesProvider>
     </TimeseriesModelsProvider>
+  )
+}
+`
+
+export const PALETTE_FILENAME = 'palette.tsx'
+
+export const PALETTE_SOURCE = `'use client'
+
+import { useState } from 'react'
+import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
+
+export default function PaletteTimeseries() {
+  const [showPalette, setShowPalette] = useState(true)
+
+  return (
+    <div>
+      <label>
+        <input
+          type="checkbox"
+          checked={showPalette}
+          onChange={(event) => setShowPalette(event.target.checked)}
+        />
+        Palette colors
+      </label>
+      <TimeseriesForecast
+        lat={52.3676}
+        lon={4.9041}
+        locale="en"
+        headerFormat={['EEEEEE d MMM', 'HH']}
+        scrollToCurrentTime
+        showPalette={showPalette}
+      />
+    </div>
   )
 }
 `

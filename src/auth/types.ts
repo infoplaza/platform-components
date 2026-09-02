@@ -81,4 +81,10 @@ export interface PlatformAuthOptions {
    * otherwise `https://api.infoplaza.dev/v1/weather/timeseries`.
    */
   timeseriesBaseUrl?: string
+  /**
+   * Upstream base for ensemble routes (`GET /api/platform/ensemble-models`).
+   * When omitted, `/weather/maps` or `/weather/timeseries` on `baseUrl` is swapped
+   * to `/weather/ensemble`, otherwise `https://api.infoplaza.dev/v1/weather/ensemble`.
+   */
+  ensembleBaseUrl?: string
 }

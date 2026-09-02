@@ -132,8 +132,8 @@ function findSeries(
 }
 
 const CELL_COLOR_FALLBACK = {
-  im_color: 'transparent',
-  im_textcolor: '#111111',
+  background: 'transparent',
+  text: '#111111',
 } as const
 
 function forecastRecord(payload: unknown): Record<string, unknown> {
@@ -175,17 +175,23 @@ function toCells(value: unknown): TimeseriesCell[] {
           ? Number(raw)
           : null
 
+    const colorRecord =
+      record.color && typeof record.color === 'object' && !Array.isArray(record.color)
+        ? (record.color as Record<string, unknown>)
+        : null
+    const background =
+      typeof colorRecord?.background === 'string'
+        ? colorRecord.background
+        : CELL_COLOR_FALLBACK.background
+    const text =
+      typeof colorRecord?.text === 'string'
+        ? colorRecord.text
+        : CELL_COLOR_FALLBACK.text
+
     cells.push({
       timestamp,
       value: cellValue,
-      im_color:
-        typeof record.im_color === 'string'
-          ? record.im_color
-          : CELL_COLOR_FALLBACK.im_color,
-      im_textcolor:
-        typeof record.im_textcolor === 'string'
-          ? record.im_textcolor
-          : CELL_COLOR_FALLBACK.im_textcolor,
+      color: { background, text },
     })
   }
   return cells

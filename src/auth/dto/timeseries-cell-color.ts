@@ -1,11 +1,11 @@
 export const TIMESERIES_CELL_COLOR_FALLBACK = {
-  im_color: 'transparent',
-  im_textcolor: '#111111',
+  background: 'transparent',
+  text: '#111111',
 } as const
 
 export type TimeseriesCellColor = {
-  im_color: string
-  im_textcolor: string
+  background: string
+  text: string
 }
 
 function parseRgb(color: string): [number, number, number] | null {
@@ -82,9 +82,9 @@ export function colorForValue(
 
   const rgb = parseRgb(match.color)
   return {
-    im_color: match.color,
-    im_textcolor: rgb
+    background: match.color,
+    text: rgb
       ? textColorFromRgb(...rgb)
-      : TIMESERIES_CELL_COLOR_FALLBACK.im_textcolor,
+      : TIMESERIES_CELL_COLOR_FALLBACK.text,
   }
 }
