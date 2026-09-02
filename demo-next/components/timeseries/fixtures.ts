@@ -106,6 +106,14 @@ function offsetFor(model: string): number {
 
 export const AMSTERDAM = { lat: 52.3676, lon: 4.9041 }
 
+export const DEMO_LOCATIONS = [
+  { label: 'Amsterdam', lat: 52.3676, lon: 4.9041 },
+  { label: 'Rotterdam', lat: 51.9225, lon: 4.4792 },
+  { label: 'London', lat: 51.5074, lon: -0.1278 },
+  { label: 'Paris', lat: 48.8566, lon: 2.3522 },
+  { label: 'Rome', lat: 41.9028, lon: 12.4964 },
+] as const
+
 function colorForItem(item: TimeseriesElementItem) {
   const element = item.element ?? ''
   if (item.view === 'ICON') {

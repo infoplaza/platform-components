@@ -17,22 +17,27 @@ import {
   CHART_ONLY_SOURCE,
   COMPOSED_FILENAME,
   COMPOSED_SOURCE,
+  CUSTOM_LOCATION_FILENAME,
+  CUSTOM_LOCATION_SOURCE,
   PACKAGED_FILENAME,
   PACKAGED_SOURCE,
 } from './examples'
 import { AMSTERDAM } from './fixtures'
+import { LocationFields } from './location-fields'
 
 function ExampleSection({
   title,
   description,
   filename,
   source,
+  controls,
   children,
 }: {
   title: string
   description: string
   filename: string
   source: string
+  controls?: ReactNode
   children: ReactNode
 }) {
   return (
@@ -48,6 +53,7 @@ function ExampleSection({
         </div>
         <ViewCodeButton title={`${title} code`} filename={filename} source={source} />
       </div>
+      {controls}
       <div className="ip-platform  overflow-auto rounded-2xl border border-cloud/10 bg-white">
         {children}
       </div>
@@ -125,6 +131,30 @@ function ComposedExample() {
   )
 }
 
+function CustomLocationExample() {
+  const [location, setLocation] = useState(AMSTERDAM)
+
+  return (
+    <ExampleSection
+      title="Custom location"
+      description="Host-owned lat and lon. Pick a place or enter coordinates, then load the forecast for that point."
+      filename={CUSTOM_LOCATION_FILENAME}
+      source={CUSTOM_LOCATION_SOURCE}
+      controls={<LocationFields value={location} onChange={setLocation} />}
+    >
+      <TimeseriesForecast
+        key={`${location.lat},${location.lon}`}
+        lat={location.lat}
+        lon={location.lon}
+        locale="en"
+        timezone={null}
+        headerFormat={['EEEEEE d MMM', 'HH']}
+        scrollToCurrentTime
+      />
+    </ExampleSection>
+  )
+}
+
 export default function TimeseriesDemo() {
   const [fullWidth, setFullWidth] = useState(false)
 
@@ -146,9 +176,10 @@ export default function TimeseriesDemo() {
               Timeseries table
             </h1>
             <p className="m-0 text-sm leading-relaxed text-dark/60">
-              Use the packaged forecast, hide the toolbar and footer, or compose
-              ModelsProvider, Provider, Toolbar, Builder, Chart, and Footer.
-              Models and chart rows are loaded for Amsterdam.
+              Use the packaged forecast, hide the toolbar and footer, compose
+              ModelsProvider, Provider, Toolbar, Builder, Chart, and Footer, or
+              pass your own lat and lon. Models and chart rows load for the
+              selected point.
             </p>
           </header>
           <button
@@ -217,6 +248,8 @@ export default function TimeseriesDemo() {
           <PackagedExample />
         </ExampleSection>
 
+        <CustomLocationExample />
+
         <ExampleSection
           title="Chart only"
           description="The same packaged forecast with toolbar and footer turned off."
@@ -236,7 +269,7 @@ export default function TimeseriesDemo() {
         </ExampleSection>
 
         <footer className="flex flex-wrap items-center gap-4 px-0.5 pb-2 text-xs text-dark/60">
-          <span>Amsterdam · 52.3676, 4.9041</span>
+          <span>lat and lon are required · catalog is location-filtered</span>
           <span className="ml-auto">@infoplaza/platform/timeseries</span>
         </footer>
       </div>
