@@ -57,6 +57,7 @@
     "demo:next": "npm run dev -w platform-components-demo-next",
     "demo:next:build": "npm run build -w platform-components-demo-next",
     "demo:next:start": "npm run start -w platform-components-demo-next",
+    "demo:storybook": "npm run storybook -w platform-components-demo-next",
     "test": "echo \"Error: no test specified\" && exit 1",
     "publish": "npm publish",
     "publish:dry-run": "npm publish --dry-run"
