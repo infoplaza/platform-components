@@ -51,6 +51,7 @@ export default {
     'events/index': 'src/events/index.tsx',
     'auth/index': 'src/auth/index.ts',
     'timeseries/index': 'src/timeseries/index.ts',
+    'ensemble/index': 'src/ensemble/index.ts',
   },
   external,
   output: {

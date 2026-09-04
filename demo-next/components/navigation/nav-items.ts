@@ -10,6 +10,11 @@ export const NAV_ITEMS = [
     hint: 'Forecast table',
   },
   {
+    href: '/ensemble',
+    label: 'Ensemble',
+    hint: 'Ensemble plume charts',
+  },
+  {
     href: '/documentation',
     label: 'Documentation',
     hint: 'In progress',
