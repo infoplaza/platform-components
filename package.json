@@ -1,6 +1,6 @@
 {
   "name": "@infoplaza/platform",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "",
   "main": "./dist/index.js",
   "style": "./dist/styles.css",
@@ -40,6 +40,10 @@
     "./timeseries": {
       "types": "./dist/timeseries/index.d.ts",
       "default": "./dist/timeseries/index.js"
+    },
+    "./ensemble": {
+      "types": "./dist/ensemble/index.d.ts",
+      "default": "./dist/ensemble/index.js"
     },
     "./styles.css": "./dist/styles.css",
     "./styles.embed.css": "./dist/styles.embed.css"
@@ -93,6 +97,7 @@
     "react-colorful": "^5.8.0",
     "react-map-gl": "^8.1.1",
     "react-redux": "^9.3.0",
+    "recharts": "^2.15.4",
     "tailwind-merge": "^3.6.0",
     "to-smooth": "^2.2.0"
   },
