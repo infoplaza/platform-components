@@ -98,7 +98,7 @@ export default function EnsembleGraph({
     return (
       <div className="ip:flex ip:w-full ip:flex-col ip:gap-2">
         <div className="ip:flex ip:flex-col ip:items-start ip:p-1 ip:text-xs ip:font-bold ip:uppercase">
-          <div className="ip:min-w-[13rem]">{title ?? ''}</div>
+          <div className="ip:min-w-52">{title ?? ''}</div>
           {subtitle ? (
             <div className="ip:text-[10px] ip:font-normal ip:opacity-75">
               {subtitle}
@@ -413,7 +413,7 @@ export default function EnsembleGraph({
     <div ref={chartRef} className="ip:relative ip:pr-2">
       <div className="ip:flex ip:justify-between">
         <div className="ip:flex ip:flex-col ip:items-start ip:p-1 ip:text-xs ip:font-bold ip:uppercase ip:dark:text-white">
-          <div className="ip:min-w-[14rem] ip:overflow-hidden ip:truncate">
+          <div className="ip:min-w-56 ip:overflow-hidden ip:truncate">
             {title ?? ''}
             {titleExtra ? (
               <span className="ip:ml-2 ip:text-[10px] ip:font-light ip:truncate">

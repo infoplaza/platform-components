@@ -137,9 +137,8 @@ export default function EnsembleDemo() {
             <p className="m-0 text-sm leading-relaxed text-dark/60">
               Use the packaged forecast, hide the toolbar and footer, or compose
               ModelsProvider, Provider, Toolbar, Builder, Chart, and Footer.
-              Models load from PlatformAuth for the selected point. Charts still
-              render mock ensemble plumes, member lines, and probability bars.
-              Switch Basic / Expert in the footer.
+              Models and chart series load from PlatformAuth for the selected
+              point. Switch Basic / Expert in the footer.
             </p>
           </header>
           <button
@@ -170,7 +169,7 @@ export default function EnsembleDemo() {
 
         <ExampleSection
           title="Packaged"
-          description="EnsembleForecast with toolbar, charts, and footer in one component. Models load from PlatformAuth; chart series are still mock."
+          description="EnsembleForecast with toolbar, charts, and footer in one component. Models and chart series load from PlatformAuth."
           filename={PACKAGED_FILENAME}
           source={PACKAGED_SOURCE}
         >
@@ -196,7 +195,7 @@ export default function EnsembleDemo() {
         </ExampleSection>
 
         <footer className="flex flex-wrap items-center gap-4 px-0.5 pb-2 text-xs text-dark/60">
-          <span>lat and lon are required · catalog is location-filtered · mock series</span>
+          <span>lat and lon are required · catalog is location-filtered · live point forecast</span>
           <span className="ml-auto">@infoplaza/platform/ensemble</span>
         </footer>
       </div>

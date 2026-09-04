@@ -8,7 +8,7 @@ alwaysApply: false
 
 ## Goal
 
-Ship a **portable ensemble forecast chart** that other platforms can import without the map stack, ImWeather fetch layer, or app chrome. Charts are Recharts plume / line / bar graphs. The models **catalog** is loaded through PlatformAuth (`GET /api/platform/ensemble-models`). Chart series still use in-package mock data unless the host passes `charts` / `getCharts`.
+Ship a **portable ensemble forecast chart** that other platforms can import without the map stack, ImWeather fetch layer, or app chrome. Charts are Recharts plume / line / bar graphs. The models **catalog** is loaded through PlatformAuth (`GET /api/platform/ensemble-models`). Chart series load from `GET /api/platform/ensemble-point-forecast` unless the host passes `charts` / `getCharts`.
 
 It is a **sibling product** to timeseries (`src/components/timeseries`) and the map. Own folder, own package export, own demo route (`/ensemble`). Do not nest it under timeseries or map, and do not re-export it from `src/components/index.ts`.
 
@@ -20,7 +20,7 @@ A compound API. The models list is not host-supplied.
 |---|---|
 | `EnsembleModelsProvider` | Required `lat`/`lon`. Fetches `GET /api/platform/ensemble-models`. Read-only `{ models, loading, error, lat, lon, basePath }` — no setter. |
 | `EnsembleForecast` | Packaged: ModelsProvider + Provider + optional Toolbar + Builder/Chart + optional Footer. Requires `lat`/`lon`. |
-| `EnsembleProvider` | Holds selection (`model`, `run`, `elementGroup`, `view`), charts, display settings. Reads the catalog from `EnsembleModelsProvider`. Uses mock `getMockEnsembleCharts` when `charts` / `getCharts` are omitted. No `models` prop. Extra vs timeseries: `view: 'basic' \| 'expert'`. |
+| `EnsembleProvider` | Holds selection (`model`, `run`, `elementGroup`, `view`), charts, display settings. Reads the catalog from `EnsembleModelsProvider`. Fetches `GET /api/platform/ensemble-point-forecast` when `charts` / `getCharts` are omitted. No `models` prop. Extra vs timeseries: `view: 'basic' \| 'expert'`. |
 | `EnsembleToolbar` | Model + run pills (catalog only) |
 | `EnsembleBuilder` | Presentational: loading skeleton, one chart-block context per `EnsembleChartBlock` |
 | `EnsembleChart` | Reads the current block (or explicit graph props) and renders `EnsembleGraph` |
@@ -31,7 +31,7 @@ A compound API. The models list is not host-supplied.
 
 Import only from `@infoplaza/platform/ensemble`. Wrap host UI in `.ip-platform` and use `ip:` utilities.
 
-**Packaged** — default chrome on; hide with flags. `lat` and `lon` are required:
+**Packaged** — default chrome on; hide with flags. `lat` and `lon` are required. Charts load from the point-forecast endpoint unless `charts` / `getCharts` is passed:
 
 ```tsx
 <EnsembleForecast
@@ -56,7 +56,7 @@ Import only from `@infoplaza/platform/ensemble`. Wrap host UI in `.ip-platform` 
 </EnsembleModelsProvider>
 ```
 
-Selection is hybrid: `model` + `onModelChange` (controlled) or `defaultModel` / omit (provider-owned). Same for `run`, `elementGroup`, `view`. Unknown slugs/runtimes are clamped to the catalog. If `charts` is passed it wins; otherwise `getCharts({ model, run, elementGroup, view, models, elementGroups, locale, timezone })` is used when provided; otherwise the Provider uses the built-in mock generator. `elementGroups` defaults to `ENSEMBLE_TIMESERIES.groups` (`DEFAULT_ENSEMBLE_ELEMENT_GROUPS`). The footer falls back to the same list.
+Selection is hybrid: `model` + `onModelChange` (controlled) or `defaultModel` / omit (provider-owned). Same for `run`, `elementGroup`, `view`. Unknown slugs/runtimes are clamped to the catalog. If `charts` is passed it wins; otherwise `getCharts({ model, run, elementGroup, view, models, elementGroups, locale, timezone })` is used when provided; otherwise the Provider fetches point-forecast charts. `elementGroups` defaults to `ENSEMBLE_TIMESERIES.groups` (`DEFAULT_ENSEMBLE_ELEMENT_GROUPS`). The footer falls back to the same list.
 
 Demo patterns live in `demo-next/components/ensemble/` (packaged, chart-only, composed). Prefer updating those examples over inventing a fourth usage mode.
 
@@ -64,9 +64,9 @@ Demo patterns live in `demo-next/components/ensemble/` (packaged, chart-only, co
 
 - **Catalog is API-only.** Do not pass a `models` array into Provider or Forecast. `EnsembleModelsProvider` is the only writer.
 - **Provider loads charts by default.** Shape `EnsembleChartBlock[]` (title + Recharts `config`). `charts` / `getCharts` remain a host override. Do not import ImWeather BFF routes or `ensemble_grid` APIs into this package.
-- **Builder does not fetch.** It maps context `charts` onto Chart. Land-cover filters, paywall, and share/export stay in the host.
+- **`run === 'all'`:** the Provider fetches one point-forecast request per catalog runtime and returns that runtime’s item charts, with `subtitle` set to the formatted runtime.
+- **Builder does not fetch.** It maps context `charts` onto Chart. The Provider fetches point forecast. Land-cover filters, paywall, and share/export stay in the host.
 - **Toolbar / Footer** resolve `props ?? context` and return `null` if neither exists — do not throw. `useEnsemble()` throws outside the provider; `useEnsembleContext()` is nullable for standalone pieces. `useEnsembleModels()` throws outside `EnsembleModelsProvider`.
 - **Keep map, timeseries, and ensemble separate.** No ensemble in the timeseries or map barrels. Toolbar/footer reuse timeseries pills internally, not map controls. Coordinates live on `EnsembleModelsProvider` (and packaged Forecast), not as props on `EnsembleProvider`.
 - **Stay presentational.** No next-intl, next-auth, `#main-header` sticky offsets, react-toastify, or paywall chrome. Titles and group labels are already-resolved strings. Locale is for date axis labels (`en`/`nl`/`de`/`it`/`es`/`fr`).
-- **Out of scope:** live PlatformAuth chart fetch, share/PNG/PDF export, marine land-cover filter, nesting under timeseries.
-
+- **Out of scope:** share/PNG/PDF export, marine land-cover filter, nesting under timeseries.

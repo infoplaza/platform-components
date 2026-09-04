@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -15,8 +16,8 @@ import type {
   EnsembleModel,
 } from './types'
 import { DEFAULT_ENSEMBLE_ELEMENT_GROUPS } from './defaults'
-import { getMockEnsembleCharts } from './mock'
 import { useEnsembleModels } from './models'
+import { fetchEnsembleCharts } from './point-forecast'
 
 const EnsembleContext = createContext<EnsembleContextValue | null>(null)
 const EnsembleChartBlockContext = createContext<EnsembleChartBlock | null>(null)
@@ -77,9 +78,16 @@ export function EnsembleProvider({
   timezone = null,
   children,
 }: EnsembleProviderProps) {
-  const { models, loading: catalogLoading, error: catalogError } =
-    useEnsembleModels()
+  const {
+    models,
+    loading: catalogLoading,
+    error: catalogError,
+    lat,
+    lon,
+    basePath,
+  } = useEnsembleModels()
   const elementGroups = elementGroupsProp ?? DEFAULT_ENSEMBLE_ELEMENT_GROUPS
+  const hostOwned = chartsProp !== undefined || Boolean(getCharts)
 
   const modelControlled = modelProp !== undefined
   const runControlled = runProp !== undefined
@@ -160,8 +168,91 @@ export function EnsembleProvider({
     [onViewChangeProp, viewControlled],
   )
 
+  const [forecastCharts, setForecastCharts] = useState<EnsembleChartBlock[]>(
+    [],
+  )
+  const [forecastLoading, setForecastLoading] = useState(() => !hostOwned)
+  const [forecastError, setForecastError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    if (hostOwned) {
+      return
+    }
+
+    if (catalogLoading) {
+      return
+    }
+
+    const selected = models.find((item) => item.slug === model)
+    const group =
+      elementGroups.find((entry) => entry.key === elementGroup) ??
+      elementGroups[0]
+
+    if (
+      !selected ||
+      !group ||
+      !model ||
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lon)
+    ) {
+      setForecastCharts([])
+      setForecastLoading(false)
+      setForecastError(null)
+      return
+    }
+
+    const controller = new AbortController()
+    setForecastLoading(true)
+    setForecastError(null)
+
+    fetchEnsembleCharts({
+      basePath,
+      lat,
+      lon,
+      model: selected,
+      run,
+      group,
+      view,
+      locale,
+      timezone,
+      signal: controller.signal,
+    })
+      .then((next) => {
+        setForecastCharts(next)
+        setForecastLoading(false)
+      })
+      .catch((err) => {
+        if (err?.name === 'AbortError') {
+          return
+        }
+        setForecastError(err instanceof Error ? err : new Error(String(err)))
+        setForecastCharts([])
+        setForecastLoading(false)
+      })
+
+    return () => {
+      controller.abort()
+    }
+  }, [
+    basePath,
+    catalogLoading,
+    elementGroup,
+    elementGroups,
+    hostOwned,
+    lat,
+    locale,
+    lon,
+    model,
+    models,
+    run,
+    timezone,
+    view,
+  ])
+
   const charts = useMemo(() => {
-    if (chartsProp !== undefined) return chartsProp
+    if (chartsProp !== undefined) {
+      return chartsProp
+    }
     if (getCharts) {
       return getCharts({
         model,
@@ -174,22 +265,12 @@ export function EnsembleProvider({
         timezone,
       })
     }
-    if (catalogLoading || !model) return []
-    return getMockEnsembleCharts({
-      model,
-      run,
-      elementGroup,
-      view,
-      models,
-      elementGroups,
-      locale,
-      timezone,
-    })
+    return forecastCharts
   }, [
-    catalogLoading,
     chartsProp,
     elementGroup,
     elementGroups,
+    forecastCharts,
     getCharts,
     locale,
     model,
@@ -199,8 +280,8 @@ export function EnsembleProvider({
     view,
   ])
 
-  const loading = catalogLoading
-  const error = catalogError
+  const loading = catalogLoading || (!hostOwned && forecastLoading)
+  const error = catalogError ?? forecastError
 
   const value = useMemo<EnsembleContextValue>(
     () => ({
