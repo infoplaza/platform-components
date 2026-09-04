@@ -15,12 +15,26 @@ import type {
   EnsembleView,
   EnsembleModel,
 } from './types'
-import { DEFAULT_ENSEMBLE_ELEMENT_GROUPS } from './defaults'
+import {
+  DEFAULT_ENSEMBLE_ELEMENT_GROUPS,
+  DEFAULT_ENSEMBLE_MODEL,
+} from './defaults'
 import { useEnsembleModels } from './models'
 import { fetchEnsembleCharts } from './point-forecast'
 
 const EnsembleContext = createContext<EnsembleContextValue | null>(null)
 const EnsembleChartBlockContext = createContext<EnsembleChartBlock | null>(null)
+
+function preferredCatalogSlug(
+  models: readonly EnsembleModel[],
+): string {
+  const preferred = models.find(
+    (item) =>
+      item.slug === DEFAULT_ENSEMBLE_MODEL ||
+      item.title.toLowerCase() === 'ecmwf ensemble global',
+  )
+  return preferred?.slug ?? models[0]?.slug ?? ''
+}
 
 function catalogSlug(
   models: readonly EnsembleModel[],
@@ -29,7 +43,7 @@ function catalogSlug(
   if (slug && models.some((item) => item.slug === slug)) {
     return slug
   }
-  return models[0]?.slug ?? ''
+  return preferredCatalogSlug(models)
 }
 
 function latestRuntime(
@@ -95,7 +109,7 @@ export function EnsembleProvider({
   const viewControlled = viewProp !== undefined
 
   const [internalModel, setInternalModel] = useState(
-    () => modelProp ?? defaultModel ?? '',
+    () => modelProp ?? defaultModel ?? DEFAULT_ENSEMBLE_MODEL,
   )
   const requestedModel = modelControlled ? modelProp : internalModel
   const model = catalogSlug(models, requestedModel)
