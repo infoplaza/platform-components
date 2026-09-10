@@ -9,6 +9,14 @@ type UpstreamPointDatum = {
   time?: unknown
   timestamp?: unknown
   value?: unknown
+  sequence?: unknown
+  metadata?: unknown
+}
+
+type TransformedPointMetadata = {
+  sequence?: number
+  offset?: number
+  rawValue?: unknown
 }
 
 type UpstreamPointElement = {
@@ -72,22 +80,50 @@ function transformMembers(value: unknown): Record<string, number | null> {
   return members
 }
 
+function transformMetadata(
+  entry: UpstreamPointDatum,
+): TransformedPointMetadata | undefined {
+  const nested = asRecord(entry.metadata)
+  const sequence = asNumber(nested?.sequence) ?? asNumber(entry.sequence)
+  const offset = asNumber(nested?.offset)
+  const rawValue = nested?.rawValue
+
+  if (sequence == null && offset == null && rawValue === undefined) {
+    return undefined
+  }
+
+  return {
+    ...(sequence != null ? { sequence } : {}),
+    ...(offset != null ? { offset } : {}),
+    ...(rawValue !== undefined ? { rawValue } : {}),
+  }
+}
+
 function transformData(
   data: unknown,
-): { time: number; value: Record<string, number | null> }[] {
+): {
+  time: number
+  value: Record<string, number | null>
+  metadata?: TransformedPointMetadata
+}[] {
   if (!Array.isArray(data)) {
     return []
   }
 
-  return data.map((entry: UpstreamPointDatum) => ({
-    time: asNumber(entry?.time) ?? asNumber(entry?.timestamp) ?? 0,
-    value: transformMembers(entry?.value),
-  }))
+  return data.map((entry: UpstreamPointDatum) => {
+    const metadata = transformMetadata(entry)
+    return {
+      time: asNumber(entry?.time) ?? asNumber(entry?.timestamp) ?? 0,
+      value: transformMembers(entry?.value),
+      ...(metadata ? { metadata } : {}),
+    }
+  })
 }
 
 /**
  * Maps the v1 weather ensemble point payload onto a stable shape: model,
- * runtime, coordinates, and elements whose `data[].value` is a member map.
+ * runtime, coordinates, and elements whose `data[]` has a member `value` map
+ * plus `metadata.sequence` / `offset` when the upstream datum provides them.
  */
 export function transformEnsemblePointForecastResponse(
   payload: unknown,
@@ -112,6 +148,7 @@ export function transformEnsemblePointForecastResponse(
       level: asString(entry.level),
       unit: asString(entry.unit),
       data: transformData(entry.data),
+      raw: entry,
     })),
   }
 }

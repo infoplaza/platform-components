@@ -122,10 +122,6 @@ export default function BaseMap({
     setDevice({ ready: true, isMobile: detectIosAndroidPhoneOrTablet() })
   }, [])
 
-  useEffect(() => {
-    console.log('modelInfo', modelInfo)
-  }, [modelInfo])
-
   const selectedMapStyle = getSelectedMapStyle(mapStyles, mapStyleKey, mapStyle)
   const resolvedMapStyle = getResolvedMapStyle(selectedMapStyle, modelInfo)
   const resolvedMapSource = style ?? resolvedMapStyle?.source

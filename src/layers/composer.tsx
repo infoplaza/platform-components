@@ -1,4 +1,4 @@
-import { useMemo, useRef, type ReactNode, useEffect } from "react"
+import { useMemo, useRef, type ReactNode } from "react"
 
 // ** Connectors Imports
 import { ImageLayerConnector } from "./connectors/image"
@@ -96,10 +96,6 @@ const LayerComposer = ({ children, beforeId, mapComponents }: LayerComposerProps
     // const { selectedPlot } = useObservation()
     // const { location } = useMapLocation()
     const frameSkip = displaySettingsState?.frameSkip ?? true
-    
-    useEffect(() => {
-        console.log('beforeId', beforeId)
-    }, [beforeId])
 
     const renderingBuilders = useMemo<RenderingBuilder[]>(() => {
         return [
