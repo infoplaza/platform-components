@@ -17,13 +17,169 @@ A hosted Next.js demo lives at [https://platform-components.vercel.app/](https:/
 npm install @infoplaza/platform maplibre-gl
 ```
 
-The package expects a React app (React + ReactDOM) and ships styles you should import once in your app entry.
+Peer expectations:
 
-> **Heads up:** as of the latest version the available weather models are
-> fetched **internally** by `Providers`. You no longer fetch `/api/platform/models`
-> yourself or pass a `models` array into `weatherConfig`. This does require you to
-> mount the platform auth route on your server — see
+- React 18 or 19
+- **`maplibre-gl` ≥ 6.4.1** (this package targets **`^6.9.0`**)
+
+Import styles once in your app entry (see [Styling & CSS isolation](#styling--css-isolation)):
+
+```ts
+import 'maplibre-gl/dist/maplibre-gl.css'
+import '@infoplaza/platform/styles.css' // or styles.embed.css in a Tailwind host
+```
+
+> **Heads up:** weather models are fetched **internally** by `Providers` / `WeatherLayers`.
+> You must mount the platform auth route on your server — see
 > [Server setup (required)](#server-setup-required).
+
+## MapLibre 6 setup (required for maps)
+
+MapLibre v6 loads vector tiles in a **Web Worker** (`maplibre-gl-worker.mjs`, which imports
+`maplibre-gl-shared.mjs`). Under **Next.js (Turbopack and webpack)**, Vite, Rollup, and
+similar bundlers, that worker URL is not resolved correctly unless the host calls
+[`setWorkerUrl`](https://maplibre.org/maplibre-gl-js/docs/API/functions/setWorkerUrl/)
+**before the first map mounts**.
+
+If you skip this step the map canvas often appears but **basemap tiles never load**.
+
+Official background: [v5 → v6 migration guide](https://maplibre.org/maplibre-gl-js/docs/guides/v5-to-v6-migration-guide/).
+
+### Next.js (recommended: automate the copy)
+
+You need two things:
+
+1. Serve the worker files from `public/` (same-origin URLs).
+2. Call `setWorkerUrl` once on the client before any `BaseMap` / MapLibre map.
+
+#### 1. Copy workers automatically on `dev` / `build`
+
+Add a small script (same approach as `demo-next/scripts/copy-maplibre-workers.mjs`):
+
+```js
+// scripts/copy-maplibre-workers.mjs
+import { copyFileSync, mkdirSync, existsSync } from 'node:fs'
+import path from 'node:path'
+import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
+
+const require = createRequire(import.meta.url)
+const appRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+
+const maplibrePackageJson = require.resolve('maplibre-gl/package.json', {
+  paths: [appRoot],
+})
+const maplibreDist = path.join(path.dirname(maplibrePackageJson), 'dist')
+const publicDir = path.join(appRoot, 'public', 'maplibre')
+const files = ['maplibre-gl-worker.mjs', 'maplibre-gl-shared.mjs']
+
+mkdirSync(publicDir, { recursive: true })
+
+for (const file of files) {
+  const source = path.join(maplibreDist, file)
+  if (!existsSync(source)) {
+    throw new Error(`Missing MapLibre worker asset: ${source}`)
+  }
+  copyFileSync(source, path.join(publicDir, file))
+}
+
+console.log(`Copied MapLibre workers → ${publicDir}`)
+```
+
+Hook it in `package.json` so every install/dev/build stays in sync with the
+installed `maplibre-gl` version:
+
+```json
+{
+  "scripts": {
+    "predev": "node scripts/copy-maplibre-workers.mjs",
+    "prebuild": "node scripts/copy-maplibre-workers.mjs",
+    "dev": "next dev",
+    "build": "next build"
+  }
+}
+```
+
+Add `public/maplibre/` to `.gitignore` (generated assets; do not commit them).
+
+Optional: also run the script from `postinstall` if CI does not call `prebuild`
+before bundling.
+
+#### 2. Point MapLibre at the worker (client only)
+
+```ts
+// components/maplibre-worker.ts
+'use client'
+
+import { setWorkerUrl } from 'maplibre-gl'
+
+let configured = false
+
+export function ensureMapLibreWorker() {
+  if (configured || typeof window === 'undefined') return
+  setWorkerUrl('/maplibre/maplibre-gl-worker.mjs')
+  configured = true
+}
+
+ensureMapLibreWorker()
+```
+
+Import that module **once**, before any map mounts — for example at the top of
+your map client entry (or a client layout that wraps map routes):
+
+```ts
+'use client'
+import '@/components/maplibre-worker'
+// …then render BaseMap / PlatformMap
+```
+
+Reference implementation: [`demo-next/`](demo-next/) (`scripts/copy-maplibre-workers.mjs`,
+`components/maplibre-worker.ts`, wired from the map client).
+
+#### Manual alternative (no script)
+
+```bash
+mkdir -p public/maplibre
+cp node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs public/maplibre/
+cp node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs public/maplibre/
+```
+
+Then call `setWorkerUrl('/maplibre/maplibre-gl-worker.mjs')` as above. Prefer the
+script so upgrades of `maplibre-gl` do not leave stale workers in `public/`.
+
+### Vite
+
+```ts
+import { setWorkerUrl } from 'maplibre-gl'
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
+
+setWorkerUrl(workerUrl)
+```
+
+If TypeScript complains about the `?worker&url` import, add:
+
+```ts
+// vite-env.d.ts
+declare module '*?worker&url' {
+  const workerUrl: string
+  export default workerUrl
+}
+```
+
+### Upgrading from MapLibre 5 / older `@infoplaza/platform`
+
+| Step | Action |
+| --- | --- |
+| 1 | Bump `maplibre-gl` to `^6.9.0` (or at least `≥ 6.4.1`) and `@infoplaza/platform` to a release that depends on MapLibre 6 |
+| 2 | Ensure `react-map-gl` is **≥ 8.1.2** (this package pins `^8.1.3`). Older 8.1.0/8.1.1 still read removed `map.transform` and crash with `Cannot read properties of undefined (reading 'center')` |
+| 3 | This package uses `@deck.gl/maplibre` (not `@deck.gl/mapbox`) with deck.gl **9.4+** so weather overlays work on MapLibre 6. Hosts should not pin an older `@deck.gl/mapbox` that still reads `map.transform.height` |
+| 4 | Add the worker copy + `setWorkerUrl` steps above (Next) or the Vite snippet |
+| 5 | Keep CSS imports as `maplibre-gl/dist/maplibre-gl.css` — path unchanged |
+| 6 | Platform APIs (`Providers`, `BaseMap`, auth route, timeseries/ensemble) stay the same for this upgrade |
+| 7 | Smoke-test: basemap tiles load, weather layers/HUD still work |
+
+If the map shell renders but stays blank/grey with no tile network requests, the
+worker URL is almost always missing or pointing at the wrong path.
 
 ## Server setup (required)
 
@@ -252,12 +408,12 @@ const myStyle: MapStyle = {
     // Used for normal (land/atmospheric) models.
     default: {
       source: 'https://maps.example.com/styles/dark/style.json', // URL or MapLibre style object
-      beforeId: 'lakes-transparent', // weather layers are inserted before this layer id
+      beforeId: 'river', // weather under rivers + borders + labels, above land fills
     },
     // Used automatically for marine models (category `wave` / `ocean`).
     marine: {
       source: 'https://maps.example.com/styles/dark-marine/style.json',
-      beforeId: 'landcover',
+      beforeId: 'river',
     },
   },
 }
@@ -267,7 +423,9 @@ const myStyle: MapStyle = {
 - `beforeId` is the id of the basemap layer the weather layers are placed under.
   `BaseMap` exposes the resolved value through the `beforeId` render-prop so you
   can forward it to `LayerComposer` (`<LayerComposer beforeId={beforeId} … />`).
-  If a style omits it, `BaseMap` falls back to `'lakes-transparent'`.
+  If a style omits it, `BaseMap` falls back to `'river'`.
+  Prefer the first river/border/label layer (e.g. `river`, `boundary_state`, `road-name`) so
+  place names, rivers, and borders stay above the weather raster.
 
 ### Selecting a style
 
@@ -406,6 +564,10 @@ The client bundle is browser-safe: no Node-only modules (`fs`,
 `worker_threads`, `child_process`) are bundled into client chunks, and `geotiff`
 is loaded lazily via an external dynamic `import('geotiff')` so the host bundler
 applies its own browser resolution.
+
+**Maps on Next require MapLibre 6 worker wiring** — see
+[MapLibre 6 setup](#maplibre-6-setup-required-for-maps) (`setWorkerUrl` + copy
+workers into `public/`). This applies to both Turbopack and webpack.
 
 Add the package to `transpilePackages`:
 

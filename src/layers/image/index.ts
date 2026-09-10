@@ -3,7 +3,6 @@ import {CompositeLayer, COORDINATE_SYSTEM} from '@deck.gl/core';
 import {createTextureCached, createEmptyTextureCached} from '../../_utils/texture';
 import {isRepeatBounds} from '../../_utils/bounds';
 import {ImageBitmapLayer} from './bitmap';
-
 // ** Types import **
 import type {ImageBitmapLayerProps} from './bitmap';
 import type {Texture} from '@luma.gl/core';
@@ -17,6 +16,8 @@ type _ImageLayerProps = Omit<ImageBitmapLayerProps, 'image' | 'paletteImage'> & 
   image: ImageSourceData | null;
   image2: ImageSourceData | null;
   paletteImage: ImageSourceData | null;
+  /** MapLibre interleaved insert point — forwarded to drawable bitmap leaves. */
+  beforeId?: string;
 };
 
 export type ImageLayerProps = _ImageLayerProps & LayerProps;
@@ -62,7 +63,11 @@ export class ImageLayer<ExtraPropsT extends {} = {}> extends CompositeLayer<Extr
           imageTexture2,
           paletteTexture,
           _imageCoordinateSystem: COORDINATE_SYSTEM.DEFAULT,
-        } satisfies Partial<ImageLayerProps>,
+          beforeId: this.props.beforeId,
+          parameters: {
+            ...this.props.parameters,
+          },
+        } as Partial<ImageLayerProps>,
 
         image: createEmptyTextureCached(device),
         image2: createEmptyTextureCached(device),

@@ -4,7 +4,6 @@ import { ImageLayer } from '../image'
 import { ImageType } from '@/src/_utils/image-type'
 import { ImageInterpolation } from '@/src/_utils/image-interpolation'
 import { getPaletteBounds } from '@/src/_utils/image-unscale'
-
 // ** Types import **
 import type { TextureData } from '@/src/_utils/texture-data'
 import type { Color } from '@deck.gl/core'
@@ -81,8 +80,6 @@ export function ImageLayerConnector(
         console.error('❌ Invalid image data for BitmapLayer:', layer.image);
         return null;
     }
-
-    void beforeId
 
     const imageSmoothing = state.imageSmoothing ?? DEFAULT_IMAGE_SMOOTHING
     const imageInterpolation = layer.imageStride

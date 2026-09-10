@@ -57,7 +57,7 @@ export default function MapDemo() {
               {(mapComponents) => (
                 <LayerComposer beforeId={beforeId} mapComponents={mapComponents}>
                   {({ layers }) => (
-                    <Overlay layers={[...layers]} interleaved controller />
+                    <Overlay layers={[...layers]} interleaved beforeId={beforeId} />
                   )}
                 </LayerComposer>
               )}

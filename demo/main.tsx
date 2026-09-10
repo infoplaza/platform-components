@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { setWorkerUrl } from 'maplibre-gl'
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { BaseMap, MAP_STYLES } from '../dist/components/index.js'
 import { Providers as ProvidersComponent } from '../dist/providers/index.js'
 import MapEventsProvider from '../dist/events/index.js'
@@ -9,6 +11,8 @@ import { MapControlHud } from '../dist/components/index.js'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import '../dist/styles.css'
 import './styles.css'
+
+setWorkerUrl(workerUrl)
 
 const rootElement = document.getElementById('root')
 

@@ -1,5 +1,6 @@
 import { ScatterplotLayer } from '@deck.gl/layers'
 import type { Color } from '@deck.gl/core'
+import type { ScatterplotLayerProps } from '@deck.gl/layers'
 import type { LayerSettingsState } from '@/src/providers/settings/layer-settings'
 
 export interface PlotDataPoint {
@@ -61,7 +62,11 @@ const SELECTED_LINE_WIDTH = 2
 const SELECTED_RADIUS_MULTIPLIER = 100
 const DEFAULT_OPACITY = 0.8
 
-export function PlotLayerConnector( layer: PlotLayerConfig, state: LayerSettingsState): ScatterplotLayer<PlotDataPoint> | null {
+export function PlotLayerConnector(
+    layer: PlotLayerConfig,
+    state: LayerSettingsState,
+    beforeId?: string,
+): ScatterplotLayer<PlotDataPoint> | null {
     if (!layer.data?.length) {
         return null
     }
@@ -86,6 +91,7 @@ export function PlotLayerConnector( layer: PlotLayerConfig, state: LayerSettings
             radiusMaxPixels: layer.radiusMaxPixels ?? DEFAULT_RADIUS_MAX_PIXELS,
             lineWidthMinPixels: 1,
             lineWidthUnits: 'pixels',
+            beforeId,
             getPosition: (d: PlotDataPoint) => {
                 return [d.lon, d.lat]
             },
@@ -112,7 +118,7 @@ export function PlotLayerConnector( layer: PlotLayerConfig, state: LayerSettings
                 getLineColor: [selectedId],
                 getLineWidth: [selectedId],
             },
-        })
+        } as ScatterplotLayerProps<PlotDataPoint>)
     } catch (error) {
         console.error('Error creating ScatterplotLayer:', error)
         return null
