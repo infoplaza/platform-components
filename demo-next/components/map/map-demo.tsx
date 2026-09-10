@@ -54,11 +54,11 @@ export default function MapDemo() {
             I'm Weather
           </p>
           <h1 className="mb-1.5 text-2xl font-bold tracking-tight text-dark">
-            Weather on the map
+            Weather on the map (legacy)
           </h1>
           <p className="m-0 text-sm leading-relaxed text-dark/60">
-            A live BaseMap, weather layers, overlay, and control HUD from I'm Weather
-            the same composition you would drop into your own app.
+            Legacy BaseMap composition: Providers, MapEventsProvider, LayerComposer,
+            Overlay, and HUD hand-wired. Prefer PlatformMap + WeatherLayers on Map.
           </p>
         </header>
         <div className="inline-flex shrink-0 items-center gap-3">

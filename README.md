@@ -1,6 +1,6 @@
 # @infoplaza/platform
 
-React components and providers for rendering Infoplaza weather layers on a MapLibre map, plus a portable timeseries forecast table.
+React components and providers for rendering Infoplaza weather layers on a MapLibre map, plus a portable timeseries forecast table. `PlatformMap` is the general map shell; weather is optional via `WeatherLayers`.
 
 ## Demo
 
@@ -8,8 +8,10 @@ A hosted Next.js demo lives at [https://platform-components.vercel.app/](https:/
 
 | Page | URL |
 | --- | --- |
-| Map (BaseMap, weather layers, HUD) | [https://platform-components.vercel.app/](https://platform-components.vercel.app/) |
+| Map (`PlatformMap` ± `WeatherLayers`) | [https://platform-components.vercel.app/](https://platform-components.vercel.app/) |
+| Map Old (legacy `BaseMap` composition) | [https://platform-components.vercel.app/map-old](https://platform-components.vercel.app/map-old) |
 | Timeseries forecast table | [https://platform-components.vercel.app/timeseries](https://platform-components.vercel.app/timeseries) |
+| Ensemble forecast charts | [https://platform-components.vercel.app/ensemble](https://platform-components.vercel.app/ensemble) |
 
 ## Install
 
@@ -89,20 +91,20 @@ URL (see [`modelsConfig`](#configuring-the-models-request)).
 
 ## Quick Start
 
-This example follows the same flow as the [live demo](https://platform-components.vercel.app/)
-(`demo-next/components/map/map-demo.tsx`): wrap your map
-with providers, compose layers, render an overlay, and mount the control HUD.
-Note there is **no** client-side models fetch — `Providers` handles it.
+This example follows the [live Map demo](https://platform-components.vercel.app/)
+(`demo-next/components/map/platform-map-demo.tsx`): a `PlatformMap` shell with
+packaged `WeatherLayers` (providers, events, Deck overlay, optional HUD).
+Note there is **no** client-side models fetch — `WeatherLayers` / `Providers` handle it.
 
 ```tsx
 import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { BaseMap, MapControlHud, MAP_STYLES } from '@infoplaza/platform/components'
-import { Providers } from '@infoplaza/platform/providers'
-import { LayerComposer, Overlay } from '@infoplaza/platform'
-
-import MapEventsProvider from '@infoplaza/platform/events'
+import {
+  PlatformMap,
+  WeatherLayers,
+  MAP_STYLES,
+} from '@infoplaza/platform/components'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
 // Host apps that already run Tailwind / have global styles should use the embed
@@ -118,46 +120,25 @@ function App() {
   const [mapStyleKey, setMapStyleKey] = useState('dark')
 
   return (
-    <Providers
-      weatherConfig={{
-        model: 'gfs',
-        element: 'temperature',
-        run: 'latest',
-        member: '0',
-        level: '2m',
-      }}
-      // Optional — controls the internal models request. These are the defaults.
-      modelsConfig={{ apiEnv: 'prod', betaModels: false }}
+    <PlatformMap
+      viewState={viewState}
+      onMove={(event: any) => setViewState(event?.viewState)}
+      mapStyles={MAP_STYLES}
+      mapStyleKey={mapStyleKey}
     >
-      <BaseMap
-        viewState={viewState}
-        onMove={(event: any) => setViewState(event?.viewState)}
-        mapStyles={MAP_STYLES}
-        mapStyleKey={mapStyleKey}
-      >
-        {({ beforeId }) => (
-          <>
-            <MapEventsProvider handler="demand">
-              {(mapComponents) => (
-                <LayerComposer beforeId={beforeId} mapComponents={mapComponents}>
-                  {({ layers }) => <Overlay layers={[...layers]} interleaved controller />}
-                </LayerComposer>
-              )}
-            </MapEventsProvider>
-
-            <MapControlHud
-              mapIndex={0}
-              mapsLength={1}
-              isMultipleMapView={false}
-              onMapsCount={() => {}}
-              onExportChange={() => {}}
-              mapRef={null}
-              viewState={viewState}
-            />
-          </>
-        )}
-      </BaseMap>
-    </Providers>
+      <WeatherLayers
+        weatherConfig={{
+          model: 'gfs',
+          element: 'temperature',
+          run: 'latest',
+          member: '0',
+          level: '2m',
+        }}
+        modelsConfig={{ apiEnv: 'prod', betaModels: false }}
+        showHud
+        hudProps={{ viewState }}
+      />
+    </PlatformMap>
   )
 }
 
@@ -172,6 +153,9 @@ createRoot(rootElement).render(
   </React.StrictMode>
 )
 ```
+
+Use a bare `PlatformMap` (no `WeatherLayers`) when you only need the MapLibre
+shell and host feature layers via `usePlatformMap()`.
 
 ### Configuring the models request
 
@@ -218,24 +202,92 @@ import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
 
 - A React application with an element like `<div id="root"></div>`.
 - The platform auth route mounted on your server plus a `PLATFORM_API_KEY` — this is what powers the internal models request (see [Server setup (required)](#server-setup-required)).
-- A map style for `BaseMap`: pick one of the built-in `MAP_STYLES` via `mapStyleKey`, pass your own `mapStyles` list, or supply a raw MapLibre style URL via `style` (see [Map styles](#map-styles)).
+- A map style for `PlatformMap` / `BaseMap`: pick one of the built-in `MAP_STYLES` via `mapStyleKey`, pass your own `mapStyles` list, or supply a raw MapLibre style URL via `style` (see [Map styles](#map-styles)).
 - Package styles imported once: `@infoplaza/platform/styles.css`.
 - MapLibre CSS imported once: `maplibre-gl/dist/maplibre-gl.css`.
 
 ## Main Building Blocks
 
-- `Providers` (`@infoplaza/platform/providers`): sets weather/config context used by the layer pipeline and fetches the available models internally.
+- `PlatformMap` (`@infoplaza/platform/components`): weather-agnostic MapLibre shell. Exposes `usePlatformMap()` / context (`map`, `beforeId`, `setStyleVariant`), `onLoad`, optional `fitBounds`, and a react-map-gl ref.
+- `WeatherLayers` (`@infoplaza/platform/components`): packaged weather stack for use under `PlatformMap` — `Providers`, events, `LayerComposer`, `Overlay`, optional HUD. Syncs marine basemap variant automatically.
+- `BaseMap` (`@infoplaza/platform/components`): legacy weather-aware map (wraps `PlatformMap`, requires outer `Providers`). Still supported — see [Migration](#migration-basemap--hand-wired-stack--platformmap--weatherlayers).
+- `Providers` (`@infoplaza/platform/providers`): weather/config context and internal models fetch (also used inside `WeatherLayers`).
 - `PlatformAuth` (`@infoplaza/platform/auth`): server-side catch-all handler that proxies `/api/platform/*` to the Infoplaza API using your secret key (required — see [Server setup](#server-setup-required)).
-- `BaseMap` (`@infoplaza/platform/components`): renders the MapLibre map container and handles camera updates.
-- `LayerComposer` (`@infoplaza/platform`): converts map event output into Deck.gl-ready layers.
-- `Overlay` (`@infoplaza/platform`): mounts Deck.gl layers on top of the map.
+- `LayerComposer` / `Overlay` (`@infoplaza/platform`): low-level Deck.gl layer pipeline (prefer `WeatherLayers` unless you need custom wiring).
 - `MapControlHud` (`@infoplaza/platform/components`): built-in map controls for model/element/time interactions.
 - `MapEventsProvider` (`@infoplaza/platform/events`): bridges map interaction events into the layer pipeline.
 - Timeseries (`@infoplaza/platform/timeseries`): `TimeseriesModelsProvider` loads the location-filtered catalog; `TimeseriesProvider` loads point-forecast rows by default. Packaged `TimeseriesForecast` (requires `lat`/`lon`) or compose Provider, Toolbar, Builder, Chart, and Footer. See the [timeseries demo](https://platform-components.vercel.app/timeseries).
 
+## Migration: BaseMap + hand-wired stack → PlatformMap + WeatherLayers
+
+The old composition remains supported (see [Map Old demo](https://platform-components.vercel.app/map-old)). New integrations should use `PlatformMap` + `WeatherLayers`.
+
+**Before (still works):**
+
+```tsx
+import { BaseMap, MapControlHud, MAP_STYLES } from '@infoplaza/platform/components'
+import { Providers } from '@infoplaza/platform/providers'
+import { LayerComposer, Overlay } from '@infoplaza/platform'
+import MapEventsProvider from '@infoplaza/platform/events'
+
+<Providers weatherConfig={…} modelsConfig={…}>
+  <BaseMap viewState={…} onMove={…} mapStyles={MAP_STYLES} mapStyleKey="dark">
+    {({ beforeId }) => (
+      <>
+        <MapEventsProvider handler="demand">
+          {(mapComponents) => (
+            <LayerComposer beforeId={beforeId} mapComponents={mapComponents}>
+              {({ layers }) => <Overlay layers={layers} interleaved controller />}
+            </LayerComposer>
+          )}
+        </MapEventsProvider>
+        <MapControlHud
+          mapIndex={0}
+          mapsLength={1}
+          isMultipleMapView={false}
+          onMapsCount={() => {}}
+          onExportChange={() => {}}
+          mapRef={null}
+          viewState={viewState}
+        />
+      </>
+    )}
+  </BaseMap>
+</Providers>
+```
+
+**After (recommended):**
+
+```tsx
+import {
+  PlatformMap,
+  WeatherLayers,
+  MAP_STYLES,
+} from '@infoplaza/platform/components'
+
+<PlatformMap viewState={…} onMove={…} mapStyles={MAP_STYLES} mapStyleKey="dark">
+  {/* Optional host layers: usePlatformMap() → map.addSource / flyTo */}
+  <WeatherLayers
+    weatherConfig={…}
+    modelsConfig={…}
+    handler="demand"
+    showHud
+    hudProps={{ viewState }}
+  />
+</PlatformMap>
+```
+
+Migration notes:
+
+- Auth route / `PLATFORM_API_KEY` unchanged.
+- `Providers` moves inside `WeatherLayers` — do not wrap `PlatformMap` in an outer `Providers` as well.
+- Feature layers that need the MapLibre instance use `usePlatformMap()` (returns `{ map, beforeId, … }`).
+- Toggle weather on a feature map by mounting/unmounting `WeatherLayers` (no models fetch when unmounted).
+- Old path remains supported; no forced upgrade.
+
 ## Map styles
 
-`BaseMap` controls the underlying MapLibre basemap through a small, structured
+`PlatformMap` / `BaseMap` control the underlying MapLibre basemap through a small, structured
 **map style** system instead of a single style URL. A map style bundles the
 basemap source(s) and the `beforeId` that the weather layers should be inserted
 under, so data layers always render below the right labels/features.
@@ -265,13 +317,13 @@ const myStyle: MapStyle = {
 
 - `source` is either a MapLibre style URL or an inline MapLibre style object.
 - `beforeId` is the id of the basemap layer the weather layers are placed under.
-  `BaseMap` exposes the resolved value through the `beforeId` render-prop so you
-  can forward it to `LayerComposer` (`<LayerComposer beforeId={beforeId} … />`).
-  If a style omits it, `BaseMap` falls back to `'lakes-transparent'`.
+  `PlatformMap` exposes it through the `beforeId` render-prop and via
+  `usePlatformMap().beforeId` (used by `WeatherLayers`). If a style omits it,
+  the shell falls back to `'lakes-transparent'`.
 
 ### Selecting a style
 
-`BaseMap` resolves the active style in this order:
+`PlatformMap` resolves the active style in this order:
 
 1. **`style`** — a raw MapLibre style URL or object. If set, it overrides
    everything else (escape hatch / quick start).
@@ -280,11 +332,15 @@ const myStyle: MapStyle = {
 3. **`mapStyleKey`** — selects an entry by `key` from the `mapStyles` list.
 4. Fallback — the first entry of `mapStyles`.
 
+Within the selected style, **`styleVariant`** (`default` | `marine`) picks the
+variant. `PlatformMap` defaults to `default`. `BaseMap` and `WeatherLayers` set
+`marine` automatically for wave/ocean models.
+
 ```tsx
 // Use a built-in style by key
-<BaseMap mapStyles={MAP_STYLES} mapStyleKey="dark" viewState={viewState}>
+<PlatformMap mapStyles={MAP_STYLES} mapStyleKey="dark" viewState={viewState}>
   {({ beforeId }) => /* … */}
-</BaseMap>
+</PlatformMap>
 ```
 
 `mapStyles` defaults to the built-in `MAP_STYLES`, so `mapStyleKey` alone is
@@ -305,17 +361,19 @@ Each one provides both a `default` and a `marine` variant.
 
 ### Marine auto-switching
 
-`BaseMap` reads `modelInfo` from weather map context. Marine models (where
-`modelInfo.description.category` is `wave` or `ocean`) automatically use the
-style's `marine` variant; all other models use `default`. If a style has no
-`marine` variant, it falls back to `default`.
+`BaseMap` (when inside `Providers`) and `WeatherLayers` (under `PlatformMap`)
+read `modelInfo` from weather context. Marine models (category `wave` or
+`ocean`) automatically use the style's `marine` variant; all other models use
+`default`. If a style has no `marine` variant, it falls back to `default`.
+A bare `PlatformMap` without weather stays on `default` unless you pass
+`styleVariant` or call `setStyleVariant` from context.
 
 ### Extending the built-in styles
 
 Add your own option by spreading `MAP_STYLES` and appending a custom `MapStyle`:
 
 ```tsx
-import { BaseMap, MAP_STYLES } from '@infoplaza/platform/components'
+import { PlatformMap, MAP_STYLES } from '@infoplaza/platform/components'
 
 const customStyle = {
   key: 'demotiles',
@@ -328,16 +386,9 @@ const customStyle = {
 
 const mapStyles = [...MAP_STYLES, customStyle]
 
-// A simple style picker:
-<select value={mapStyleKey} onChange={(e) => setMapStyleKey(e.target.value)}>
-  {mapStyles.map((option) => (
-    <option key={option.key} value={option.key}>{option.title}</option>
-  ))}
-</select>
-
-<BaseMap mapStyles={mapStyles} mapStyleKey={mapStyleKey} viewState={viewState}>
+<PlatformMap mapStyles={mapStyles} mapStyleKey={mapStyleKey} viewState={viewState}>
   {({ beforeId }) => /* … */}
-</BaseMap>
+</PlatformMap>
 ```
 
 ## Entry Points
@@ -345,11 +396,12 @@ const mapStyles = [...MAP_STYLES, customStyle]
 | Import | Purpose |
 | --- | --- |
 | `@infoplaza/platform` | Top-level API (`LayerComposer`, `Overlay`, components, providers) |
-| `@infoplaza/platform/components` | `BaseMap`, `MapControlHud`, `MAP_STYLES`, `MapStyle` type, … |
+| `@infoplaza/platform/components` | `PlatformMap`, `WeatherLayers`, `BaseMap`, `MapControlHud`, `MAP_STYLES`, `usePlatformMap`, … |
 | `@infoplaza/platform/providers` | `Providers`, `useModels`, `useProviders` |
 | `@infoplaza/platform/auth` | `PlatformAuth` (server-side route handler) |
 | `@infoplaza/platform/events` | `MapEventsProvider` |
 | `@infoplaza/platform/timeseries` | `TimeseriesForecast`, `TimeseriesModelsProvider`, `TimeseriesProvider`, toolbar / builder / chart / footer |
+| `@infoplaza/platform/ensemble` | `EnsembleForecast`, models/provider, graph / chart / toolbar / footer |
 | `@infoplaza/platform/layers/composer` · `/layers/overlay` | Individual layer building blocks |
 | `@infoplaza/platform/styles.css` | Full stylesheet (includes Tailwind preflight) — for standalone apps |
 | `@infoplaza/platform/styles.embed.css` | Utilities only, **no preflight** — for host apps that already run Tailwind / have global styles |

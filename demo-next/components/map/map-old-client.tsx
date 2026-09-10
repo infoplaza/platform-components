@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 
-const PlatformMapDemo = dynamic(() => import('./platform-map-demo'), {
+const MapDemo = dynamic(() => import('./map-demo'), {
   ssr: false,
   loading: () => (
     <div className="flex h-full min-h-0 flex-col gap-4 p-4 md:p-6" aria-busy="true">
@@ -12,10 +12,10 @@ const PlatformMapDemo = dynamic(() => import('./platform-map-demo'), {
             I&apos;m Weather
           </p>
           <h1 className="mb-1.5 text-2xl font-bold tracking-tight text-dark">
-            Map
+            Weather on the map (legacy)
           </h1>
           <p className="m-0 text-sm leading-relaxed text-dark/60">
-            Loading PlatformMap examples…
+            Loading legacy BaseMap composition…
           </p>
         </header>
       </div>
@@ -24,6 +24,6 @@ const PlatformMapDemo = dynamic(() => import('./platform-map-demo'), {
   ),
 })
 
-export default function MapClient() {
-  return <PlatformMapDemo />
+export default function MapOldClient() {
+  return <MapDemo />
 }
