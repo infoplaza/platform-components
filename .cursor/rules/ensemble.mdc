@@ -56,7 +56,7 @@ Import only from `@infoplaza/platform/ensemble`. Wrap host UI in `.ip-platform` 
 </EnsembleModelsProvider>
 ```
 
-Selection is hybrid: `model` + `onModelChange` (controlled) or `defaultModel` / omit (provider-owned). Same for `run`, `elementGroup`, `view`. Unknown slugs/runtimes are clamped to the catalog. If `charts` is passed it wins; otherwise `getCharts({ model, run, elementGroup, view, models, elementGroups, locale, timezone })` is used when provided; otherwise the Provider fetches point-forecast charts. `elementGroups` defaults to `ENSEMBLE_TIMESERIES.groups` (`DEFAULT_ENSEMBLE_ELEMENT_GROUPS`). The footer falls back to the same list.
+Selection is hybrid: `model` + `onModelChange` (controlled) or `defaultModel` / omit (provider-owned). Same for `run`, `elementGroup`, `view`. Unknown slugs/runtimes are clamped to the catalog. When the host omits `model` / `defaultModel`, the Provider selects `ecmwfensembleglobal` if it is in the catalog, otherwise the first catalog model. If `charts` is passed it wins; otherwise `getCharts({ model, run, elementGroup, view, models, elementGroups, locale, timezone })` is used when provided; otherwise the Provider fetches point-forecast charts. `elementGroups` defaults to `ENSEMBLE_TIMESERIES.groups` (`DEFAULT_ENSEMBLE_ELEMENT_GROUPS`). The footer falls back to the same list.
 
 Demo patterns live in `demo-next/components/ensemble/` (packaged, chart-only, composed). Prefer updating those examples over inventing a fourth usage mode.
 

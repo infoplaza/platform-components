@@ -12,6 +12,7 @@ export {
   useEnsembleModels,
   useEnsembleModelsContext,
   DEFAULT_ENSEMBLE_ELEMENT_GROUPS,
+  DEFAULT_ENSEMBLE_MODEL,
   ENSEMBLE_TIMESERIES,
   EnsembleToolbar,
   EnsembleFooter,

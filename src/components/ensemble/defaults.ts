@@ -33,6 +33,9 @@ function groupIcon(Icon: ComponentType<{ className: string }>): GroupIcon {
   return Icon as GroupIcon
 }
 
+/** Catalog slug for ECMWF ensemble global — used when no model is selected. */
+export const DEFAULT_ENSEMBLE_MODEL = 'ecmwfensembleglobal'
+
 const UNIT_BY_KEY: Record<string, string> = {
   precipitation: 'mm',
   snow: 'cm',

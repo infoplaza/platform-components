@@ -12,6 +12,11 @@ import ensembleUtil from './utils/ensemble'
 export type EnsemblePointDatum = {
   time: number
   value: Record<string, number | null>
+  metadata?: {
+    sequence: number
+    offset?: number
+    rawValue?: unknown
+  }
 }
 
 export type EnsemblePointSeries = {
@@ -136,6 +141,25 @@ function toMembers(value: unknown): Record<string, number | null> {
   return members
 }
 
+function toPointMetadata(
+  record: Record<string, unknown>,
+): EnsemblePointDatum['metadata'] | undefined {
+  const nested = asRecord(record.metadata)
+  const sequence = asNumber(nested?.sequence) ?? asNumber(record.sequence)
+  const offset = asNumber(nested?.offset) ?? asNumber(record.offset)
+  const rawValue = nested?.rawValue
+
+  if (sequence == null && offset == null && rawValue === undefined) {
+    return undefined
+  }
+
+  return {
+    sequence: sequence ?? 1,
+    ...(offset != null ? { offset } : {}),
+    ...(rawValue !== undefined ? { rawValue } : {}),
+  }
+}
+
 function toPointData(value: unknown): EnsemblePointDatum[] {
   if (!Array.isArray(value)) {
     return []
@@ -150,9 +174,11 @@ function toPointData(value: unknown): EnsemblePointDatum[] {
     if (time == null) {
       continue
     }
+    const metadata = toPointMetadata(record)
     points.push({
       time,
       value: toMembers(record.value),
+      ...(metadata ? { metadata } : {}),
     })
   }
   return points
@@ -239,7 +265,6 @@ function toEnsembleRows(data: EnsemblePointDatum[]): EnsembleRow[] {
       asNumber(entry.value.control) ??
       (firstKey != null ? asNumber(entry.value[firstKey]) : null) ??
       0
-
     const record: EnsembleRow = {
       datetime: iso,
       min: sorted[0] ?? 0,
@@ -254,7 +279,10 @@ function toEnsembleRows(data: EnsemblePointDatum[]): EnsembleRow[] {
       metadata: {
         datetime: iso,
         epoch: entry.time,
-        sequence: 1,
+        sequence: entry.metadata?.sequence ?? 1,
+        ...(entry.metadata?.offset != null
+          ? { offset: entry.metadata.offset }
+          : {}),
         rawValue: values,
       },
     }

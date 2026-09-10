@@ -83,7 +83,6 @@ export function ImageAltLayerConnector(
     //     return null
     // }
 
-    // console.log('image alt layer', layer)
     const opacity = state.imageOpacity ?? layer.opacity ?? DEFAULT_OPACITY
 
     return new BitmapLayer({

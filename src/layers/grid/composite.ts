@@ -155,8 +155,6 @@ export class GridCompositeLayer<ExtraPropsT extends {} = {}> extends CompositeLa
                 } satisfies IconLayerProps<GeoJSONFeature<GeoJSONPoint, RasterPointProperties>>),
             ]
         } else {
-
-            // console.log('renderLayers feeded positions', beforeId)
             return [
                 // new ScatterplotLayer({
                 //     id: `${id}-grid-scatterplot`,
@@ -171,7 +169,6 @@ export class GridCompositeLayer<ExtraPropsT extends {} = {}> extends CompositeLa
                 //     lineWidthMinPixels: 1,
                 //     lineWidthUnits: 'pixels',
                 //     getPosition: (d: GeoJSONFeature<GeoJSONPoint, RasterPointProperties>) => {
-                //         // console.log('getPosition feeded position', d)
                 //         // return d.geometry.coordinates as Position
                 //         return d as unknown as Position
                 //     },

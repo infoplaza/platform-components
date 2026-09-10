@@ -27,6 +27,7 @@ export type {
 } from './types'
 export {
   DEFAULT_ENSEMBLE_ELEMENT_GROUPS,
+  DEFAULT_ENSEMBLE_MODEL,
   ENSEMBLE_TIMESERIES,
 } from './defaults'
 export { default as EnsembleToolbar } from './toolbar'
