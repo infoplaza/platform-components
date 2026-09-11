@@ -2,7 +2,12 @@ export const NAV_ITEMS = [
   {
     href: '/',
     label: 'Map',
-    hint: 'BaseMap, weather layers and HUD',
+    hint: 'PlatformMap shell (± WeatherLayers)',
+  },
+  {
+    href: '/map-old',
+    label: 'Map Old',
+    hint: 'Legacy BaseMap + hand-wired layers',
   },
   {
     href: '/timeseries',
