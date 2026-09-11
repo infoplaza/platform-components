@@ -26,7 +26,6 @@ import type {BitmapModuleProps} from '@/src/shaders/bitmap-module/bitmap-module'
 import type {RasterModuleProps} from '@/src/shaders/raster-module/raster-module';
 import type {PaletteModuleProps} from '@/src/shaders/palette-module/palette-module';
 
-
 type _ImageBitmapLayerProps = BitmapLayerProps & {
   imageTexture: Texture | null;
   imageTexture2: Texture | null;
@@ -194,7 +193,6 @@ export class ImageBitmapLayer<ExtraPropsT extends {} = {}> extends BitmapLayer<E
       model.setParameters({
         ...model.parameters,
         cullMode: 'back', // enable culling to avoid rendering on both sides of the globe
-        depthCompare: 'always', // disable depth test to avoid conflict with Maplibre globe depth buffer, see https://github.com/visgl/deck.gl/issues/9357
         ...this.props.parameters,
       });
 

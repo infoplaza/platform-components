@@ -393,7 +393,6 @@ export function ContourGeoJsonLayerConnector(
                 getBackgroundColor: (d: LabelDatum) => getLineColorAccessor(d.feature),
                 backgroundPadding: [4,2,4,2],
                 backgroundBorderRadius: 4,
-                parameters: { depthCompare: 'always' },
                 beforeId: beforeId,
                 updateTriggers: {
                     getColor: [state.contourGeoJsonLabelColorMode, state.contourGeoJsonLabelColor],

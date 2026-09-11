@@ -201,7 +201,7 @@ const LayerComposer = ({ children, beforeId, mapComponents }: LayerComposerProps
                     if (!isRangeConnectorLayer(layer)) {
                         return null
                     }
-                    return RangeLayerConnector(layer)
+                    return RangeLayerConnector(layer, beforeId)
                 },
             },
             {
@@ -215,7 +215,7 @@ const LayerComposer = ({ children, beforeId, mapComponents }: LayerComposerProps
                     id: `${layer.id}-plot`,
                     selectedPlotId: null,
                     data: Array.isArray(layer.data) ? layer.data : [],
-                }, getLayerState(layer)),
+                }, getLayerState(layer), beforeId),
             },
             {
                 condition: (layer: ComposedLayer) =>
@@ -266,12 +266,16 @@ const LayerComposer = ({ children, beforeId, mapComponents }: LayerComposerProps
     }, [mapComponents, timestamp, frameSkip])
 
 
+    // Keep the last rendered deck layers while textures reload (model/layer
+    // switches clear mapComponents briefly). Mirrors timestamp frameSkip.
+    const lastLayersRef = useRef<unknown[]>([])
+
     const layers = useMemo(() => {
         if (!mapping) {
-            return []
+            return frameSkip ? lastLayersRef.current : []
         }
 
-        return mapping.flatMap((layer) =>
+        const next = mapping.flatMap((layer) =>
             renderingBuilders
                 .filter(({ condition }) => condition(layer))
                 .flatMap(({ create }) => {
@@ -280,7 +284,9 @@ const LayerComposer = ({ children, beforeId, mapComponents }: LayerComposerProps
                 })
                 .filter(Boolean)
         )
-    }, [mapping, renderingBuilders])
+        lastLayersRef.current = next
+        return next
+    }, [mapping, renderingBuilders, frameSkip])
 
     // const constants = useMemo(() => {
     //     if (!locationMarker) return []

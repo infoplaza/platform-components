@@ -1,7 +1,12 @@
 import '@testing-library/jest-dom'
 import { describe, it, expect } from '@jest/globals'
 
-import { MAP_STYLES } from '@/config/styles'
+import {
+    MAP_STYLES,
+    DEFAULT_WEATHER_BEFORE_ID,
+    DEFAULT_MARINE_WEATHER_BEFORE_ID,
+    TRAFFIC_WEATHER_BEFORE_ID,
+} from '@/config/styles'
 import { DARK_MARINE_STYLE } from '@/config/styles/dark'
 import { LAND_MARINE_STYLE } from '@/config/styles/land'
 import { SEA_MARINE_STYLE } from '@/config/styles/sea'
@@ -14,15 +19,20 @@ describe('Styles Configuration', () => {
         expect(MAP_STYLES.map((style) => style.title)).toEqual(['Dark', 'Land', 'Sea', 'Traffic'])
 
         expect(MAP_STYLES.map((style) => style.styles.default)).toEqual([
-            { source: 'https://maps.meteoplaza.com/styles/imweather-timo/style.json', beforeId: 'lakes-transparent' },
-            { source: 'https://maps.meteoplaza.com/styles/imweather-combined-black/style.json', beforeId: 'lakes-transparent' },
-            { source: 'https://maps.meteoplaza.com/styles/imweather-sea/style.json', beforeId: 'lakes-transparent' },
-            { source: 'https://maps.meteoplaza.com/styles/verkeerplaza/style.json', beforeId: 'water-intermittent' }
+            { source: 'https://maps.meteoplaza.com/styles/imweather-timo/style.json', beforeId: DEFAULT_WEATHER_BEFORE_ID },
+            { source: 'https://maps.meteoplaza.com/styles/imweather-combined-black/style.json', beforeId: DEFAULT_WEATHER_BEFORE_ID },
+            { source: 'https://maps.meteoplaza.com/styles/imweather-sea/style.json', beforeId: DEFAULT_WEATHER_BEFORE_ID },
+            { source: 'https://maps.meteoplaza.com/styles/verkeerplaza/style.json', beforeId: TRAFFIC_WEATHER_BEFORE_ID },
         ])
     })
 
     it('MAP_STYLES should use the matching marine style config for each style', () => {
-        expect(MAP_STYLES.map((style) => style.styles.marine.beforeId)).toEqual(['landcover', 'landcover', 'landcover', 'landcover'])
+        expect(MAP_STYLES.map((style) => style.styles.marine.beforeId)).toEqual([
+            DEFAULT_MARINE_WEATHER_BEFORE_ID,
+            DEFAULT_MARINE_WEATHER_BEFORE_ID,
+            DEFAULT_MARINE_WEATHER_BEFORE_ID,
+            DEFAULT_MARINE_WEATHER_BEFORE_ID,
+        ])
         expect(MAP_STYLES.map((style) => style.styles.marine.source)).toEqual([
             DARK_MARINE_STYLE,
             LAND_MARINE_STYLE,

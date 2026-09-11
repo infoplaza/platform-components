@@ -1,5 +1,6 @@
 /.next/
 /node_modules/
+/public/maplibre/
 next-env.d.ts
 *.tsbuildinfo
 .env

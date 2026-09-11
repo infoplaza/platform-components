@@ -144,7 +144,7 @@ const MapControlInfo: React.FC<MapControlInfoProps> = function ({ small = false,
             <div className="ip:sm:grid ip:sm:grid-cols-3 ip:flex ip:w-full ip:justify-between ip:flex-nowrap ip:sm:flex-wrap">
                 <div className={twMerge('ip:col-span-2 ip:flex ip:flex-col ip:grow ip:gap-1 ip:border-white ip:dark:border-white/10 ip:self-center', small ? 'ip:p-1 ip:sm:p-2' : 'ip:py-1.5 ip:px-2 ip:sm:p-3', align === 'left' ? 'ip:order-first ip:sm:border-r' : 'ip:order-2 ip:sm:border-l')}>
                     <div className="ip:leading-none ip:text-sm ip:sm:font-medium ip:font-normal">
-                        <span>{InfoElement.title}</span>
+                        <p>{InfoElement.title}</p>
                         {InfoLevel && <span className="ip:text-xs ip:font-hairline"> {InfoLevel}</span>}
                         {InfoUnit && <span className="ip:text-3xs ip:font-hairline"> ({InfoUnit})</span>}
                     </div>

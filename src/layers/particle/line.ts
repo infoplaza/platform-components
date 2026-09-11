@@ -23,7 +23,6 @@ import type {PaletteModuleProps} from '../../shaders/palette-module/palette-modu
 import {particleModule} from './module';
 import type {ParticleModuleProps} from './module';
 import {PARTICLE_LINE_LAYER_UPDATE_VS as updateVs} from './vertex';
-
 function intersectLngLatBounds(
   viewport: [number, number, number, number],
   data: [number, number, number, number]

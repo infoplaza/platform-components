@@ -1,5 +1,6 @@
 'use client'
 
+import '../maplibre-worker'
 import dynamic from 'next/dynamic'
 
 const MapDemo = dynamic(() => import('./map-demo'), {
