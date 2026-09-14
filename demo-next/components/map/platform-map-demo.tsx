@@ -2,15 +2,20 @@
 
 import { type ReactNode, useState } from 'react'
 import {
-  MAP_STYLES,
+  MapControlHud,
   PlatformMap,
   WeatherLayers,
-  usePlatformMap,
 } from '@infoplaza/platform/components'
+import { MAP_STYLES } from '@infoplaza/platform/defaults'
+import { Providers, usePlatformMap } from '@infoplaza/platform/providers'
+import MapEventsProvider from '@infoplaza/platform/events'
+import { LayerComposer, LayerOverlay } from '@infoplaza/platform/layers'
 import { ViewCodeButton } from '../view-code-dialog'
 import {
   BARE_MAP_FILENAME,
   BARE_MAP_SOURCE,
+  COMPOSED_MAP_FILENAME,
+  COMPOSED_MAP_SOURCE,
   WEATHER_MAP_FILENAME,
   WEATHER_MAP_SOURCE,
 } from './examples'
@@ -38,14 +43,6 @@ const DEFAULT_VIEW_STATE = {
   latitude: 52.3676,
   zoom: 7,
 }
-
-const WEATHER_CONFIG = {
-  model: 'optimal',
-  element: 'temperature',
-  run: 'latest',
-  member: '0',
-  level: '2m',
-} as const
 
 function resolveMoveViewState(event: unknown): typeof DEFAULT_VIEW_STATE | null {
   if (typeof event !== 'object' || event === null || !('viewState' in event)) {
@@ -98,7 +95,7 @@ function ExampleSection({
         <ViewCodeButton title={`${title} code`} filename={filename} source={source} />
       </div>
       {controls}
-      <div className="ip-platform min-h-70 overflow-hidden rounded-2xl border border-cloud/10 bg-cloud-100">
+      <div className="ip-platform min-h-100 overflow-hidden rounded-2xl border border-cloud/10 bg-cloud-100">
         {children}
       </div>
     </article>
@@ -126,25 +123,19 @@ function FlyToAmsterdamButton() {
   )
 }
 
-function BareMapExample({
-  mapStyleKey,
-}: {
-  mapStyleKey: string
-}) {
+function BareMapExample() {
   const [viewState, setViewState] = useState(DEFAULT_VIEW_STATE)
 
   return (
-    <div className="relative h-70 w-full">
+    <div className="relative h-100 w-full">
       <PlatformMap
         viewState={viewState}
-        onMove={(event) => {
+        onMove={(event: unknown) => {
           const next = resolveMoveViewState(event)
           if (next) {
             setViewState(next)
           }
         }}
-        mapStyles={mapStyles}
-        mapStyleKey={mapStyleKey}
       >
         <div className="pointer-events-none absolute top-3 left-3 z-10">
           <div className="pointer-events-auto">
@@ -156,7 +147,57 @@ function BareMapExample({
   )
 }
 
-function WeatherMapExample({
+function WeatherMapExample() {
+  const [viewState, setViewState] = useState(DEFAULT_VIEW_STATE)
+
+  return (
+    <div className="relative h-100 w-full">
+      <PlatformMap
+        viewState={viewState}
+        onMove={(event: unknown) => {
+          const next = resolveMoveViewState(event)
+          if (next) {
+            setViewState(next)
+          }
+        }}
+      >
+        <WeatherLayers
+          showHud
+          hudProps={{ viewState }}
+        />
+      </PlatformMap>
+    </div>
+  )
+}
+
+function ComposedWeatherStack({
+  viewState,
+}: {
+  viewState: typeof DEFAULT_VIEW_STATE
+}) {
+  const { beforeId } = usePlatformMap()
+
+  return (
+    <Providers mapIndex={1}>
+      <MapEventsProvider>
+        {(mapComponents: Record<number, unknown[]>) => (
+          <LayerComposer beforeId={beforeId} mapComponents={mapComponents}>
+            {({ layers }) => (
+              <LayerOverlay
+                layers={[...layers]}
+                interleaved
+                beforeId={beforeId}
+              />
+            )}
+          </LayerComposer>
+        )}
+      </MapEventsProvider>
+      <MapControlHud mapIndex={1} viewState={viewState} />
+    </Providers>
+  )
+}
+
+function ComposedMapExample({
   mapStyleKey,
 }: {
   mapStyleKey: string
@@ -167,7 +208,7 @@ function WeatherMapExample({
     <div className="relative h-100 w-full">
       <PlatformMap
         viewState={viewState}
-        onMove={(event) => {
+        onMove={(event: unknown) => {
           const next = resolveMoveViewState(event)
           if (next) {
             setViewState(next)
@@ -176,20 +217,14 @@ function WeatherMapExample({
         mapStyles={mapStyles}
         mapStyleKey={mapStyleKey}
       >
-        <WeatherLayers
-          weatherConfig={WEATHER_CONFIG}
-          modelsConfig={{ apiEnv: 'prod', betaModels: false }}
-          showHud
-          hudProps={{ viewState }}
-        />
+        <ComposedWeatherStack viewState={viewState} />
       </PlatformMap>
     </div>
   )
 }
 
 export default function PlatformMapDemo() {
-  const [bareStyleKey, setBareStyleKey] = useState('dark')
-  const [weatherStyleKey, setWeatherStyleKey] = useState('dark')
+  const [composedStyleKey, setComposedStyleKey] = useState('dark')
 
   return (
     <section className="h-full overflow-auto p-4 md:p-6">
@@ -204,44 +239,47 @@ export default function PlatformMapDemo() {
           <p className="m-0 text-sm leading-relaxed text-dark/60">
             PlatformMap is the general map shell. Add host layers via{' '}
             <code className="text-xs">usePlatformMap()</code>, and mount
-            WeatherLayers when you need forecast overlays and the HUD.
+            WeatherLayers when you need forecast overlays and the HUD. The
+            composed stack is included as a third example.
           </p>
         </header>
 
         <ExampleSection
           title="Without weather"
-          description="Bare PlatformMap with style picker and an imperative flyTo via usePlatformMap()."
+          description="Bare PlatformMap with an imperative flyTo via usePlatformMap()."
           filename={BARE_MAP_FILENAME}
           source={BARE_MAP_SOURCE}
-          controls={
-            <StylePicker
-              value={bareStyleKey}
-              options={mapStyles}
-              onChange={setBareStyleKey}
-            />
-          }
         >
-          <BareMapExample mapStyleKey={bareStyleKey} />
+          <BareMapExample />
         </ExampleSection>
 
         <ExampleSection
           title="With weather"
-          description="PlatformMap plus WeatherLayers (Providers, events, Deck overlay, HUD) — same weather setup as Map Old."
+          description="PlatformMap plus WeatherLayers (Providers, events, Deck overlay, HUD)."
           filename={WEATHER_MAP_FILENAME}
           source={WEATHER_MAP_SOURCE}
+        >
+          <WeatherMapExample />
+        </ExampleSection>
+
+        <ExampleSection
+          title="Composed"
+          description="PlatformMap shell with a hand-wired stack: Providers, MapEventsProvider, LayerComposer, LayerOverlay, and HUD. Prefer WeatherLayers unless you need custom wiring."
+          filename={COMPOSED_MAP_FILENAME}
+          source={COMPOSED_MAP_SOURCE}
           controls={
             <StylePicker
-              value={weatherStyleKey}
+              value={composedStyleKey}
               options={mapStyles}
-              onChange={setWeatherStyleKey}
+              onChange={setComposedStyleKey}
             />
           }
         >
-          <WeatherMapExample mapStyleKey={weatherStyleKey} />
+          <ComposedMapExample mapStyleKey={composedStyleKey} />
         </ExampleSection>
 
         <footer className="flex flex-wrap items-center gap-4 px-0.5 pb-2 text-xs text-dark/60">
-          <span>PlatformMap shell · WeatherLayers optional</span>
+          <span>PlatformMap · WeatherLayers optional · Composed stack</span>
           <span className="ml-auto">@infoplaza/platform/components</span>
         </footer>
       </div>

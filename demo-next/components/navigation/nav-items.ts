@@ -5,11 +5,6 @@ export const NAV_ITEMS = [
     hint: 'PlatformMap shell (± WeatherLayers)',
   },
   {
-    href: '/map-old',
-    label: 'Map Old',
-    hint: 'Legacy BaseMap + hand-wired layers',
-  },
-  {
     href: '/timeseries',
     label: 'Timeseries',
     hint: 'Forecast table',

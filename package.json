@@ -1,6 +1,6 @@
 {
   "name": "@infoplaza/platform",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "",
   "main": "./dist/index.js",
   "style": "./dist/styles.css",
@@ -29,6 +29,10 @@
       "types": "./dist/auth/index.d.ts",
       "default": "./dist/auth/index.js"
     },
+    "./layers": {
+      "types": "./dist/layers/index.d.ts",
+      "default": "./dist/layers/index.js"
+    },
     "./layers/composer": {
       "types": "./dist/layers/composer.d.ts",
       "default": "./dist/layers/composer.js"
@@ -44,6 +48,10 @@
     "./ensemble": {
       "types": "./dist/ensemble/index.d.ts",
       "default": "./dist/ensemble/index.js"
+    },
+    "./defaults": {
+      "types": "./dist/defaults/index.d.ts",
+      "default": "./dist/defaults/index.js"
     },
     "./styles.css": "./dist/styles.css",
     "./styles.embed.css": "./dist/styles.embed.css"

@@ -21,19 +21,23 @@ import MapControlInfo from './info'
 import MapControlLayer from '@/src/components/controls/layer'
 
 export type MapControlHudProps = {
-    mapIndex: number
-    mapsLength: number
-    isMultipleMapView: boolean
-    onMapsCount: (count: number) => void
-    onExportChange: (value: boolean) => void
-    mapRef: any
-    viewState: {
+    mapIndex?: number
+    mapsLength?: number
+    isMultipleMapView?: boolean
+    onMapsCount?: (count: number) => void
+    onExportChange?: (value: boolean) => void
+    mapRef?: any
+    viewState?: {
         latitude?: number
         longitude?: number
     }
 }
 
-export function MapControlHud({ mapIndex, mapsLength, isMultipleMapView, onMapsCount, onExportChange, mapRef, viewState }: MapControlHudProps) {
+export function MapControlHud({
+    mapIndex = 0,
+    mapsLength = 1,
+    isMultipleMapView = false,
+}: MapControlHudProps) {
     const { models: contextModels, modelInfo, model, elementInfo, layersInfo, month } = useWeatherMap()
     const models = contextModels
     const { legends } = useLegendValues()

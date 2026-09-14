@@ -1,4 +1,9 @@
 export * from './components'
 export * from './providers'
-export { default as LayerComposer } from './layers/composer'
-export { default as Overlay } from './layers/overlay'
+export {
+  MAP_STYLES,
+  DEFAULT_WEATHER_BEFORE_ID,
+  DEFAULT_MARINE_WEATHER_BEFORE_ID,
+  TRAFFIC_WEATHER_BEFORE_ID,
+} from './defaults'
+export { LayerComposer, LayerOverlay, Overlay } from './layers'

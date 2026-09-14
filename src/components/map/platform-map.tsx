@@ -15,7 +15,7 @@ import type { MapStyle } from '@/@types/map-style.types'
 import {
   PlatformMapContext,
   type PlatformMapStyleVariantName,
-} from './map-context'
+} from '@/src/providers/map'
 
 export type { MapStyle }
 

@@ -23,11 +23,12 @@ import { useTimestampMap } from "@/src/redux/timestamps/provider"
 // import { useSettings } from "@/context/settings"
 import { GridStyle } from "./grid/style"
 import type { Layer, LayerRendering } from "@/@types/layer.types"
+import { Layer as DeckGLLayer } from '@deck.gl/core'
 
 type ComposedLayer = Layer & Record<string, unknown>
 
 type LayerComposerProps = {
-    children: (args: { layers: unknown[] }) => ReactNode
+    children: (args: { layers: DeckGLLayer[] }) => ReactNode
     beforeId?: string
     mapComponents?: Record<number, unknown[]>
 }

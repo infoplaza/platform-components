@@ -3,11 +3,8 @@ export const BARE_MAP_FILENAME = 'platform-map-bare.tsx'
 export const BARE_MAP_SOURCE = `'use client'
 
 import { useState } from 'react'
-import {
-  MAP_STYLES,
-  PlatformMap,
-  usePlatformMap,
-} from '@infoplaza/platform/components'
+import { PlatformMap } from '@infoplaza/platform/components'
+import { usePlatformMap } from '@infoplaza/platform/providers'
 
 function FlyToAmsterdamButton() {
   const { map } = usePlatformMap()
@@ -40,8 +37,6 @@ export default function BarePlatformMap() {
     <PlatformMap
       viewState={viewState}
       onMove={(event) => setViewState(event?.viewState)}
-      mapStyles={MAP_STYLES}
-      mapStyleKey="dark"
     >
       <FlyToAmsterdamButton />
     </PlatformMap>
@@ -55,7 +50,6 @@ export const WEATHER_MAP_SOURCE = `'use client'
 
 import { useState } from 'react'
 import {
-  MAP_STYLES,
   PlatformMap,
   WeatherLayers,
 } from '@infoplaza/platform/components'
@@ -71,21 +65,61 @@ export default function PlatformMapWithWeather() {
     <PlatformMap
       viewState={viewState}
       onMove={(event) => setViewState(event?.viewState)}
-      mapStyles={MAP_STYLES}
-      mapStyleKey="dark"
     >
       <WeatherLayers
-        weatherConfig={{
-          model: 'optimal',
-          element: 'temperature',
-          run: 'latest',
-          member: '0',
-          level: '2m',
-        }}
-        modelsConfig={{ apiEnv: 'prod', betaModels: false }}
         showHud
         hudProps={{ viewState }}
       />
+    </PlatformMap>
+  )
+}
+`
+
+export const COMPOSED_MAP_FILENAME = 'platform-map-composed.tsx'
+
+export const COMPOSED_MAP_SOURCE = `'use client'
+
+import { useState } from 'react'
+import { MapControlHud, PlatformMap } from '@infoplaza/platform/components'
+import { MAP_STYLES } from '@infoplaza/platform/defaults'
+import { Providers, usePlatformMap } from '@infoplaza/platform/providers'
+import MapEventsProvider from '@infoplaza/platform/events'
+import { LayerComposer, LayerOverlay } from '@infoplaza/platform/layers'
+
+function ComposedWeatherStack({ viewState }) {
+  const { beforeId } = usePlatformMap()
+
+  return (
+    <Providers mapIndex={1}>
+      <MapEventsProvider>
+        {(mapComponents) => (
+          <LayerComposer beforeId={beforeId} mapComponents={mapComponents}>
+            {({ layers }) => (
+              <LayerOverlay layers={[...layers]} interleaved beforeId={beforeId} />
+            )}
+          </LayerComposer>
+        )}
+      </MapEventsProvider>
+      <MapControlHud mapIndex={1} viewState={viewState} />
+    </Providers>
+  )
+}
+
+export default function ComposedPlatformMap() {
+  const [viewState, setViewState] = useState({
+    longitude: 4.9041,
+    latitude: 52.3676,
+    zoom: 7,
+  })
+
+  return (
+    <PlatformMap
+      viewState={viewState}
+      onMove={(event) => setViewState(event?.viewState)}
+      mapStyles={MAP_STYLES}
+      mapStyleKey="dark"
+    >
+      <ComposedWeatherStack viewState={viewState} />
     </PlatformMap>
   )
 }
