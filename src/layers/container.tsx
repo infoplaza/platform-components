@@ -1,9 +1,15 @@
-import { useEffect, useMemo, useReducer, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useReducer } from 'react'
 import { useControl, useMap } from 'react-map-gl/maplibre'
 import { MapLibreOverlay as DeckOverlay } from '@deck.gl/maplibre'
 import type { Layer } from '@deck.gl/core'
-import type { Map as MapLibreMap } from 'maplibre-gl'
-import { DECK_DEVICE_PROPS } from './constants'
+import { DECK_DEVICE_PROPS, STYLE_EPOCH_DEBOUNCE_MS } from './constants'
+import {
+    getMapLibreMap,
+    installAfterPassGuard,
+    installUniformBufferRebind,
+    resolveBeforeId,
+    type DeckInternal,
+} from './maplibre-interleave'
 
 type DeckGLOverlayProps = {
     layers?: Layer[] | null
@@ -18,123 +24,9 @@ type LayerWithBeforeId = Layer & {
     clone: (props: Record<string, unknown>) => Layer
 }
 
-type DeckDrawLayersOptions = {
-    viewports?: Array<{ id?: string }>
-    clearStack?: boolean
-    clearCanvas?: boolean
-}
-
-type DeckInternal = {
-    userData?: Record<string, unknown>
-    device?: { gl?: WebGLRenderingContext }
-    props?: {
-        onBeforeRender?: (opts: { device?: unknown; gl?: unknown }) => void
-        onAfterRender?: (opts: { device?: unknown; gl?: unknown }) => void
-    }
-    _drawLayers?: (reason: string, opts?: DeckDrawLayersOptions) => void
-}
-
 type DeckOverlayInternal = {
     setProps: (props: Record<string, unknown>) => void
     _deck?: DeckInternal
-}
-
-type MapLibreUniformBuffer = {
-    upload?: () => void
-}
-
-type MapLibrePainterContext = {
-    setDirty?: () => void
-    frameUniformBuffer?: MapLibreUniformBuffer
-    projectionUniformBuffer?: MapLibreUniformBuffer
-    terrainUniformBuffer?: MapLibreUniformBuffer
-    __platformUboRebind?: boolean
-}
-
-const getMapLibreMap = (
-    mapRef: { getMap?: () => MapLibreMap } | MapLibreMap | null | undefined,
-): MapLibreMap | undefined => {
-    if (!mapRef) {
-        return undefined
-    }
-    if (typeof (mapRef as { getMap?: () => MapLibreMap }).getMap === 'function') {
-        return (mapRef as { getMap: () => MapLibreMap }).getMap()
-    }
-    return mapRef as MapLibreMap
-}
-
-/**
- * setDirty marks UBO bindingDirty, but FrameUBO is only upload()'d at frame start.
- * Deck/luma rebinds slots 0–2; MapLibre draw_custom already calls setDirty after
- * custom layers — wrapping it to upload() restores the correct bindBufferBase.
- */
-const installUniformBufferRebind = (map: MapLibreMap) => {
-    const context = (map as { painter?: { context?: MapLibrePainterContext } }).painter?.context
-    if (!context || context.__platformUboRebind) {
-        return
-    }
-
-    const originalSetDirty = context.setDirty?.bind(context)
-    if (!originalSetDirty) {
-        return
-    }
-
-    context.setDirty = () => {
-        originalSetDirty()
-        context.frameUniformBuffer?.upload?.()
-        context.projectionUniformBuffer?.upload?.()
-        context.terrainUniformBuffer?.upload?.()
-    }
-    context.__platformUboRebind = true
-}
-
-/**
- * MapLibreOverlay may redraw deck after the basemap finishes; that paints weather
- * above borders/labels. Group draws always pass `clearStack`.
- */
-const installAfterPassGuard = (deck: DeckInternal) => {
-    if (!deck._drawLayers || deck.userData?.__afterPassGuarded) {
-        return
-    }
-
-    const originalDrawLayers = deck._drawLayers.bind(deck)
-    deck._drawLayers = (reason, opts = {}) => {
-        const isAfterMapLibrePass =
-            reason === 'maplibre-repaint' &&
-            opts.clearCanvas === false &&
-            !Object.prototype.hasOwnProperty.call(opts, 'clearStack')
-
-        if (isAfterMapLibrePass) {
-            if (deck.userData) {
-                deck.userData.currentViewport = null
-            }
-            const device = deck.device
-            const gl = device?.gl
-            deck.props?.onBeforeRender?.({ device, gl })
-            deck.props?.onAfterRender?.({ device, gl })
-            return
-        }
-
-        return originalDrawLayers(reason, opts)
-    }
-
-    if (!deck.userData) {
-        deck.userData = {}
-    }
-    deck.userData.__afterPassGuarded = true
-}
-
-const resolveBeforeId = (
-    map: MapLibreMap | undefined,
-    interleaved: boolean,
-    beforeId: string | undefined,
-): string | undefined => {
-    if (!map || !interleaved || !beforeId) {
-        return undefined
-    }
-    // Prefer getLayer only — isStyleLoaded() can lag and force a "last" group
-    // (weather above labels) for remote basemap styles.
-    return map.getLayer(beforeId) ? beforeId : undefined
 }
 
 function DeckGLOverlay({
@@ -147,34 +39,59 @@ function DeckGLOverlay({
     const maps = useMap()
     const map = getMapLibreMap(maps.current)
     const [, bumpStyleEpoch] = useReducer((value: number) => value + 1, 0)
-    const previousResolvedBeforeIdRef = useRef<string | undefined>(undefined)
+    // Increments on every basemap `style.load` so deck re-creates custom layers
+    // against the new style. Needed when the new beforeId already existed on the
+    // previous style (e.g. landcover on remote → marine): resolveBeforeId never
+    // goes undefined, and React would otherwise keep Layer instances bound to the
+    // old basemap until something else rebuilds layers (e.g. timeline play).
+    const [styleLoadGeneration, bumpStyleLoadGeneration] = useReducer(
+        (value: number) => value + 1,
+        0,
+    )
 
-    // Synchronous: never stamp a beforeId that is missing mid style-switch.
     const resolvedBeforeId = resolveBeforeId(map, Boolean(interleaved), beforeId)
-    const anchorRecovered =
-        previousResolvedBeforeIdRef.current === undefined &&
-        typeof resolvedBeforeId === 'string'
+
+    useLayoutEffect(() => {
+        if (!map || !interleaved) {
+            return
+        }
+        installUniformBufferRebind(map)
+    }, [map, interleaved])
 
     useEffect(() => {
-        previousResolvedBeforeIdRef.current = resolvedBeforeId
-    }, [resolvedBeforeId])
+        if (!map || !interleaved) {
+            return
+        }
 
-    if (map && interleaved) {
-        installUniformBufferRebind(map)
-    }
+        const onStyleLoad = () => {
+            installUniformBufferRebind(map)
+            bumpStyleLoadGeneration()
+            bumpStyleEpoch()
+        }
+
+        map.on('style.load', onStyleLoad)
+        return () => {
+            map.off('style.load', onStyleLoad)
+        }
+    }, [map, interleaved])
 
     useEffect(() => {
         if (!map || !interleaved) {
             return
         }
         installUniformBufferRebind(map)
+        let debounceId: ReturnType<typeof setTimeout> | undefined
         const onStyleLifecycle = () => {
             installUniformBufferRebind(map)
-            bumpStyleEpoch()
+            clearTimeout(debounceId)
+            debounceId = setTimeout(() => {
+                bumpStyleEpoch()
+            }, STYLE_EPOCH_DEBOUNCE_MS)
         }
         map.on('styledata', onStyleLifecycle)
         map.on('idle', onStyleLifecycle)
         return () => {
+            clearTimeout(debounceId)
             map.off('styledata', onStyleLifecycle)
             map.off('idle', onStyleLifecycle)
         }
@@ -198,21 +115,19 @@ function DeckGLOverlay({
         }
 
         // Never stamp beforeId: undefined — that becomes deck-maplibre-layer-group-last
-        // and paints weather above borders/labels. Wait until the basemap anchor exists.
+        // and paints weather above borders/labels. Prefer a brief blank over wrong order.
         if (!resolvedBeforeId) {
             return []
         }
 
-        // When the anchor recovers after setStyle, force new layer instances so deck
-        // re-resolves custom-layer groups even if beforeId props already match.
+        // Always clone with the resolved anchor. Reusing instances when
+        // props.beforeId already matches leaves deck holding layers bound to the
+        // previous basemap after setStyle (non-marine → marine via shared landcover).
         return list.map((layer) => {
             const typed = layer as LayerWithBeforeId
-            if (!anchorRecovered && typed.props.beforeId === resolvedBeforeId) {
-                return layer
-            }
             return typed.clone({ beforeId: resolvedBeforeId })
         })
-    }, [layers, interleaved, resolvedBeforeId, anchorRecovered])
+    }, [layers, interleaved, resolvedBeforeId, styleLoadGeneration])
 
     overlay.setProps({
         ...rest,
@@ -224,11 +139,7 @@ function DeckGLOverlay({
         },
     })
 
-    if (interleaved && overlay._deck) {
-        installAfterPassGuard(overlay._deck)
-    }
-
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!interleaved) {
             return
         }

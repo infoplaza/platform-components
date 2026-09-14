@@ -9,3 +9,9 @@ export const DECK_DEVICE_PROPS = {
 
 /** Screen-space text/icon sizing for interleaved MapLibre overlays. */
 export const LAYER_SIZE_UNITS = 'pixels' as const
+
+/**
+ * Debounce style-lifecycle re-renders (styledata/idle can fire per tile).
+ * Keep low so beforeId anchor recovery stays snappy after setStyle.
+ */
+export const STYLE_EPOCH_DEBOUNCE_MS = 50

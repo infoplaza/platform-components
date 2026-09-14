@@ -408,12 +408,12 @@ const myStyle: MapStyle = {
     // Used for normal (land/atmospheric) models.
     default: {
       source: 'https://maps.example.com/styles/dark/style.json', // URL or MapLibre style object
-      beforeId: 'river', // weather under rivers + borders + labels, above land fills
+      beforeId: 'lakes-transparent', // weather under this basemap layer id
     },
     // Used automatically for marine models (category `wave` / `ocean`).
     marine: {
       source: 'https://maps.example.com/styles/dark-marine/style.json',
-      beforeId: 'river',
+      beforeId: 'landcover',
     },
   },
 }
@@ -423,9 +423,11 @@ const myStyle: MapStyle = {
 - `beforeId` is the id of the basemap layer the weather layers are placed under.
   `BaseMap` exposes the resolved value through the `beforeId` render-prop so you
   can forward it to `LayerComposer` (`<LayerComposer beforeId={beforeId} … />`).
-  If a style omits it, `BaseMap` falls back to `'river'`.
-  Prefer the first river/border/label layer (e.g. `river`, `boundary_state`, `road-name`) so
-  place names, rivers, and borders stay above the weather raster.
+  If a style omits it, `BaseMap` falls back to `DEFAULT_WEATHER_BEFORE_ID`
+  (`'lakes-transparent'`). Built-in styles use `'lakes-transparent'` (default),
+  `'landcover'` (marine), and `'water-intermittent'` (traffic). Pick a layer that
+  sits above land/water fills so place names, rivers, and borders stay on top of
+  the weather raster.
 
 ### Selecting a style
 
