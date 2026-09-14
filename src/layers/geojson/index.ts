@@ -129,12 +129,12 @@ export class GeoJsonCustomLayer<ExtraPropsT extends {} = {}> extends CompositeLa
                 pickable,
                 autoHighlight,
                 highlightColor,
+                beforeId: this.props.beforeId,
                 ...(getDashArray ? { getDashArray, dashJustified, dashGapPickable } : {}),
                 extensions,
                 updateTriggers: this.props.updateTriggers,
                 parameters: {
                     cullMode: 'back',
-                    depthCompare: 'always',
                     ...this.props.parameters,
                 },
             })),

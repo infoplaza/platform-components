@@ -27,6 +27,7 @@ import { paletteColorToGl } from '../../_utils/color'
 import type { IconStyle } from '../../_utils/icon-style'
 import { GridStyle, GRID_ICON_STYLES } from './style'
 import type { Legend } from '../../_utils/pixel-value'
+import { LAYER_SIZE_UNITS } from '../constants'
 
 type _GridCompositeLayerProps = CompositeLayerProps & {
   image: TextureData | null;
@@ -147,54 +148,24 @@ export class GridCompositeLayer<ExtraPropsT extends {} = {}> extends CompositeLa
                     iconMapping: iconStyle.iconMapping,
                     billboard: false,
                     sizeBasis: 'height',
+                    sizeUnits: LAYER_SIZE_UNITS,
+                    beforeId: beforeId ?? undefined,
+                    updateTriggers: {
+                        getSize: [iconSize, iconBounds],
+                        getColor: [iconColor],
+                    },
                     parameters: {
                         cullMode: 'front', // enable culling to avoid rendering on both sides of the globe; front-face culling because it seems deck.gl uses a wrong winding order and setting frontFace: 'cw' throws "GL_INVALID_ENUM: Enum 0x0000 is currently not supported."
-                        depthCompare: 'always', // disable depth test to avoid conflict with Maplibre globe depth buffer, see https://github.com/visgl/deck.gl/issues/9357
                         ...this.props.parameters,
                     },
-                } satisfies IconLayerProps<GeoJSONFeature<GeoJSONPoint, RasterPointProperties>>),
+                } as IconLayerProps<GeoJSONFeature<GeoJSONPoint, RasterPointProperties>>),
             ]
         } else {
             return [
-                // new ScatterplotLayer({
-                //     id: `${id}-grid-scatterplot`,
-                //     data: positions,
-                //     pickable: true,
-                //     autoHighlight: true,
-                //     stroked: true,
-                //     filled: true,
-                //     radiusScale: 15,
-                //     radiusMinPixels: 3,
-                //     radiusMaxPixels: 10,
-                //     lineWidthMinPixels: 1,
-                //     lineWidthUnits: 'pixels',
-                //     getPosition: (d: GeoJSONFeature<GeoJSONPoint, RasterPointProperties>) => {
-                //         // return d.geometry.coordinates as Position
-                //         return d as unknown as Position
-                //     },
-                //     getRadius: (d: GeoJSONFeature<GeoJSONPoint, RasterPointProperties>) => {
-                //         return 1
-                //     },
-                //     getFillColor: (d: GeoJSONFeature<GeoJSONPoint, RasterPointProperties>) => paletteScale ? paletteColorToGl(paletteScale(d.properties.value).rgba()) : iconColor,
-                //     getLineColor: (d: GeoJSONFeature<GeoJSONPoint, RasterPointProperties>) => iconColor,
-                //     getLineWidth: (d: GeoJSONFeature<GeoJSONPoint, RasterPointProperties>) => 1,
-                //     updateTriggers: {
-                //         getPosition: [visiblePoints],
-                //         getRadius: [visiblePoints],
-                //         getFillColor: [visiblePoints, iconColor],
-                //         getLineColor: [visiblePoints],
-                //         getLineWidth: [visiblePoints],
-                //     },
-                //     beforeId,
-                // }),
                 new TextLayer({
                     id: `${id}-grid-text`,
                     data: visiblePoints,
                     characterSet: 'auto',
-                    // fontSettings: {
-                    //     sdf: true,
-                    //     buffer: 8
-                    // },
                     getPosition: d => d.geometry.coordinates as Position,
                     getText: d => textFormatFunction(d.properties.value, unitFormat),
                     getSize: textSize,
@@ -204,14 +175,19 @@ export class GridCompositeLayer<ExtraPropsT extends {} = {}> extends CompositeLa
                     getTextAnchor: 'middle',
                     pickable: false,
                     fontFamily: textFontFamily,
-                    // fontSettings: { sdf: true },
                     billboard: false,
+                    sizeUnits: LAYER_SIZE_UNITS,
+                    beforeId: beforeId ?? undefined,
+                    updateTriggers: {
+                        getSize: [textSize],
+                        getColor: [textColor],
+                        getText: [textFormatFunction, unitFormat],
+                    },
                     parameters: {
                         cullMode: 'front', // enable culling to avoid rendering on both sides of the globe; front-face culling because it seems deck.gl uses a wrong winding order and setting frontFace: 'cw' throws "GL_INVALID_ENUM: Enum 0x0000 is currently not supported."
-                        depthCompare: 'always', // disable depth test to avoid conflict with Maplibre globe depth buffer, see https://github.com/visgl/deck.gl/issues/9357
                         ...this.props.parameters,
                     },
-                } satisfies TextLayerProps<GeoJSONFeature<GeoJSONPoint, RasterPointProperties>>),
+                } as TextLayerProps<GeoJSONFeature<GeoJSONPoint, RasterPointProperties>>),
             ]
         }
     }

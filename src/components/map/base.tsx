@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { Map } from 'react-map-gl/maplibre'
-import { MAP_STYLES } from '../../config/styles'
+import { MAP_STYLES, DEFAULT_WEATHER_BEFORE_ID } from '../../config/styles'
 import type { MapStyle } from '@/@types/map-style.types'
 import { useWeatherMap } from '@/src/providers/weather/weather'
 import type { ModelInfo } from '@/@types/weather.types'
@@ -125,7 +125,7 @@ export default function BaseMap({
   const selectedMapStyle = getSelectedMapStyle(mapStyles, mapStyleKey, mapStyle)
   const resolvedMapStyle = getResolvedMapStyle(selectedMapStyle, modelInfo)
   const resolvedMapSource = style ?? resolvedMapStyle?.source
-  const resolvedBeforeId = resolvedMapStyle?.beforeId ?? 'lakes-transparent'
+  const resolvedBeforeId = resolvedMapStyle?.beforeId ?? DEFAULT_WEATHER_BEFORE_ID
 
   if (!device.ready) {
     return null

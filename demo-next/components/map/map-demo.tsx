@@ -98,7 +98,11 @@ export default function MapDemo() {
                   {(mapComponents: any) => (
                     <LayerComposer beforeId={beforeId} mapComponents={mapComponents}>
                       {({ layers }: { layers: any[] }) => (
-                        <Overlay layers={[...layers]} interleaved={true} controller={true} />
+                        <Overlay
+                          layers={[...layers]}
+                          interleaved
+                          beforeId={beforeId}
+                        />
                       )}
                     </LayerComposer>
                   )}

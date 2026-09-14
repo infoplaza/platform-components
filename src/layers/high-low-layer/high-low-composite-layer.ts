@@ -17,6 +17,7 @@ import {parsePalette, type Palette, type Scale} from '../../_utils/palette';
 import {paletteColorToGl} from '../../_utils/color';
 import {getHighLowPoints, HighLowType} from './high-low-point';
 import type {HighLowPointProperties} from './high-low-point';
+import {LAYER_SIZE_UNITS} from '../constants';
 
 const HIGH_LOW_LABEL_COLLISION_GROUP = 'high-low-label';
 
@@ -52,6 +53,8 @@ type _HighLowCompositeLayerProps = CompositeLayerProps & {
   textOutlineWidth: number;
   textOutlineColor: Color;
   palette: Palette | null;
+  /** MapLibre interleaved insert point — forwarded to drawable TextLayer leaves. */
+  beforeId?: string;
 }
 
 export type HighLowCompositeLayerProps = _HighLowCompositeLayerProps & LayerProps;
@@ -106,6 +109,7 @@ export class HighLowCompositeLayer<ExtraPropsT extends {} = {}> extends Composit
 
     const {unitFormat, textFormatFunction, textFontFamily, textSize, textColor, textOutlineWidth, textOutlineColor} = ensureDefaultProps(props, defaultProps);
     const {paletteScale} = this.state;
+    const {beforeId} = this.props;
 
     return [
       new TextLayer({
@@ -122,7 +126,13 @@ export class HighLowCompositeLayer<ExtraPropsT extends {} = {}> extends Composit
         fontFamily: textFontFamily,
         fontSettings: {sdf: true},
         billboard: false,
-
+        sizeUnits: LAYER_SIZE_UNITS,
+        beforeId,
+        updateTriggers: {
+          getSize: [textSize],
+          getPixelOffset: [textSize],
+          getColor: [textColor, paletteScale],
+        },
         extensions: [new CollisionFilterExtension()],
         collisionEnabled: true,
         collisionGroup: HIGH_LOW_LABEL_COLLISION_GROUP,
@@ -130,10 +140,9 @@ export class HighLowCompositeLayer<ExtraPropsT extends {} = {}> extends Composit
         getCollisionPriority: (d: GeoJSON.Feature<GeoJSON.Point, HighLowPointProperties>) => getHighLowPointCollisionPriority(d, minValue, maxValue),
         parameters: {
           cullMode: 'front', // enable culling to avoid rendering on both sides of the globe; front-face culling because it seems deck.gl uses a wrong winding order and setting frontFace: 'cw' throws "GL_INVALID_ENUM: Enum 0x0000 is currently not supported."
-          depthCompare: 'always', // disable depth test to avoid conflict with Maplibre globe depth buffer, see https://github.com/visgl/deck.gl/issues/9357
           ...this.props.parameters,
         },
-      } satisfies TextLayerProps<GeoJSON.Feature<GeoJSON.Point, HighLowPointProperties>> & CollisionFilterExtensionProps<GeoJSON.Feature<GeoJSON.Point, HighLowPointProperties>>),
+      } as TextLayerProps<GeoJSON.Feature<GeoJSON.Point, HighLowPointProperties>> & CollisionFilterExtensionProps<GeoJSON.Feature<GeoJSON.Point, HighLowPointProperties>>),
       // new TextLayer({
       //   id: 'value',
       //   data: visiblePoints,
