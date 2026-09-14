@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { setWorkerUrl } from 'maplibre-gl'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
-import { BaseMap, MAP_STYLES } from '../dist/components/index.js'
+import { BaseMap } from '../dist/components/index.js'
+import { MAP_STYLES } from '../dist/defaults/index.js'
 import { Providers as ProvidersComponent } from '../dist/providers/index.js'
 import MapEventsProvider from '../dist/events/index.js'
-import LayerComposer from '../dist/layers/composer.js'
-import Overlay from '../dist/layers/overlay.js'
+import { LayerComposer, LayerOverlay } from '../dist/layers/index.js'
 import { MapControlHud } from '../dist/components/index.js'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import '../dist/styles.css'
@@ -50,7 +50,7 @@ function App() {
   useEffect(() => {
     const controller = new AbortController()
 
-    fetch('/api/platform/models?apiEnv=prod&betaModels=false', {
+    fetch('/api/platform/models', {
       signal: controller.signal,
     })
       .then((response) => {
@@ -112,7 +112,7 @@ function App() {
                   {(mapComponents) => (
                     <LayerComposer beforeId={beforeId} mapComponents={mapComponents}>
                       {({ layers }) => (
-                          <Overlay 
+                          <LayerOverlay 
                               layers={[...layers]} 
                               interleaved={true} 
                               controller={true} />

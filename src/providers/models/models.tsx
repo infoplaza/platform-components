@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from '
 import type { ModelInfo, ModelsConfig, ModelsContextValue } from '@/@types/weather.types'
 
 const DEFAULT_BASE_PATH = '/api/platform'
-const DEFAULT_API_ENV: NonNullable<ModelsConfig['apiEnv']> = 'prod'
 
 export const ModelsContext = createContext<ModelsContextValue | null>(null)
 
@@ -23,8 +22,6 @@ function extractModels(payload: any): ModelInfo[] {
  * consumers no longer have to perform this request themselves on the client.
  */
 export const ModelsProvider: React.FC<ModelsConfig & { children: React.ReactNode }> = ({
-  apiEnv = DEFAULT_API_ENV,
-  betaModels = false,
   basePath = DEFAULT_BASE_PATH,
   children,
 }) => {
@@ -39,12 +36,8 @@ export const ModelsProvider: React.FC<ModelsConfig & { children: React.ReactNode
     setError(null)
 
     const normalizedBase = basePath.replace(/\/+$/, '')
-    const params = new URLSearchParams({
-      apiEnv,
-      betaModels: String(betaModels),
-    })
 
-    fetch(`${normalizedBase}/models?${params.toString()}`, {
+    fetch(`${normalizedBase}/models`, {
       signal: controller.signal,
     })
       .then((response) => {
@@ -71,7 +64,7 @@ export const ModelsProvider: React.FC<ModelsConfig & { children: React.ReactNode
     return () => {
       controller.abort()
     }
-  }, [apiEnv, betaModels, basePath])
+  }, [basePath])
 
   const value = useMemo<ModelsContextValue>(
     () => ({ models, loading, error }),
