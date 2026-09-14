@@ -33,6 +33,29 @@ export type CachedLoadFunction<T> = (url: string, options?: CachedLoadOptions<T>
 
 const DEFAULT_CACHE = new Map<string, any>();
 
+// Underlying loads are decoupled from any single caller's signal (see
+// loadCached below) so that one caller aborting doesn't cancel work other
+// callers are still awaiting. That means an aborted caller's network download
+// keeps running and holds a browser connection slot. This registry lets us
+// forcibly cancel every in-flight shared load at once (e.g. when the model
+// or element changes) so the new, higher-priority request isn't queued behind
+// a backlog of still-downloading preload images.
+const inFlightLoadControllers = new Set<AbortController>();
+
+/**
+ * Aborts every shared load currently in flight. Callers awaiting those loads
+ * receive an AbortError (handled the same as any other abort); the dedupe
+ * cache entry is dropped so the next request re-fetches cleanly. Use this to
+ * immediately free browser connection slots when preloaded data is no longer
+ * relevant (e.g. the model or element changed).
+ */
+export function abortInFlightTextureLoads(): void {
+  for (const controller of inFlightLoadControllers) {
+    controller.abort();
+  }
+  inFlightLoadControllers.clear();
+}
+
 function maskData(data: TextureDataArray, nodata: number | null): TextureDataArray {
   if (nodata == undefined) {
     return data;
@@ -243,24 +266,30 @@ function loadCached<T>(loadFunction: LoadFunction<T>): CachedLoadFunction<T> {
 
     const cache = options?.cache ?? DEFAULT_CACHE;
     const cacheKey = url + (options?.headers ? ':' + JSON.stringify(options?.headers) : '');
-    const cached = cache.get(cacheKey);
-    if (cached) {
-      return waitWithSignal(cached, options?.signal);
+    if (cache.has(cacheKey)) {
+      return waitWithSignal(cache.get(cacheKey), options?.signal);
     }
 
     // Per-caller signal must not cancel the shared load (other callers may be
-    // awaiting it). Strip it from the options handed to the loader and bridge
-    // the caller's signal at the wait site.
-    const sharedOptions = {...options, cache: undefined, signal: undefined};
+    // awaiting it). Instead of stripping cancellation entirely, give the shared
+    // load its own controller so a single caller aborting only rejects its wait
+    // (bridged below), while abortInFlightTextureLoads() can still cancel the
+    // underlying network work — and free the browser connection — for all
+    // in-flight loads at once.
+    const sharedController = new AbortController();
+    inFlightLoadControllers.add(sharedController);
+    const sharedOptions = {...options, cache: undefined, signal: sharedController.signal};
     const dataPromise = loadFunction(url, sharedOptions);
     cache.set(cacheKey, dataPromise);
     dataPromise.then(
       data => {
+        inFlightLoadControllers.delete(sharedController);
         cache.set(cacheKey, data);
       },
-      () => {
-        // Don't poison the cache with rejected/aborted loads — let the
-        // next caller retry.
+      (_error) => {
+        inFlightLoadControllers.delete(sharedController);
+        // Drop aborted and failed in-flight entries so the next caller
+        // re-fetches instead of awaiting a rejected shared promise.
         if (cache.get(cacheKey) === dataPromise) {
           cache.delete(cacheKey);
         }
