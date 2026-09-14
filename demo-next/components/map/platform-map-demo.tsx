@@ -178,7 +178,16 @@ function ComposedWeatherStack({
   const { beforeId } = usePlatformMap()
 
   return (
-    <Providers mapIndex={1}>
+    <Providers
+      mapIndex={1}
+      weatherConfig={{
+        model: 'optimal',
+        element: 'temperature',
+        run: 'latest',
+        member: '0',
+        level: '2m',
+      }}
+    >
       <MapEventsProvider>
         {(mapComponents: Record<number, unknown[]>) => (
           <LayerComposer beforeId={beforeId} mapComponents={mapComponents}>
@@ -245,7 +254,7 @@ export default function PlatformMapDemo() {
         </header>
 
         <ExampleSection
-          title="Without weather"
+          title="Base Map"
           description="Bare PlatformMap with an imperative flyTo via usePlatformMap()."
           filename={BARE_MAP_FILENAME}
           source={BARE_MAP_SOURCE}
@@ -254,7 +263,7 @@ export default function PlatformMapDemo() {
         </ExampleSection>
 
         <ExampleSection
-          title="With weather"
+          title="Map with weather"
           description="PlatformMap plus WeatherLayers (Providers, events, Deck overlay, HUD)."
           filename={WEATHER_MAP_FILENAME}
           source={WEATHER_MAP_SOURCE}
@@ -263,8 +272,8 @@ export default function PlatformMapDemo() {
         </ExampleSection>
 
         <ExampleSection
-          title="Composed"
-          description="PlatformMap shell with a hand-wired stack: Providers, MapEventsProvider, LayerComposer, LayerOverlay, and HUD. Prefer WeatherLayers unless you need custom wiring."
+          title="Maps with custom composed stack"
+          description="PlatformMap shell with a hand-wired stack: Providers, MapEventsProvider, LayerComposer, LayerOverlay, and HUD."
           filename={COMPOSED_MAP_FILENAME}
           source={COMPOSED_MAP_SOURCE}
           controls={
@@ -279,8 +288,8 @@ export default function PlatformMapDemo() {
         </ExampleSection>
 
         <footer className="flex flex-wrap items-center gap-4 px-0.5 pb-2 text-xs text-dark/60">
-          <span>PlatformMap · WeatherLayers optional · Composed stack</span>
-          <span className="ml-auto">@infoplaza/platform/components</span>
+          <span>PlatformMap · WeatherLayers · Composed stack</span>
+          <span className="ml-auto">@infoplaza/platform</span>
         </footer>
       </div>
     </section>
