@@ -12,6 +12,7 @@ import type { SupportedLocale } from "@/src/utilities/date"
 
 import { useWeatherMap } from "@/src/providers/weather/weather"
 import { useSyncTimebarPlaying, useTimestampMap } from "@/src/redux/timestamps"
+import { getPreloadProgress } from "./preload-progress"
 
 import type { TimestampInfo } from "@/@types/weather.types"
 
@@ -102,6 +103,8 @@ export default function MapControlMobileTimebar({ language, timezone, small = fa
             .filter((ts): ts is TimestampInfo => ts !== null)
             .sort((a, b) => a.timestamp - b.timestamp)
     }, [timestampsInfo, onlyActive])
+
+    const preloadProgress = useMemo(() => getPreloadProgress(mapTimestamps), [mapTimestamps])
 
 
     const formatStep = useCallback(
@@ -690,6 +693,17 @@ export default function MapControlMobileTimebar({ language, timezone, small = fa
                     onMouseDown={handleMouseDown}
                 >
                     <div className={twMerge('ip:grow ip:relative')}>
+                        {preloadProgress.isPreloading && (
+                            <div
+                                title={`Preloading ${preloadProgress.loaded}/${preloadProgress.total} frames`}
+                                className="ip:absolute ip:top-0 ip:left-0 ip:z-100 ip:text-3xs ip:font-light ip:whitespace-nowrap ip:flex ip:items-center ip:gap-0.5 ip:p-2 ip:text-yellow-600 ip:dark:text-yellow-300"
+                            >
+                                <IpLoadingSpinner className="ip:w-3 ip:h-3" />
+                                <span className="ip:font-medium">
+                                    {preloadProgress.loaded}/{preloadProgress.total}
+                                </span>
+                            </div>
+                        )}
                         <div className={twMerge("ip:absolute ip:top-0 ip:right-0 ip:text-3xs ip:text-center ip:text-gray-500 ip:font-light ip:dark:text-white ip:nowrap ip:flex ip:gap-1 ip:sm:hidden ip:sm:font-normal ip:p-2")}>
                             <span>{timestampInfo?.dayWeek} </span>
                             <span>{timestampInfo?.dayMonth} </span>
@@ -730,9 +744,16 @@ export default function MapControlMobileTimebar({ language, timezone, small = fa
                                                         idx == 0 && 'ip:w-3 ip:min-w-3 ip:-ml-3 ip:rounded-l-full',
                                                         idx === mapTimestamps.length - 1 && 'ip:w-3 ip:min-w-3 ip:-mr-3 ip:rounded-r-full',
                                                         ts.loaded && 'ip:bg-primary/75',
-                                                        !ts.loaded && 'ip:bg-yellow-400/75',
+                                                        !ts.loaded && ts.active && 'ip:bg-gray-400/75 ip:motion-safe:animate-pulse',
                                                         !ts.active && 'ip:bg-red-500/75',
-                                                    )}>
+                                                    )
+                                                }
+                                                style={
+                                                    !ts.loaded && ts.active
+                                                        ? { animationDelay: `${(idx % 24) * 70}ms` }
+                                                        : undefined
+                                                }
+                                            >
                                             </div>
                                         ))}
                                     </div>

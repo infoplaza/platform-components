@@ -32,15 +32,13 @@ export default function MapControlRun({ small = false }: MapControlRunProps) {
     
     return (
         <div>
-            <div className="pointer-events-auto">
-                <div className="flex gap-4 items-center">
-                    <div>
-                        <DropdownControl items={modelItems}                                        
-                            maxItems={0}
-                            small={small}
-                            onChange={(val) => onChange(val)}                                        
-                            className="bg-white/80 dark:bg-dark/80 backdrop-blur-md border border-white/10" />
-                    </div>
+            <div className="ip:pointer-events-auto">
+                <div className="ip:flex ip:gap-4 ip:items-center">
+                    <DropdownControl items={modelItems}                                        
+                        maxItems={0}
+                        small={small}
+                        onChange={(val) => onChange(val)}                                        
+                        className="ip:bg-white/80 ip:dark:bg-dark/80 ip:backdrop-blur-md ip:border ip:border-white/10" />
                 </div>
             </div>
         </div>

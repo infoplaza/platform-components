@@ -13,6 +13,7 @@ import { formatTime } from '@/src/utilities/date'
 import { useStorageState } from "@/src/utilities/storageState"
 import { twMerge } from "@/src/utilities/external/twMerge"
 import useKeyPress from '@/src/hooks/keypress'
+import { getPreloadProgress } from "./preload-progress"
 
 import type { SupportedLocale } from "@/src/utilities/date"
 import type { TimestampInfo } from "@/@types/weather.types"
@@ -93,6 +94,8 @@ export default function MapControlTimebar({ language, timezone, small = false, o
 
     const playing = useRef<boolean>(false)
     const playingTimeout = useRef<number | null>(null)
+    const progressBarRef = useRef<HTMLDivElement>(null)
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
     /** Current slider index before advancing; ref avoids stale closures when mapTimestamps / callbacks change each render. */
     // const playCursorRef = useRef(0)
     // const mapTimestampsRef = useRef<TimestampInfo[]>([])
@@ -132,6 +135,8 @@ export default function MapControlTimebar({ language, timezone, small = false, o
             .filter((ts): ts is TimestampInfo => ts !== null)
             .sort((a, b) => a.timestamp - b.timestamp)
     }, [timestampsInfo, onlyActive])
+
+    const preloadProgress = useMemo(() => getPreloadProgress(mapTimestamps), [mapTimestamps])
 
     // Derive timestamp index from context (single source of truth)
     const index = useMemo((): number | null => {
@@ -493,6 +498,41 @@ export default function MapControlTimebar({ language, timezone, small = false, o
         [formattedTimestamps, marksType, getHoursPerDay]
     )
 
+    const onTrackMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        const bar = progressBarRef.current
+        if (!bar || mapTimestamps.length < 2) {
+            return
+        }
+
+        const rect = bar.getBoundingClientRect()
+        const yPad = 12
+        if (e.clientY < rect.top - yPad || e.clientY > rect.bottom + yPad) {
+            setHoveredIndex(null)
+
+            return
+        }
+
+        const ratio = (e.clientX - rect.left) / Math.max(rect.width, 1)
+        const next = Math.max(0, Math.min(mapTimestamps.length - 1, Math.round(ratio * (mapTimestamps.length - 1))))
+        setHoveredIndex(next)
+    }, [mapTimestamps.length])
+
+    const onTrackMouseLeave = useCallback(() => {
+        setHoveredIndex(null)
+    }, [])
+
+    const hoveredTimestamp = hoveredIndex != null ? mapTimestamps[hoveredIndex] : null
+    const hoveredFormatted = hoveredIndex != null ? formattedTimestamps[hoveredIndex] : null
+    const hoveredOffsetLabel = useMemo(() => {
+        if (hoveredIndex == null || !mapTimestamps[hoveredIndex] || !mapTimestamps[0]) {
+            return ''
+        }
+
+        const offsetHours = (mapTimestamps[hoveredIndex].timestamp - mapTimestamps[0].timestamp) / 3600
+
+        return `${offsetHours >= 0 ? '+' : ''}${Number.isInteger(offsetHours) ? offsetHours : offsetHours.toFixed(1)}h`
+    }, [hoveredIndex, mapTimestamps])
+
     const renderMarksHandler = useCallback((props: MarkProps) => {
         const { subtitle, titleSM, titleMD } = markStep(parseInt(String(props.key))) || {}
 
@@ -527,7 +567,7 @@ export default function MapControlTimebar({ language, timezone, small = false, o
         <div
             ref={mainDivRef}
             tabIndex={0}
-            className={twMerge('ip:outline-none ip:focus:outline-none ip:select-none ip:pointer-events-auto ip:bg-white/80 ip:dark:bg-dark/80 ip:backdrop-blur-md ip:border ip:border-white/10 ip:w-full ip:transition-all ip:duration-1000', [className, index != null && timestamp != null && elementInfo?.live !== true ? 'ip:max-h-screen' : 'ip:max-h-0'])}
+            className={twMerge('ip:relative ip:z-30 ip:outline-none ip:focus:outline-none ip:select-none ip:pointer-events-auto ip:bg-white/80 ip:dark:bg-dark/80 ip:backdrop-blur-md ip:border ip:border-white/10 ip:w-full ip:transition-all ip:duration-1000', [className, index != null && timestamp != null && elementInfo?.live !== true ? 'ip:max-h-screen' : 'ip:max-h-0'])}
         >
             {(index != null && timestamp != null && mapTimestamps.length > 1) ?
                 <div className='ip:flex ip:sm:gap-3 ip:gap-0'>
@@ -654,26 +694,59 @@ export default function MapControlTimebar({ language, timezone, small = false, o
                     )}
 
 
-                    <div className={`ip:grow ip:relative ${small ? 'ip:pr-2' : 'ip:pr-2 ip:md:pr-6 ip:pt-2 ip:md:pt-3'}`}>
-                        <div className={twMerge("ip:absolute ip:top-0 ip:right-0 ip:text-3xs ip:text-center ip:text-gray-500 ip:z-100 ip:font-light ip:dark:text-white ip:nowrap ip:flex ip:gap-1 ip:p-2")}>
+                    <div
+                        className={`ip:grow ip:relative ${small ? 'ip:pr-2' : 'ip:pr-2 ip:md:pr-6 ip:pt-2 ip:md:pt-3'}`}
+                        onMouseMove={onTrackMouseMove}
+                        onMouseLeave={onTrackMouseLeave}
+                    >
+                        <div className={twMerge("ip:absolute ip:top-0 ip:right-0 ip:text-3xs ip:text-center ip:text-gray-500 ip:z-100 ip:font-light ip:dark:text-white ip:nowrap ip:flex ip:gap-1 ip:p-2 ip:items-center")}>
+                            {preloadProgress.isPreloading && (
+                                <span
+                                    title={`Preloading ${preloadProgress.loaded}/${preloadProgress.total} frames`}
+                                    className="ip:inline-flex ip:items-center ip:gap-0.5 ip:text-yellow-600 ip:dark:text-yellow-300 ip:mr-2"
+                                >
+                                    <IpLoadingSpinner className={small ? 'ip:w-2.5 ip:h-2.5' : 'ip:w-3 ip:h-3'} />
+                                    {!small && (
+                                        <span className="ip:hidden ip:md:inline ip:font-medium">
+                                            {preloadProgress.loaded}/{preloadProgress.total}
+                                        </span>
+                                    )}
+                                </span>
+                            )}
                             <span>{formattedTimestamps[index]?.dayWeek} </span>
                             <span>{formattedTimestamps[index]?.dayMonth} </span>
                             <span>{formattedTimestamps[index]?.month} </span>
                             <span className="ip:font-medium">{formattedTimestamps[index]?.hour}:{formattedTimestamps[index]?.minute} </span>
                         </div>
-                        <div className={twMerge('ip:absolute ip:flex ip:h-2 ip:left-0 ip:rounded-full ip:overflow-hidden', [small ? 'ip:top-4 ip:right-2' : 'ip:top-5 ip:md:top-8 ip:right-2 ip:md:right-4'])}>
-                            {(mapTimestamps).map((ts: TimestampInfo) => (
+                        <div
+                            ref={progressBarRef}
+                            role="progressbar"
+                            aria-label="Frame preload progress"
+                            aria-busy={preloadProgress.isPreloading}
+                            aria-valuemin={0}
+                            aria-valuemax={preloadProgress.total}
+                            aria-valuenow={preloadProgress.loaded}
+                            className={twMerge('ip:absolute ip:flex ip:h-2 ip:left-0 ip:rounded-full ip:overflow-hidden ip:pointer-events-none', [small ? 'ip:top-4 ip:right-2' : 'ip:top-5 ip:md:top-8 ip:right-2 ip:md:right-4'])}
+                        >
+                            {(mapTimestamps).map((ts: TimestampInfo, i: number) => (
                                 <div 
-                                    key={`${ts.timestamp}-${ts.index}-${ts.loaded}-${ts.active}`} 
+                                    key={`${ts.timestamp}-${ts.index}`}
                                     className={
                                         twMerge('ip:flex-1', 
                                             [
                                                 ts.loaded && 'ip:bg-primary/75',
-                                                !ts.loaded && 'ip:bg-yellow-400/75', 
-                                                !ts.active && 'ip:bg-red-500/75', 
+                                                !ts.loaded && ts.active && 'ip:bg-gray-400/75 ip:motion-safe:animate-pulse',
+                                                !ts.active && 'ip:bg-red-500/75',
+                                                hoveredIndex === i && 'ip:brightness-125',
                                             ]
                                         )
-                                    }></div>
+                                    }
+                                    style={
+                                        !ts.loaded && ts.active
+                                            ? { animationDelay: `${(i % 24) * 70}ms` }
+                                            : undefined
+                                    }
+                                ></div>
                             ))}
                             {/* <ExportPreviewMarker
                                 mapTimestamps={mapTimestamps}
@@ -681,6 +754,50 @@ export default function MapControlTimebar({ language, timezone, small = false, o
                                 exportPreviewStep={exportPreviewStep}
                             /> */}
                         </div>
+                        {hoveredTimestamp != null && hoveredFormatted != null && hoveredIndex != null && (
+                            <div
+                                className={twMerge(
+                                    'ip:absolute ip:z-200 ip:h-2 ip:pointer-events-none',
+                                    [small ? 'ip:top-4 ip:right-2 ip:left-0' : 'ip:top-5 ip:md:top-8 ip:right-2 ip:md:right-4 ip:left-0']
+                                )}
+                            >
+                                <div
+                                    className="ip:absolute ip:bottom-full ip:mb-1.5 ip:-translate-x-1/2 ip:rounded-md ip:border ip:border-black/10 ip:dark:border-white/10 ip:bg-white/90 ip:dark:bg-dark/90 ip:backdrop-blur-md ip:px-2.5 ip:py-1.5 ip:text-center ip:text-dark ip:dark:text-white ip:shadow-md ip:whitespace-nowrap"
+                                    style={{ left: `${(hoveredIndex / Math.max(mapTimestamps.length - 1, 1)) * 100}%` }}
+                                >
+                                    <div className="ip:text-xs ip:font-medium">
+                                        <span className="ip:font-light ip:mr-1">{hoveredFormatted.dayWeek}</span>
+                                        <span>{hoveredFormatted.dayMonth} {hoveredFormatted.month}</span>
+                                        {' '}
+                                        <span className="ip:font-semibold">{hoveredFormatted.hour}:{hoveredFormatted.minute}</span>
+                                    </div>
+                                    <div className="ip:mt-0.5 ip:flex ip:items-center ip:justify-center ip:gap-1.5 ip:text-2xs ip:font-light ip:text-gray-500 ip:dark:text-white/70">
+                                        <span
+                                            className={twMerge(
+                                                'ip:inline-block ip:size-1.5 ip:rounded-full',
+                                                !hoveredTimestamp.active && 'ip:bg-red-500',
+                                                hoveredTimestamp.active && hoveredTimestamp.loaded && 'ip:bg-primary',
+                                                hoveredTimestamp.active && !hoveredTimestamp.loaded && 'ip:bg-yellow-400',
+                                            )}
+                                        />
+                                        <span
+                                            className={twMerge(
+                                                'ip:font-medium',
+                                                !hoveredTimestamp.active && 'ip:text-red-500',
+                                                hoveredTimestamp.active && hoveredTimestamp.loaded && 'ip:text-primary',
+                                                hoveredTimestamp.active && !hoveredTimestamp.loaded && 'ip:text-yellow-600 ip:dark:text-yellow-300',
+                                            )}
+                                        >
+                                            {!hoveredTimestamp.active ? 'Unavailable' : hoveredTimestamp.loaded ? 'Loaded' : 'Loading'}
+                                        </span>
+                                        <span>·</span>
+                                        <span>{hoveredOffsetLabel}</span>
+                                        <span>·</span>
+                                        <span>{hoveredIndex + 1}/{mapTimestamps.length}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         <div className={twMerge('ip:relative', [small ? 'ip:mt-4' : 'ip:mt-3 ip:md:mt-5'])} onWheel={onWheel}>
                             <ReactSlider className="ip:bg-transparent ip:h-2 ip:w-full ip:rounded-full ip:relative ip:z-20 ip:focus:outline-none"
                                 trackClassName="ip:focus:outline-none slider-track"
@@ -718,16 +835,16 @@ export default function MapControlTimebar({ language, timezone, small = false, o
                                         tabIndex={props.tabIndex}
                                     >
                                         <div className={twMerge(
-                                            'ip:h-4 ip:w-6 ip:-mt-1 ip:rounded-full ip:border-2 ip:border-dark ip:dark:border-white ip:cursor-pointer ip:transition-scale ip:group-focus:scale-110 ip:group-hover:scale-110',
+                                            'ip:h-4 ip:w-6 ip:-mt-1 ip:rounded-full ip:border-2 ip:border-gray-700 ip:dark:border-white ip:cursor-pointer ip:transition-scale ip:group-focus:scale-110 ip:group-hover:scale-110',
                                             [
                                                 !mapTimestamps[state.valueNow]?.active ? 'ip:bg-red-500' : !mapTimestamps[state.valueNow]?.loaded ? 'ip:bg-yellow-400' : 'ip:bg-primary',
-                                                autoplay ? 'ip:animate-pulse': '',
+                                                (autoplay || (mapTimestamps[state.valueNow]?.active && !mapTimestamps[state.valueNow]?.loaded)) ? 'ip:motion-safe:animate-pulse': '',
                                             ])} >
                                         </div>
                                         {(() => {
                                             const formattedStep = formattedTimestamps[state.valueNow];
                                             return formattedStep != null ? (
-                                                <div className="ip:absolute ip:z-100 ip:bottom-6 ip:-left-5 ip:bg-dark ip:text-white ip:text-xs ip:rounded-md ip:leading-none ip:w-16 ip:py-1 ip:text-center">
+                                                <div className="ip:absolute ip:z-100 ip:bottom-6 ip:-left-5 ip:rounded-md ip:border ip:border-black/10 ip:dark:border-white/10 ip:bg-white/90 ip:dark:bg-dark/90 ip:backdrop-blur-md ip:text-xs ip:leading-none ip:min-w-16 ip:px-2 ip:py-1 ip:text-center ip:text-dark ip:dark:text-white">
                                                     <span className="ip:font-light ip:mr-1 ip:2xs:block ip:hidden">{formattedStep.dayWeek}</span>
                                                     <span className="ip:font-semibold">
                                                         {formattedStep.hour}:{formattedStep.minute}
@@ -735,7 +852,7 @@ export default function MapControlTimebar({ language, timezone, small = false, o
                                                 </div>
                                             ) : '';
                                         })()}
-                                        <div className="ip:absolute ip:z-30 ip:bottom-5 ip:left-2 ip:w-2 ip:h-2 ip:bg-dark ip:rotate-45"></div>
+                                        <div className="ip:absolute ip:z-30 ip:bottom-5 ip:left-2 ip:w-2 ip:h-2 ip:bg-white ip:dark:bg-dark ip:rotate-45"></div>
                                     </div>
                                 }
                                 renderMark={(props: MarkProps) =>
