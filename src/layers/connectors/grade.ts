@@ -34,7 +34,7 @@ export function GradeLayerConnector(layer: GradeLayerConfig, beforeId?: string):
             getRadius: layer.state.gradeRadius,
             getPosition: (point) => [point.lon, point.lat],
             getFillColor: (point): Color => point.color,
-            // beforeId,
+            beforeId,
         } as ScatterplotLayerProps<GradeDataPoint>)
 
         const textLayer = new TextLayer<GradeDataPoint>({
@@ -60,9 +60,10 @@ export function GradeLayerConnector(layer: GradeLayerConfig, beforeId?: string):
             alignmentBaseline: 'center',
             billboard: true,
             pickable: false,
-            // beforeId,
+            beforeId,
             updateTriggers: {
                 getColor: layer.state.gradeTextColor,
+                getSize: layer.state.gradeTextSize,
             },
         } as TextLayerProps<GradeDataPoint>)
 

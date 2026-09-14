@@ -9,8 +9,6 @@ import { useTimestampMap } from '@/src/redux/timestamps'
 import type { SupportedLocale } from '@/src/utilities/date'
 import { useWeatherMap } from '@/src/providers/weather'
 
-type Align = 'left' | 'right'
-
 type TimestampInfoItem = {
     timestamp: number
     url: boolean

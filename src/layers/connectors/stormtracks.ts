@@ -6,8 +6,6 @@ import type { Feature, FeatureCollection, Point } from 'geojson'
 import type { Layer } from '@deck.gl/core'
 import { CollisionFilterExtension } from '@deck.gl/extensions';
 import type { LayerSettingsState } from '@/src/providers/settings/layer-settings'
-
-
 interface StormtracksLayerConfig {
     id?: string
     data?: FeatureCollection | Feature | Feature[] | null
@@ -133,9 +131,6 @@ export function StormtracksLayerConnector(
             collisionEnabled: true,
             collisionGroup: `${layer.id ?? 'stormtracks'}-collision`,
             getCollisionPriority: (d: Feature<Point>) => d.properties?.windSpeedKTS ?? 0,
-            parameters: {
-                depthCompare: 'always',
-            },
             beforeId: beforeId,
         } as TextLayerProps<Feature<Point>>)
 
