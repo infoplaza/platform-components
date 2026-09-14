@@ -3,6 +3,7 @@ import { useCallback, useRef } from "react"
 import { hasRendering } from "@/src/_utils/type"
 import { useLayerSettings } from "@/src/providers/settings/layer-settings"
 import { getLayerSettingsKey } from "@/src/providers/settings/layer-key"
+import { getImageRangeIdentity, resolveImageMinMax } from "@/src/events/helpers/image-range"
 import type { EnrichedMapLayer } from "@/@types/weather.types"
 import type {
     ConfigColor,
@@ -107,8 +108,10 @@ function normalizeGradeSettings(input: LayerGradeSettings): Record<string, unkno
  * Returns a stable callback that pushes derived layer settings into the
  * layer-settings store after a fetch:
  *
- * - palette URL and databounds-derived min/max for `IMAGE_V2` layers (from
- *   the API response);
+ * - palette URL for `IMAGE_V2` layers (from the API response);
+ * - image min/max whenever the rendered element|level|unit identity changes
+ *   (config overrides, else databounds). Timestamp-only fetches keep in-session
+ *   slider edits;
  * - per-layer config overrides declared on `layer.settings.{value,image,
  *   contour}` in `forecast.ts`. These are applied once per (layer, bucket)
  *   so subsequent fetches do not clobber user edits.
@@ -119,13 +122,13 @@ function normalizeGradeSettings(input: LayerGradeSettings): Record<string, unkno
 export function useApplyImageSettings() {
     const { hasLayerState, setImageState, setValuesState, setContourState, setContourGeoJsonState, setDirectionState, setBarbState, setGradeState } = useLayerSettings()
     const appliedRef = useRef<Set<string>>(new Set())
+    const rangeIdentityRef = useRef<Map<string, string>>(new Map())
 
     return useCallback((layers: EnrichedMapLayer[]) => {
         for (const layer of layers) {
             const cfg = layer.settings
 
             if (hasRendering(layer, 'IMAGE_V2')) {
-                const hasImageState = hasLayerState(layer, 'IMAGE_V2')
                 const partial: Parameters<typeof setImageState>[1] = {}
 
                 const palette = layer.data?.element?.palette
@@ -135,21 +138,23 @@ export function useApplyImageSettings() {
 
                 // imageMinValue and imageMaxValue are independent: each can be
                 // set in the layer config, and any axis the config omits falls
-                // back to databounds. Handled here (not in the cfg.image bundle
-                // below) so this is the single source of truth for min/max.
-                if (!hasImageState) {
-                    const cfgMin = cfg?.image?.imageMinValue
-                    const cfgMax = cfg?.image?.imageMaxValue
-                    const databounds = layer.data?.element?.databounds
-                    if (cfgMin !== undefined) {
-                        partial.imageMinValue = cfgMin
-                    } else if (databounds) {
-                        partial.imageMinValue = Math.floor(Math.min(...databounds))
-                    }
-                    if (cfgMax !== undefined) {
-                        partial.imageMaxValue = cfgMax
-                    } else if (databounds) {
-                        partial.imageMaxValue = Math.ceil(Math.max(...databounds))
+                // back to databounds. Re-applied when element/unit/level
+                // identity changes so a stored Celsius range is not reused
+                // after switching to Fahrenheit. Identity is stored only after
+                // a range is applied so a later fetch can still fill min/max
+                // once databounds arrive.
+                const settingsKey = getLayerSettingsKey(layer, 'IMAGE_V2')
+                const identity = getImageRangeIdentity(layer)
+                if (rangeIdentityRef.current.get(settingsKey) !== identity) {
+                    const range = resolveImageMinMax(layer)
+                    if (range.imageMinValue !== undefined || range.imageMaxValue !== undefined) {
+                        if (range.imageMinValue !== undefined) {
+                            partial.imageMinValue = range.imageMinValue
+                        }
+                        if (range.imageMaxValue !== undefined) {
+                            partial.imageMaxValue = range.imageMaxValue
+                        }
+                        rangeIdentityRef.current.set(settingsKey, identity)
                     }
                 }
 

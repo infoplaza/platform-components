@@ -45,6 +45,7 @@ export default {
   input: {
     index: 'src/index.ts',
     'components/index': 'src/components/index.ts',
+    'layers/index': 'src/layers/index.ts',
     'layers/composer': 'src/layers/composer.tsx',
     'layers/overlay': 'src/layers/overlay.tsx',
     'providers/index': 'src/providers/index.ts',
@@ -52,6 +53,7 @@ export default {
     'auth/index': 'src/auth/index.ts',
     'timeseries/index': 'src/timeseries/index.ts',
     'ensemble/index': 'src/ensemble/index.ts',
+    'defaults/index': 'src/defaults/index.ts',
   },
   external,
   output: {

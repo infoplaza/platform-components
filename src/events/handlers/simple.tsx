@@ -11,6 +11,7 @@ import {
     buildLayersViewportUrl,
     type ViewportGetLayersUrlArgs,
 } from "@/src/events/helpers/viewport"
+import { abortInFlightTextureLoads } from "@/src/_utils/texture-data"
 import type { EnrichedMapLayer } from "@/@types/weather.types"
 import { isEmpty } from "lodash"
 
@@ -71,6 +72,12 @@ export default function SimpleEventsProvider({ children }: SimpleEventsProviderP
     }, [layersInfo, modelInfo, createGetLayersUrl, elementInfo?.preloading])
 
     useEffect(() => {
+        // Cancel leftover preload downloads from the previous element/model
+        // immediately. beginTextureGeneration only aborts the caller wait;
+        // loadCached keeps the shared fetches running and they occupy browser
+        // connections until abortInFlightTextureLoads() cancels them.
+        abortAll()
+        abortInFlightTextureLoads()
         setFetchedLayers([])
         setLegends([])
 

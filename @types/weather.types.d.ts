@@ -26,10 +26,6 @@ export interface WeatherConfig {
  * Configuration for the internal models request performed by `ModelsProvider`.
  */
 export interface ModelsConfig {
-  /** Upstream environment to request models for. Defaults to `prod`. */
-  apiEnv?: 'prod' | 'test'
-  /** Whether to include beta models. Defaults to `false`. */
-  betaModels?: boolean
   /**
    * Base path where the platform auth handler is mounted. The models request is
    * sent to `${basePath}/models`. Defaults to `/api/platform`.

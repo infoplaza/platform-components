@@ -2,7 +2,7 @@ export const NAV_ITEMS = [
   {
     href: '/',
     label: 'Map',
-    hint: 'BaseMap, weather layers and HUD',
+    hint: 'PlatformMap shell (± WeatherLayers)',
   },
   {
     href: '/timeseries',
