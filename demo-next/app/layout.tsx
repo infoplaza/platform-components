@@ -22,8 +22,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`h-full ${poppins.className}`}>
-      <body className="h-full min-h-dvh bg-cloud font-sans text-dark antialiased">
+    <html lang="en" className={`h-full overflow-hidden ${poppins.className}`}>
+      <body className="h-full overflow-hidden bg-cloud font-sans text-dark antialiased">
         <AppShell header={<TopNav />}>{children}</AppShell>
       </body>
     </html>

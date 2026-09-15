@@ -3,7 +3,13 @@
 import '../maplibre-worker'
 import dynamic from 'next/dynamic'
 
-function ExampleSectionSkeleton({ showControls = false }: { showControls?: boolean }) {
+function ExampleSectionSkeleton({
+  showControls = false,
+  showCode = true,
+}: {
+  showControls?: boolean
+  showCode?: boolean
+}) {
   return (
     <article className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -11,7 +17,7 @@ function ExampleSectionSkeleton({ showControls = false }: { showControls?: boole
           <div className="h-5 w-40 rounded bg-dark/10" />
           <div className="h-4 w-80 max-w-full rounded bg-dark/5" />
         </div>
-        <div className="h-8 w-24 shrink-0 rounded-md bg-primary/10" />
+        {showCode ? <div className="h-8 w-24 shrink-0 rounded-md bg-primary/10" /> : null}
       </div>
       {showControls ? <div className="h-8 w-48 rounded-md bg-dark/5" /> : null}
       <div className="min-h-100 overflow-hidden rounded-2xl border border-cloud/10 bg-cloud-100" />
@@ -21,7 +27,7 @@ function ExampleSectionSkeleton({ showControls = false }: { showControls?: boole
 
 function MapDemoLoading() {
   return (
-    <section className="h-full overflow-auto p-4 md:p-6" aria-busy="true">
+    <section className="p-4 md:p-6" aria-busy="true">
       <div className="mx-auto flex max-w-7xl flex-col gap-10">
         <header className="max-w-xl">
           <p className="mb-1.5 text-2xs font-semibold uppercase tracking-widest text-primary">
@@ -38,6 +44,8 @@ function MapDemoLoading() {
         <ExampleSectionSkeleton />
         <ExampleSectionSkeleton />
         <ExampleSectionSkeleton showControls />
+        <ExampleSectionSkeleton showCode={false} />
+        <ExampleSectionSkeleton showCode={false} />
 
         <footer className="flex flex-wrap items-center gap-4 px-0.5 pb-2 text-xs text-dark/60">
           <span>PlatformMap · WeatherLayers · Composed stack</span>

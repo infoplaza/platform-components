@@ -120,15 +120,7 @@ function App() {
                     </LayerComposer>
                   )}
                 </MapEventsProvider>
-                <MapControlHud 
-                  mapIndex={0} 
-                  mapsLength={1} 
-                  isMultipleMapView={false} 
-                  models={models} 
-                  onMapsCount={() => {}} 
-                  onExportChange={() => {}} 
-                  mapRef={null} 
-                  viewState={viewState} />
+                <MapControlHud mapIndex={0} mapsLength={1} isMultipleMapView={false} />
                   </>
               )}
           </BaseMap>

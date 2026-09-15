@@ -11,6 +11,8 @@ import {
   EnsembleToolbar,
   useEnsemble,
 } from '@infoplaza/platform/ensemble'
+import { DemoExamplesLink } from '../demo/demo-examples-link'
+import { INFOPLAZA_PLATFORM_EXAMPLES_CHARTS_URL } from '../../lib/infoplaza-platform'
 import { ViewCodeButton } from '../view-code-dialog'
 import {
   CHART_ONLY_FILENAME,
@@ -24,6 +26,7 @@ import {
 const AMSTERDAM = { lat: 52.3676, lon: 4.9041 }
 
 function ExampleSection({
+  id,
   title,
   description,
   filename,
@@ -31,6 +34,7 @@ function ExampleSection({
   controls,
   children,
 }: {
+  id: string
   title: string
   description: string
   filename: string
@@ -39,7 +43,7 @@ function ExampleSection({
   children: ReactNode
 }) {
   return (
-    <article className="flex flex-col gap-3">
+    <article id={id} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="m-0 text-base font-semibold tracking-tight text-dark">
@@ -118,7 +122,7 @@ export default function EnsembleDemo() {
   const [fullWidth, setFullWidth] = useState(false)
 
   return (
-    <section className="h-full overflow-auto p-4 md:p-6">
+    <section className="p-4 md:p-6">
       <div
         className={
           fullWidth
@@ -140,6 +144,7 @@ export default function EnsembleDemo() {
               Models and chart series load from PlatformAuth for the selected
               point. Switch Basic / Expert in the footer.
             </p>
+            <DemoExamplesLink href={INFOPLAZA_PLATFORM_EXAMPLES_CHARTS_URL} />
           </header>
           <button
             type="button"
@@ -168,6 +173,7 @@ export default function EnsembleDemo() {
         </div>
 
         <ExampleSection
+          id="packaged"
           title="Packaged"
           description="EnsembleForecast with toolbar, charts, and footer in one component. Models and chart series load from PlatformAuth."
           filename={PACKAGED_FILENAME}
@@ -177,6 +183,7 @@ export default function EnsembleDemo() {
         </ExampleSection>
 
         <ExampleSection
+          id="chart-only"
           title="Chart only"
           description="The same packaged forecast with toolbar and footer turned off."
           filename={CHART_ONLY_FILENAME}
@@ -186,6 +193,7 @@ export default function EnsembleDemo() {
         </ExampleSection>
 
         <ExampleSection
+          id="composed"
           title="Composed"
           description="EnsembleModelsProvider with Toolbar, Builder, Chart, and Footer assembled by the host."
           filename={COMPOSED_FILENAME}

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useId, useState } from 'react'
-import { isNavItemActive, NAV_ITEMS } from './nav-items'
+import { isNavItemActive, NAV_ITEMS, type NavItem } from './nav-items'
 
 const desktopNavClass =
   'hidden md:inline-flex shrink-0 items-center gap-1'
@@ -22,6 +22,46 @@ function navLinkClass(isActive: boolean, variant: 'bar' | 'menu') {
   return isActive
     ? 'block rounded-md px-3 py-2.5 text-sm font-medium bg-primary/10 text-primary'
     : 'block rounded-md px-3 py-2.5 text-sm font-medium text-dark/80 hover:bg-dark/5 hover:text-primary'
+}
+
+function PrimaryNavLink({
+  item,
+  pathname,
+  variant,
+  onClick,
+}: {
+  item: NavItem
+  pathname: string
+  variant: 'bar' | 'menu'
+  onClick?: () => void
+}) {
+  const isActive = isNavItemActive(item.href, pathname)
+  const className = navLinkClass(isActive, variant)
+
+  if (item.external) {
+    return (
+      <a
+        href={item.href}
+        className={className}
+        rel="noreferrer"
+        target="_blank"
+        onClick={onClick}
+      >
+        {item.label}
+      </a>
+    )
+  }
+
+  return (
+    <Link
+      href={item.href}
+      className={className}
+      aria-current={isActive ? 'page' : undefined}
+      onClick={onClick}
+    >
+      {item.label}
+    </Link>
+  )
 }
 
 export function TopNav() {
@@ -70,19 +110,9 @@ export function TopNav() {
       </Link>
 
       <nav className={desktopNavClass} aria-label="Primary">
-        {NAV_ITEMS.map((item) => {
-          const isActive = isNavItemActive(item.href, pathname)
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={navLinkClass(isActive, 'bar')}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              {item.label}
-            </Link>
-          )
-        })}
+        {NAV_ITEMS.map((item) => (
+          <PrimaryNavLink key={item.href} item={item} pathname={pathname} variant="bar" />
+        ))}
       </nav>
 
       <button
@@ -105,20 +135,15 @@ export function TopNav() {
             onClick={() => setMenuOpen(false)}
           />
           <nav id={menuId} className={mobilePanelClass} aria-label="Primary">
-            {NAV_ITEMS.map((item) => {
-              const isActive = isNavItemActive(item.href, pathname)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={navLinkClass(isActive, 'menu')}
-                  aria-current={isActive ? 'page' : undefined}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              )
-            })}
+            {NAV_ITEMS.map((item) => (
+              <PrimaryNavLink
+                key={item.href}
+                item={item}
+                pathname={pathname}
+                variant="menu"
+                onClick={() => setMenuOpen(false)}
+              />
+            ))}
           </nav>
         </>
       ) : null}
