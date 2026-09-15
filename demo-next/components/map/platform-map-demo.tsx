@@ -1,6 +1,7 @@
 'use client'
 
 import { type ReactNode, useState } from 'react'
+import type { Layer } from '@deck.gl/core'
 import {
   MapControlHud,
   PlatformMap,
@@ -19,6 +20,8 @@ import {
   WEATHER_MAP_FILENAME,
   WEATHER_MAP_SOURCE,
 } from './examples'
+import { DemoExamplesLink } from '../demo/demo-examples-link'
+import { INFOPLAZA_PLATFORM_EXAMPLES_MAPS_URL } from '../../lib/infoplaza-platform'
 import { StylePicker } from './style-picker'
 
 const customStyle = {
@@ -67,6 +70,7 @@ function resolveMoveViewState(event: unknown): typeof DEFAULT_VIEW_STATE | null 
 }
 
 function ExampleSection({
+  id,
   title,
   description,
   filename,
@@ -74,6 +78,7 @@ function ExampleSection({
   controls,
   children,
 }: {
+  id: string
   title: string
   description: string
   filename: string
@@ -82,7 +87,7 @@ function ExampleSection({
   children: ReactNode
 }) {
   return (
-    <article className="flex flex-col gap-3">
+    <article id={id} className="flex scroll-mt-4 flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="m-0 text-base font-semibold tracking-tight text-dark">
@@ -97,6 +102,32 @@ function ExampleSection({
       {controls}
       <div className="ip-platform min-h-100 overflow-hidden rounded-2xl border border-cloud/10 bg-cloud-100">
         {children}
+      </div>
+    </article>
+  )
+}
+
+function ExamplePlaceholder({
+  id,
+  title,
+  description,
+}: {
+  id: string
+  title: string
+  description: string
+}) {
+  return (
+    <article id={id} className="flex scroll-mt-4 flex-col gap-3">
+      <div>
+        <h2 className="m-0 text-base font-semibold tracking-tight text-dark">
+          {title}
+        </h2>
+        <p className="m-0 mt-1 text-sm leading-relaxed text-dark/60">
+          {description}
+        </p>
+      </div>
+      <div className="flex min-h-100 items-center justify-center overflow-hidden rounded-2xl border border-cloud/10 bg-cloud-100">
+        <p className="m-0 text-sm text-dark/60">… in progress</p>
       </div>
     </article>
   )
@@ -161,20 +192,13 @@ function WeatherMapExample() {
           }
         }}
       >
-        <WeatherLayers
-          showHud
-          hudProps={{ viewState }}
-        />
+        <WeatherLayers showHud />
       </PlatformMap>
     </div>
   )
 }
 
-function ComposedWeatherStack({
-  viewState,
-}: {
-  viewState: typeof DEFAULT_VIEW_STATE
-}) {
+function ComposedWeatherStack() {
   const { beforeId } = usePlatformMap()
 
   return (
@@ -191,7 +215,7 @@ function ComposedWeatherStack({
       <MapEventsProvider>
         {(mapComponents: Record<number, unknown[]>) => (
           <LayerComposer beforeId={beforeId} mapComponents={mapComponents}>
-            {({ layers }) => (
+            {({ layers }: { layers: Layer[] }) => (
               <LayerOverlay
                 layers={[...layers]}
                 interleaved
@@ -201,7 +225,7 @@ function ComposedWeatherStack({
           </LayerComposer>
         )}
       </MapEventsProvider>
-      <MapControlHud mapIndex={1} viewState={viewState} />
+      <MapControlHud mapIndex={1} />
     </Providers>
   )
 }
@@ -226,7 +250,7 @@ function ComposedMapExample({
         mapStyles={mapStyles}
         mapStyleKey={mapStyleKey}
       >
-        <ComposedWeatherStack viewState={viewState} />
+        <ComposedWeatherStack />
       </PlatformMap>
     </div>
   )
@@ -236,7 +260,7 @@ export default function PlatformMapDemo() {
   const [composedStyleKey, setComposedStyleKey] = useState('dark')
 
   return (
-    <section className="h-full overflow-auto p-4 md:p-6">
+    <section className="p-4 md:p-6">
       <div className="mx-auto flex max-w-7xl flex-col gap-10">
         <header className="max-w-xl">
           <p className="mb-1.5 text-2xs font-semibold uppercase tracking-widest text-primary">
@@ -251,9 +275,11 @@ export default function PlatformMapDemo() {
             WeatherLayers when you need forecast overlays and the HUD. The
             composed stack is included as a third example.
           </p>
+          <DemoExamplesLink href={INFOPLAZA_PLATFORM_EXAMPLES_MAPS_URL} />
         </header>
 
         <ExampleSection
+          id="base-map"
           title="Base Map"
           description="Bare PlatformMap with an imperative flyTo via usePlatformMap()."
           filename={BARE_MAP_FILENAME}
@@ -263,6 +289,7 @@ export default function PlatformMapDemo() {
         </ExampleSection>
 
         <ExampleSection
+          id="map-with-weather"
           title="Map with weather"
           description="PlatformMap plus WeatherLayers (Providers, events, Deck overlay, HUD)."
           filename={WEATHER_MAP_FILENAME}
@@ -272,6 +299,7 @@ export default function PlatformMapDemo() {
         </ExampleSection>
 
         <ExampleSection
+          id="composed-stack"
           title="Maps with custom composed stack"
           description="PlatformMap shell with a hand-wired stack: Providers, MapEventsProvider, LayerComposer, LayerOverlay, and HUD."
           filename={COMPOSED_MAP_FILENAME}
@@ -286,6 +314,18 @@ export default function PlatformMapDemo() {
         >
           <ComposedMapExample mapStyleKey={composedStyleKey} />
         </ExampleSection>
+
+        <ExamplePlaceholder
+          id="custom-hud"
+          title="Custom HUD"
+          description="Replace MapControlHud with host-owned map chrome."
+        />
+
+        <ExamplePlaceholder
+          id="palette"
+          title="Palette"
+          description="Override the weather color palette on the map."
+        />
 
         <footer className="flex flex-wrap items-center gap-4 px-0.5 pb-2 text-xs text-dark/60">
           <span>PlatformMap · WeatherLayers · Composed stack</span>

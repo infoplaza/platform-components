@@ -10,7 +10,7 @@ alwaysApply: false
 
 Ship a **portable forecast table** that other platforms can import without the map stack, ImWeather fetch layer, or app chrome. The models **catalog** and point-forecast **rows** are loaded through PlatformAuth. Hosts may still override rows with `blocks` / `getBlocks`.
 
-It is a **sibling product** to the map (`src/components/map`). Own folder, own package export, own demo route (`/timeseries`). Do not nest it under map or re-export it from `src/components/index.ts`.
+It is a **sibling product** to the map (`src/components/map`). Own folder, own package export, own demo route (`/demo/timeseries`). Do not nest it under map or re-export it from `src/components/index.ts`.
 
 ## What
 

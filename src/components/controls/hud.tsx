@@ -24,13 +24,6 @@ export type MapControlHudProps = {
     mapIndex?: number
     mapsLength?: number
     isMultipleMapView?: boolean
-    onMapsCount?: (count: number) => void
-    onExportChange?: (value: boolean) => void
-    mapRef?: any
-    viewState?: {
-        latitude?: number
-        longitude?: number
-    }
 }
 
 export function MapControlHud({

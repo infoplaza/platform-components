@@ -11,6 +11,8 @@ import {
   TimeseriesToolbar,
   useTimeseries,
 } from '@infoplaza/platform/timeseries'
+import { DemoExamplesLink } from '../demo/demo-examples-link'
+import { INFOPLAZA_PLATFORM_EXAMPLES_CHARTS_URL } from '../../lib/infoplaza-platform'
 import { ViewCodeButton } from '../view-code-dialog'
 import {
   CHART_ONLY_FILENAME,
@@ -28,6 +30,7 @@ import { AMSTERDAM } from './fixtures'
 import { LocationFields } from './location-fields'
 
 function ExampleSection({
+  id,
   title,
   description,
   filename,
@@ -35,6 +38,7 @@ function ExampleSection({
   controls,
   children,
 }: {
+  id: string
   title: string
   description: string
   filename: string
@@ -43,7 +47,7 @@ function ExampleSection({
   children: ReactNode
 }) {
   return (
-    <article className="flex flex-col gap-3">
+    <article id={id} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="m-0 text-base font-semibold tracking-tight text-dark">
@@ -173,6 +177,7 @@ function PaletteExample() {
 
   return (
     <ExampleSection
+      id="palette"
       title="Palette"
       description="Turn cell palette colors off to use the default table text and background. showPalette defaults to true."
       filename={PALETTE_FILENAME}
@@ -199,6 +204,7 @@ function CustomLocationExample() {
 
   return (
     <ExampleSection
+      id="custom-location"
       title="Custom location"
       description="Host-owned lat and lon. Pick a place or enter coordinates, then load the forecast for that point."
       filename={CUSTOM_LOCATION_FILENAME}
@@ -222,7 +228,7 @@ export default function TimeseriesDemo() {
   const [fullWidth, setFullWidth] = useState(false)
 
   return (
-    <section className="h-full overflow-auto p-4 md:p-6">
+    <section className="p-4 md:p-6">
       <div
         className={
           fullWidth
@@ -245,6 +251,7 @@ export default function TimeseriesDemo() {
               default table text and backgrounds. Models and chart rows load
               for the selected point.
             </p>
+            <DemoExamplesLink href={INFOPLAZA_PLATFORM_EXAMPLES_CHARTS_URL} />
           </header>
           <button
             type="button"
@@ -273,6 +280,7 @@ export default function TimeseriesDemo() {
         </div>
 
         <ExampleSection
+          id="packaged"
           title="Packaged"
           description="TimeseriesForecast with toolbar, table, and footer in one component."
           filename={PACKAGED_FILENAME}
@@ -286,6 +294,7 @@ export default function TimeseriesDemo() {
         <CustomLocationExample />
 
         <ExampleSection
+          id="chart-only"
           title="Chart only"
           description="The same packaged forecast with toolbar and footer turned off."
           filename={CHART_ONLY_FILENAME}
@@ -295,6 +304,7 @@ export default function TimeseriesDemo() {
         </ExampleSection>
 
         <ExampleSection
+          id="composed"
           title="Composed"
           description="TimeseriesModelsProvider with Toolbar, Builder, Chart, and Footer assembled by the host."
           filename={COMPOSED_FILENAME}

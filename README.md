@@ -8,9 +8,9 @@ A hosted Next.js demo lives at [https://platform-components.vercel.app/](https:/
 
 | Page | URL |
 | --- | --- |
-| Map (`PlatformMap` ± `WeatherLayers`, plus a hand-wired composed stack) | [https://platform-components.vercel.app/](https://platform-components.vercel.app/) |
-| Timeseries forecast table | [https://platform-components.vercel.app/timeseries](https://platform-components.vercel.app/timeseries) |
-| Ensemble forecast charts | [https://platform-components.vercel.app/ensemble](https://platform-components.vercel.app/ensemble) |
+| Demo · Map (`PlatformMap` ± `WeatherLayers`, plus a hand-wired composed stack) | [https://platform-components.vercel.app/demo](https://platform-components.vercel.app/demo) |
+| Demo · Timeseries forecast table | [https://platform-components.vercel.app/demo/timeseries](https://platform-components.vercel.app/demo/timeseries) |
+| Demo · Ensemble forecast charts | [https://platform-components.vercel.app/demo/ensemble](https://platform-components.vercel.app/demo/ensemble) |
 
 ## Install
 
@@ -31,7 +31,8 @@ import '@infoplaza/platform/styles.css' // or styles.embed.css in a Tailwind hos
 ```
 
 > **Heads up:** weather models are fetched **internally** by `Providers` / `WeatherLayers`.
-> You must mount the platform auth route on your server — see
+> Create an API token on the [Infoplaza developer platform](https://platform.infoplaza.com/docs/introduction),
+> then mount the platform auth route on your server — see
 > [Server setup (required)](#server-setup-required).
 
 ## MapLibre 6 setup (required for maps)
@@ -184,6 +185,10 @@ worker URL is almost always missing or pointing at the wrong path.
 
 ## Server setup (required)
 
+Create and manage API keys on the [Infoplaza developer platform](https://platform.infoplaza.com/docs/introduction).
+Copy the token into `PLATFORM_API_KEY` on your server. Without a token, `/api/platform/*`
+cannot proxy weather, timeseries, or ensemble data.
+
 `Providers` loads the available weather models for you by calling
 `GET /api/platform/models` on **your own** server, which proxies the request to
 the Infoplaza API using your secret API key. You must mount the platform auth
@@ -240,13 +245,16 @@ Only `apiKey` is required. The rest are optional:
 PLATFORM_API_KEY=your-secret-key
 ```
 
+`your-secret-key` is the token from the [developer platform](https://platform.infoplaza.com/docs/introduction).
+Keep it server-side and never commit it.
+
 If you mount the handler under a different base path, pass it through
 `modelsConfig.basePath` on `Providers` so the internal request targets the right
 URL (see [`modelsConfig`](#configuring-the-models-request)).
 
 ## Quick Start
 
-This example follows the [live Map demo](https://platform-components.vercel.app/)
+This example follows the [live Map demo](https://platform-components.vercel.app/demo)
 (`demo-next/components/map/platform-map-demo.tsx`): a `PlatformMap` shell with
 packaged `WeatherLayers` (providers, events, Deck overlay, optional HUD).
 Note there is **no** client-side models fetch — `WeatherLayers` / `Providers` handle it.
@@ -281,10 +289,7 @@ function App() {
       mapStyles={MAP_STYLES}
       mapStyleKey={mapStyleKey}
     >
-      <WeatherLayers
-        showHud
-        hudProps={{ viewState }}
-      />
+      <WeatherLayers showHud />
     </PlatformMap>
   )
 }
@@ -368,7 +373,7 @@ import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
 ## What You Need
 
 - A React application with an element like `<div id="root"></div>`.
-- The platform auth route mounted on your server plus a `PLATFORM_API_KEY` — this is what powers the internal models request (see [Server setup (required)](#server-setup-required)).
+- An API token from the [Infoplaza developer platform](https://platform.infoplaza.com/docs/introduction), plus the platform auth route mounted on your server with `PLATFORM_API_KEY` — this is what powers the internal models request (see [Server setup (required)](#server-setup-required)).
 - A map style for `PlatformMap` / `BaseMap`: pick one of the built-in `MAP_STYLES` via `mapStyleKey`, pass your own `mapStyles` list, or supply a raw MapLibre style URL via `style` (see [Map styles](#map-styles)).
 - Package styles imported once: `@infoplaza/platform/styles.css`.
 - MapLibre CSS imported once: `maplibre-gl/dist/maplibre-gl.css`.
@@ -384,11 +389,11 @@ import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
 - `LayerComposer` / `LayerOverlay` (`@infoplaza/platform/layers`): low-level Deck.gl layer pipeline (prefer `WeatherLayers` unless you need custom wiring).
 - `MapControlHud` (`@infoplaza/platform/components`): built-in map controls for model/element/time interactions.
 - `MapEventsProvider` (`@infoplaza/platform/events`): bridges map interaction events into the layer pipeline.
-- Timeseries (`@infoplaza/platform/timeseries`): `TimeseriesModelsProvider` loads the location-filtered catalog; `TimeseriesProvider` loads point-forecast rows by default. Packaged `TimeseriesForecast` (requires `lat`/`lon`) or compose Provider, Toolbar, Builder, Chart, and Footer. See the [timeseries demo](https://platform-components.vercel.app/timeseries).
+- Timeseries (`@infoplaza/platform/timeseries`): `TimeseriesModelsProvider` loads the location-filtered catalog; `TimeseriesProvider` loads point-forecast rows by default. Packaged `TimeseriesForecast` (requires `lat`/`lon`) or compose Provider, Toolbar, Builder, Chart, and Footer. See the [timeseries demo](https://platform-components.vercel.app/demo/timeseries).
 
 ## Migration: BaseMap + hand-wired stack → PlatformMap + WeatherLayers
 
-The hand-wired composition remains supported (see the **Composed** example on the [Map demo](https://platform-components.vercel.app/)). New integrations should use `PlatformMap` + `WeatherLayers`.
+The hand-wired composition remains supported (see the **Composed** example on the [Map demo](https://platform-components.vercel.app/demo)). New integrations should use `PlatformMap` + `WeatherLayers`.
 
 **Before (still works):**
 
@@ -410,7 +415,7 @@ import MapEventsProvider from '@infoplaza/platform/events'
             </LayerComposer>
           )}
         </MapEventsProvider>
-        <MapControlHud viewState={viewState} />
+        <MapControlHud />
       </>
     )}
   </BaseMap>
@@ -431,7 +436,6 @@ import { MAP_STYLES } from '@infoplaza/platform/defaults'
   <WeatherLayers
     handler="demand"
     showHud
-    hudProps={{ viewState }}
   />
 </PlatformMap>
 ```

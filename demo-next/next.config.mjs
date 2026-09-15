@@ -10,6 +10,12 @@ const nextConfig = {
   // The platform package is linked from the repo root via `file:..`. Tracing
   // must start there so Vercel serverless functions include dist/ and deps.
   outputFileTracingRoot: path.join(__dirname, '..'),
+  async redirects() {
+    return [
+      { source: '/timeseries', destination: '/demo/timeseries', permanent: true },
+      { source: '/ensemble', destination: '/demo/ensemble', permanent: true },
+    ]
+  },
 }
 
 export default nextConfig

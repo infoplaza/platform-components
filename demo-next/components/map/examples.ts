@@ -63,10 +63,7 @@ export default function PlatformMapWithWeather() {
       viewState={viewState} 
       onMove={(event) => setViewState(event?.viewState)}
     >
-      <WeatherLayers 
-        showHud 
-        hudProps={{ viewState }} 
-      />
+      <WeatherLayers showHud />
     </PlatformMap>
   )
 }
@@ -85,7 +82,7 @@ import { MAP_STYLES } from '@infoplaza/platform/defaults'
 
 import MapEventsProvider from '@infoplaza/platform/events'
 
-function ComposedWeatherStack({ viewState }) {
+function ComposedWeatherStack() {
   const { beforeId } = usePlatformMap()
 
   return (
@@ -108,7 +105,7 @@ function ComposedWeatherStack({ viewState }) {
           </LayerComposer>
         )}
       </MapEventsProvider>
-      <MapControlHud mapIndex={1} viewState={viewState} />
+      <MapControlHud mapIndex={1} />
     </Providers>
   )
 }
@@ -127,7 +124,7 @@ export default function ComposedPlatformMap() {
       mapStyles={MAP_STYLES}
       mapStyleKey="dark"
     >
-      <ComposedWeatherStack viewState={viewState} />
+      <ComposedWeatherStack />
     </PlatformMap>
   )
 }

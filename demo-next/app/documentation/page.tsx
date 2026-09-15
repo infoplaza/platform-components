@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { PlaceholderPage } from '../../components/layouts'
+import { IntroductionDocs } from '../../components/documentation/content/introduction'
 
 export const metadata: Metadata = {
-  title: 'Documentation',
+  title: 'Introduction · Documentation',
 }
 
 export default function DocumentationPage() {
-  return <PlaceholderPage title="Documentation" />
+  return <IntroductionDocs />
 }
