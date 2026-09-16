@@ -45,4 +45,5 @@ export type {
   TimeseriesPillItem,
   TimeseriesRow,
   TimeseriesRun,
+  TimeseriesDomain,
 } from '../components/timeseries'

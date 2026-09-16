@@ -88,6 +88,21 @@ export const DOCS_NAV_GROUPS: readonly DocsNavGroup[] = [
         ],
       },
       {
+        href: '/documentation/timeseries-charts',
+        label: 'Timeseries charts',
+        children: [
+          { href: '/documentation/timeseries-charts#timeseries-charts-forecast', label: 'TimeseriesChartsForecast' },
+          { href: '/documentation/timeseries-charts#timeseries-charts-models-provider', label: 'ModelsProvider' },
+          { href: '/documentation/timeseries-charts#timeseries-charts-provider', label: 'Provider' },
+          { href: '/documentation/timeseries-charts#timeseries-graph', label: 'Graph' },
+          {
+            href: INFOPLAZA_PLATFORM_EXAMPLES_CHARTS_URL,
+            label: 'Token usage',
+            external: true,
+          },
+        ],
+      },
+      {
         href: '/documentation/ensemble',
         label: 'Ensemble',
         children: [

@@ -99,6 +99,7 @@ export function TimeseriesProvider({
     lat,
     lon,
     basePath,
+    domain,
   } = useTimeseriesModels()
   const elementGroups = elementGroupsProp ?? DEFAULT_TIMESERIES_ELEMENT_GROUPS
   const hostOwned = blocksProp !== undefined || Boolean(getBlocks)
@@ -237,6 +238,7 @@ export function TimeseriesProvider({
       model: selected,
       run,
       group,
+      domain,
       signal: controller.signal,
     })
       .then((next) => {
@@ -258,6 +260,7 @@ export function TimeseriesProvider({
   }, [
     basePath,
     catalogLoading,
+    domain,
     elementGroup,
     elementGroups,
     hostOwned,

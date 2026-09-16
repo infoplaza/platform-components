@@ -119,7 +119,7 @@ function ComposedExample() {
 }
 
 export default function EnsembleDemo() {
-  const [fullWidth, setFullWidth] = useState(false)
+  const [fullWidth, setFullWidth] = useState(true)
 
   return (
     <section className="p-4 md:p-6">

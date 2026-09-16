@@ -1,0 +1,84 @@
+---
+description: Timeseries charts component goal, contract, usage modes, and implementation rules
+globs: "**/timeseries-charts/**"
+alwaysApply: false
+---
+
+# Timeseries charts (`@infoplaza/platform/timeseries-charts`)
+
+## Goal
+
+Ship a **portable point-forecast chart** that other platforms can import without the map stack, ImWeather fetch layer, or app chrome. Charts are Recharts composed graphs. The models **catalog** is the timeseries catalog (`GET /api/platform/timeseries-models`, or `marine-timeseries-models` when `domain` is `marine`). Series load from `GET /api/platform/timeseries-point-forecast` (or `marine-timeseries-point-forecast`) unless the host passes `charts` / `getCharts`.
+
+It is a **sibling product** to the timeseries table (`src/components/timeseries`) and ensemble. Own folder, own package export, own demo route (`/demo/timeseries-charts`). Do not nest it under the table folder or map, and do not re-export it from `src/components/index.ts`. Do not add `LINE` to `TimeseriesCellView`.
+
+## What
+
+A compound API. The models list is not host-supplied.
+
+| Piece | Role |
+|---|---|
+| `TimeseriesModelsProvider` | Reused from timeseries. Required `lat`/`lon`. Optional `domain` (`land` default, or `marine`). Fetches `GET /api/platform/timeseries-models` or `marine-timeseries-models`. |
+| `TimeseriesChartsForecast` | Packaged: ModelsProvider + Provider + optional Toolbar + Builder/Chart. Requires `lat`/`lon`. Footer is off (`showFooter` defaults to false). |
+| `TimeseriesChartsProvider` | Holds selection (`model`, `run`, `visibleGroups`), charts. Reads the catalog from `TimeseriesModelsProvider`. Fetches point forecast when `charts` / `getCharts` are omitted. No `models` prop. |
+| `TimeseriesChartsToolbar` | Model + run pills (catalog only) |
+| `TimeseriesChartsBuilder` | Presentational: loading skeleton, one chart-block context per `TimeseriesChartBlock` |
+| `TimeseriesChartsChart` | Reads the current block (or explicit graph props) and renders `TimeseriesGraph` |
+| `TimeseriesChartsFooter` | Group-visibility pills. Disabled for now — do not mount in packaged or composed usage. |
+| `TimeseriesGraph` | Low-level Recharts `ComposedChart` (LINE series, DIRECTION arrows, VALUE strip labels, PRECIPITATION_TYPE icons) |
+
+Config item views: `LINE`, `DIRECTION`, `VALUE`, `PRECIPITATION_TYPE`. One **group** = one composed chart. Builder stacks every group. Threshold `yLines` are out of scope.
+
+## How
+
+Import only from `@infoplaza/platform/timeseries-charts`. Wrap host UI in `.ip-platform` and use `ip:` utilities.
+
+**Packaged** — default chrome on; hide with flags. `lat` and `lon` are required. Charts load from the point-forecast endpoint unless `charts` / `getCharts` is passed. `domain` defaults to `land`:
+
+```tsx
+<TimeseriesChartsForecast
+  lat={52.3676}
+  lon={4.9041}
+  model="gfs"
+  showToolbar={false}
+/>
+```
+
+Marine:
+
+```tsx
+<TimeseriesChartsForecast
+  lat={55.551448725742}
+  lon={4.0444930642829116}
+  domain="marine"
+/>
+```
+
+**Composed** — host wraps `TimeseriesModelsProvider`; `TimeseriesChartsProvider` has no `models` prop:
+
+```tsx
+<TimeseriesModelsProvider lat={52.3676} lon={4.9041}>
+  <TimeseriesChartsProvider>
+    <TimeseriesChartsToolbar />
+    <TimeseriesChartsBuilder>
+      <TimeseriesChartsChart />
+    </TimeseriesChartsBuilder>
+  </TimeseriesChartsProvider>
+</TimeseriesModelsProvider>
+```
+
+Selection is hybrid: `model` + `onModelChange` (controlled) or `model` without `onModelChange` / `defaultModel` / omit (provider-owned preferred slug). Same for `run` and `visibleGroups`. Unknown slugs fall back to the first catalog model; unknown runtimes are clamped to the catalog. If `charts` is passed it wins; otherwise `getCharts({ model, run, models, elementGroups, visibleGroups, locale, timezone })` is used when provided; otherwise the Provider fetches point-forecast charts. `elementGroups` defaults from `domain`: `DEFAULT_LAND_TIMESERIES_CHART_GROUPS` or `DEFAULT_MARINE_TIMESERIES_CHART_GROUPS`. Fetch once per runtime for all groups; do not N+1 by group. `plotHeight` defaults to 320 (`DEFAULT_TIMESERIES_CHART_PLOT_HEIGHT`); set it on Forecast or Provider so Chart/Graph and the Builder loading skeleton share it. Chart/Graph can override. `fixedHeight` still overrides the total Recharts container.
+
+Demo patterns live in `demo-next/components/timeseries-charts/` (packaged, marine, chart-only, composed). Prefer updating those examples over inventing a fourth usage mode.
+
+## Rules
+
+- **Catalog is API-only.** Do not pass a `models` array into Provider or Forecast. `TimeseriesModelsProvider` is the only writer. `domain` (`land` | `marine`) lives on ModelsProvider / packaged Forecast, not on TimeseriesChartsProvider.
+- **Provider loads charts by default.** Shape `TimeseriesChartBlock[]` (title + graph config). `charts` / `getCharts` remain a host override. Do not import ImWeather BFF routes.
+- **Reuse table fetch, not table rows.** Use `fetchTimeseriesPointForecast` / `findTimeseriesSeries` / `partitionTimeseriesGroupItems`. Do not reuse `assembleBlock`, `TimeseriesTable`, or `EnsembleGraph`.
+- **`run === 'all'`:** the Provider fetches one point-forecast request per catalog runtime and stacks all group charts for each runtime, with `subtitle` set to the formatted runtime.
+- **Builder does not fetch.** It maps context `charts` onto Chart. The Provider fetches point forecast.
+- **Toolbar** resolves `props ?? context` and returns `null` if neither exists — do not throw. Footer group pills exist but are off for now (`showFooter` defaults to false; do not mount `TimeseriesChartsFooter` in demos). `useTimeseriesCharts()` throws outside the provider; `useTimeseriesChartsContext()` is nullable for standalone pieces.
+- **Keep map, timeseries table, and charts separate.** No charts in the timeseries or map barrels. Toolbar/footer reuse timeseries pills internally, not map controls. Coordinates live on `TimeseriesModelsProvider` (and packaged Forecast), not as props on `TimeseriesChartsProvider`.
+- **Stay presentational.** No next-intl, next-auth, `#main-header` sticky offsets, or paywall chrome. Titles and group labels are already-resolved strings. Locale is for date axis labels (`en`/`nl`/`de`/`it`/`es`/`fr`).
+- **Out of scope:** threshold lines, ICON on charts, dual Y-axis, renaming `TimeseriesChart`, nesting under the table package.

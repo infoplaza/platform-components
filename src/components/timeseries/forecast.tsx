@@ -49,6 +49,7 @@ export default function TimeseriesForecast({
   lat,
   lon,
   basePath,
+  domain,
   showToolbar = true,
   showFooter = true,
   className,
@@ -56,7 +57,12 @@ export default function TimeseriesForecast({
   ...providerProps
 }: TimeseriesForecastProps) {
   return (
-    <TimeseriesModelsProvider lat={lat} lon={lon} basePath={basePath}>
+    <TimeseriesModelsProvider
+      lat={lat}
+      lon={lon}
+      basePath={basePath}
+      domain={domain}
+    >
       <TimeseriesProvider {...providerProps}>
         <TimeseriesForecastBody
           showToolbar={showToolbar}

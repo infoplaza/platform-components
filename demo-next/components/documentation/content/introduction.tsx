@@ -18,7 +18,7 @@ export function IntroductionDocs() {
       description={
         <p className="m-0">
           React components and providers for Infoplaza weather on a MapLibre map, plus a
-          portable timeseries forecast table and ensemble plume charts.{' '}
+          portable timeseries forecast table, timeseries charts, and ensemble plume charts.{' '}
           <Code>PlatformMap</Code> is the general map shell; weather is optional via{' '}
           <Code>WeatherLayers</Code>.
         </p>
@@ -26,8 +26,8 @@ export function IntroductionDocs() {
     >
       <DocsGuideSection id="what" title="What you get">
         <p className="m-0">
-          Three sibling products, one package. Import each from its own entry point — do
-          not nest timeseries or ensemble under the map barrel.
+          Four sibling products, one package. Import each from its own entry point — do
+          not nest timeseries, timeseries charts, or ensemble under the map barrel.
         </p>
         <ul className="m-0 flex list-disc flex-col gap-2 pl-5">
           <li>
@@ -42,6 +42,12 @@ export function IntroductionDocs() {
               Timeseries
             </Link>{' '}
             — location-aware forecast table. Catalog and rows load through PlatformAuth.
+          </li>
+          <li>
+            <Link href="/documentation/timeseries-charts" className="font-medium text-primary">
+              Timeseries charts
+            </Link>{' '}
+            — Recharts LINE / DIRECTION / VALUE / PRECIPITATION_TYPE charts from the same timeseries catalog.
           </li>
           <li>
             <Link href="/documentation/ensemble" className="font-medium text-primary">
@@ -95,7 +101,7 @@ export function IntroductionDocs() {
         <p className="m-0">
           Prefer the subpath that matches the product. The top-level{' '}
           <Code>@infoplaza/platform</Code> barrel re-exports map components, providers,
-          layers, and defaults — not auth, events, timeseries, ensemble, or CSS.
+          layers, and defaults — not auth, events, timeseries, timeseries charts, ensemble, or CSS.
         </p>
         <DocsPropTable
           title="Imports"
@@ -141,6 +147,11 @@ export function IntroductionDocs() {
               name: '@infoplaza/platform/timeseries',
               type: 'table',
               description: 'TimeseriesForecast, models/provider, toolbar, builder, chart, footer.',
+            },
+            {
+              name: '@infoplaza/platform/timeseries-charts',
+              type: 'charts',
+              description: 'TimeseriesChartsForecast, models/provider, toolbar, builder, chart, graph.',
             },
             {
               name: '@infoplaza/platform/ensemble',

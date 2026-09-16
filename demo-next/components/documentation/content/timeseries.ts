@@ -12,10 +12,11 @@ export const TIMESERIES_COMPONENTS: DocsComponent[] = [
     name: 'TimeseriesForecast',
     summary: 'Packaged forecast table with toolbar, table, and footer.',
     description:
-      'Wraps TimeseriesModelsProvider and TimeseriesProvider, then renders optional Toolbar, Builder + Chart, and Footer. lat and lon are required. Chart rows load from GET /api/platform/timeseries-point-forecast unless you pass blocks or getBlocks. Applies the ip-platform class for you.',
+      'Wraps TimeseriesModelsProvider and TimeseriesProvider, then renders optional Toolbar, Builder + Chart, and Footer. lat and lon are required. Chart rows load from GET /api/platform/timeseries-point-forecast (or marine-timeseries-point-forecast when domain is marine) unless you pass blocks or getBlocks. Applies the ip-platform class for you.',
     importStatement: `import { TimeseriesForecast } from '@infoplaza/platform/timeseries'`,
     notes: [
       'Do not pass a models array. The catalog is loaded from the auth route using lat and lon.',
+      'domain defaults to land. Set domain="marine" to use the marine timeseries catalog and point-forecast routes.',
       'showToolbar and showFooter default to true. Set both to false for a chart-only table.',
       'All TimeseriesProvider selection and display props are forwarded.',
     ],
@@ -36,7 +37,13 @@ export const TIMESERIES_COMPONENTS: DocsComponent[] = [
         name: 'basePath',
         type: 'string',
         defaultValue: "'/api/platform'",
-        description: 'Auth handler mount path. Requests go to ${basePath}/timeseries-models.',
+        description: 'Auth handler mount path. Requests go to ${basePath}/timeseries-models (or marine-timeseries-models when domain is marine).',
+      },
+      {
+        name: 'domain',
+        type: "'land' | 'marine'",
+        defaultValue: "'land'",
+        description: 'Which PlatformAuth proxy to use. land hits timeseries-models and timeseries-point-forecast; marine hits the marine-timeseries-* routes.',
       },
       {
         name: 'showToolbar',
@@ -70,8 +77,8 @@ export const TIMESERIES_COMPONENTS: DocsComponent[] = [
       {
         name: 'showPalette',
         type: 'boolean',
-        defaultValue: 'true',
-        description: 'When false, cell background and text colors are not applied.',
+        defaultValue: 'false',
+        description: 'When true, cell background and text colors from the palette are applied.',
       },
       {
         name: 'headerFormat',
@@ -107,7 +114,7 @@ export const TIMESERIES_COMPONENTS: DocsComponent[] = [
     name: 'TimeseriesModelsProvider',
     summary: 'Location-filtered models catalog.',
     description:
-      'Required lat and lon. Fetches GET {basePath}/timeseries-models?lat=&lon=. Context is read-only: { models, loading, error, lat, lon, basePath }. There is no models setter.',
+      'Required lat and lon. Fetches GET {basePath}/timeseries-models?lat=&lon= (or marine-timeseries-models when domain is marine). Context is read-only: { models, loading, error, lat, lon, basePath, domain }. There is no models setter.',
     importStatement: `import { TimeseriesModelsProvider, useTimeseriesModels } from '@infoplaza/platform/timeseries'`,
     notes: [
       'The catalog is API-only. Do not pass a models array into Provider or Forecast.',
@@ -123,6 +130,12 @@ export const TIMESERIES_COMPONENTS: DocsComponent[] = [
         type: 'string',
         defaultValue: "'/api/platform'",
         description: 'Auth mount path. Trailing slashes are stripped.',
+      },
+      {
+        name: 'domain',
+        type: "'land' | 'marine'",
+        defaultValue: "'land'",
+        description: 'land uses timeseries-models; marine uses marine-timeseries-models. Point-forecast fetches follow the same domain from this context.',
       },
       { name: 'children', type: 'ReactNode', description: 'Usually TimeseriesProvider.' },
     ],
@@ -190,7 +203,7 @@ export const TIMESERIES_COMPONENTS: DocsComponent[] = [
       {
         name: 'showPalette',
         type: 'boolean',
-        description: 'Forwarded to the table. Defaults to true on TimeseriesTable.',
+        description: 'Forwarded to the table. Defaults to false on TimeseriesTable.',
       },
     ],
   },
@@ -293,7 +306,7 @@ export const TIMESERIES_COMPONENTS: DocsComponent[] = [
       {
         name: 'showPalette',
         type: 'boolean',
-        defaultValue: 'true',
+        defaultValue: 'false',
         description: 'Apply cell background and text colors.',
       },
       {

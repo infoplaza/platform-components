@@ -49,7 +49,7 @@ export default function TimeseriesTable({
   getIconSrc,
   directionView,
   onDirectionViewChange,
-  showPalette = true,
+  showPalette = false,
 }: TimeseriesTableProps) {
   const [scrolled, setScrolled] = useState(false)
   const [dragScrolling, setDragScrolling] = useState(false)

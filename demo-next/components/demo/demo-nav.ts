@@ -49,6 +49,22 @@ export const DEMO_NAV_ITEMS: readonly DemoNavItem[] = [
     ],
   },
   {
+    href: '/demo/timeseries-charts',
+    label: 'Timeseries charts',
+    children: [
+      { href: '/demo/timeseries-charts#packaged', label: 'Packaged' },
+      { href: '/demo/timeseries-charts#marine', label: 'Marine' },
+      { href: '/demo/timeseries-charts#chart-only', label: 'Chart only' },
+      { href: '/demo/timeseries-charts#composed', label: 'Composed' },
+      { href: '/demo/timeseries-charts#custom-elements', label: 'Custom elements' },
+      {
+        href: INFOPLAZA_PLATFORM_EXAMPLES_CHARTS_URL,
+        label: 'Token usage',
+        external: true,
+      },
+    ],
+  },
+  {
     href: '/demo/ensemble',
     label: 'Ensemble',
     children: [

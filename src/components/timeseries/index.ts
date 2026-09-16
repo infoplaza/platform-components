@@ -40,6 +40,7 @@ export type {
   TimeseriesCellView,
   TimeseriesCellViewMap,
   TimeseriesDirectionView,
+  TimeseriesDomain,
   TimeseriesElementGroup,
   TimeseriesElementItem,
   TimeseriesHiddenRow,

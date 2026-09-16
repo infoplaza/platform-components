@@ -10,6 +10,7 @@ import type {
   TimeseriesModelsContextValue,
   TimeseriesModelsProviderProps,
 } from './types'
+import { timeseriesCatalogPath } from './endpoints'
 
 const DEFAULT_BASE_PATH = '/api/platform'
 
@@ -53,6 +54,7 @@ export function TimeseriesModelsProvider({
   lat,
   lon,
   basePath = DEFAULT_BASE_PATH,
+  domain = 'land',
   children,
 }: TimeseriesModelsProviderProps) {
   const [models, setModels] = useState<readonly TimeseriesModel[]>([])
@@ -78,7 +80,7 @@ export function TimeseriesModelsProvider({
       lon: String(lon),
     })
 
-    fetch(`${normalizedBase}/timeseries-models?${params.toString()}`, {
+    fetch(`${normalizedBase}/${timeseriesCatalogPath(domain)}?${params.toString()}`, {
       signal: controller.signal,
     })
       .then((response) => {
@@ -102,11 +104,11 @@ export function TimeseriesModelsProvider({
     return () => {
       controller.abort()
     }
-  }, [basePath, lat, lon])
+  }, [basePath, domain, lat, lon])
 
   const value = useMemo<TimeseriesModelsContextValue>(
-    () => ({ models, loading, error, lat, lon, basePath }),
-    [basePath, error, lat, loading, lon, models],
+    () => ({ models, loading, error, lat, lon, basePath, domain }),
+    [basePath, domain, error, lat, loading, lon, models],
   )
 
   return (

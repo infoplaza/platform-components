@@ -4,7 +4,7 @@ import { twMerge } from '@/src/utilities/external/twMerge'
 export default function TimeseriesIconCell({
   data,
   getIconSrc,
-  showPalette = true,
+  showPalette = false,
 }: TimeseriesCellComponentProps) {
   if (data.value == null) {
     return null

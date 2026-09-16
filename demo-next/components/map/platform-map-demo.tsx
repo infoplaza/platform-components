@@ -261,7 +261,7 @@ export default function PlatformMapDemo() {
 
   return (
     <section className="p-4 md:p-6">
-      <div className="mx-auto flex max-w-7xl flex-col gap-10">
+      <div className="mx-auto flex w-full flex-col gap-10">
         <header className="max-w-xl">
           <p className="mb-1.5 text-2xs font-semibold uppercase tracking-widest text-primary">
             I&apos;m Weather

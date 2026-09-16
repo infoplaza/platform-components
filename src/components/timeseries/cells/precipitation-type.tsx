@@ -11,7 +11,7 @@ import {
 import { twMerge } from '@/src/utilities/external/twMerge'
 import type { TimeseriesCellComponentProps } from '../types'
 
-const PRECIPITATION_TYPES = [
+export const PRECIPITATION_TYPES = [
   { Icon: null, title: 'Dry' },
   { Icon: IpPrecipitationRainIcon, title: 'Rain' },
   { Icon: IpPrecipitationLightningIcon, title: 'Thunderstorm' },
@@ -25,7 +25,7 @@ const PRECIPITATION_TYPES = [
   { Icon: IpPrecipitationHailIcon, title: 'Hail' },
 ] as const
 
-function getPrecipitationType(value: number) {
+export function getPrecipitationType(value: number) {
   if (value < 0 || value >= PRECIPITATION_TYPES.length) {
     return null
   }
@@ -34,7 +34,7 @@ function getPrecipitationType(value: number) {
 
 export default function TimeseriesPrecipitationTypeCell({
   data,
-  showPalette = true,
+  showPalette = false,
 }: TimeseriesCellComponentProps) {
   if (data.value == null || Number.isNaN(data.value)) {
     return null

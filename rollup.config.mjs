@@ -53,6 +53,7 @@ export default {
     'auth/index': 'src/auth/index.ts',
     'timeseries/index': 'src/timeseries/index.ts',
     'ensemble/index': 'src/ensemble/index.ts',
+    'timeseries-charts/index': 'src/timeseries-charts/index.ts',
     'defaults/index': 'src/defaults/index.ts',
   },
   external,

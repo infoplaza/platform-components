@@ -13,6 +13,7 @@ const nextConfig = {
   async redirects() {
     return [
       { source: '/timeseries', destination: '/demo/timeseries', permanent: true },
+      { source: '/timeseries-charts', destination: '/demo/timeseries-charts', permanent: true },
       { source: '/ensemble', destination: '/demo/ensemble', permanent: true },
     ]
   },

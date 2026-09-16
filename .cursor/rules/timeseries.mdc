@@ -18,9 +18,9 @@ A compound API. The models list is not host-supplied.
 
 | Piece | Role |
 |---|---|
-| `TimeseriesModelsProvider` | Required `lat`/`lon`. Fetches `GET /api/platform/timeseries-models`. Read-only `{ models, loading, error, lat, lon, basePath }` — no setter. |
-| `TimeseriesForecast` | Packaged: ModelsProvider + Provider + optional Toolbar + Builder/Chart + optional Footer. Requires `lat`/`lon`. |
-| `TimeseriesProvider` | Holds selection, blocks, display settings, direction view. Reads the catalog from `TimeseriesModelsProvider`. Fetches `GET /api/platform/timeseries-point-forecast` when `blocks` / `getBlocks` are omitted. No `models` prop. |
+| `TimeseriesModelsProvider` | Required `lat`/`lon`. Optional `domain` (`land` default, or `marine`). Fetches `GET /api/platform/timeseries-models` or `marine-timeseries-models`. Read-only `{ models, loading, error, lat, lon, basePath, domain }` — no setter. |
+| `TimeseriesForecast` | Packaged: ModelsProvider + Provider + optional Toolbar + Builder/Chart + optional Footer. Requires `lat`/`lon`. Forwards `domain`. |
+| `TimeseriesProvider` | Holds selection, blocks, display settings, direction view. Reads the catalog from `TimeseriesModelsProvider`. Fetches `GET /api/platform/timeseries-point-forecast` (or `marine-timeseries-point-forecast` when `domain` is `marine`) when `blocks` / `getBlocks` are omitted. No `models` prop. |
 | `TimeseriesToolbar` | Model + run pills (catalog only) |
 | `TimeseriesBuilder` | Presentational: loading skeleton, `ScrollSync`, one block context per `TimeseriesBlock` |
 | `TimeseriesChart` | Reads the current block (or explicit table props) and renders `TimeseriesTable` |
@@ -33,7 +33,7 @@ Built-in cell views: `VALUE`, `VALUE_ROUND`, `DIRECTION`, `PRECIPITATION_TYPE`, 
 
 Import only from `@infoplaza/platform/timeseries`. Wrap host UI in `.ip-platform` and use `ip:` utilities.
 
-**Packaged** — default chrome on; hide with flags. `lat` and `lon` are required. Chart rows load from the point-forecast endpoint unless `blocks` / `getBlocks` is passed:
+**Packaged** — default chrome on; hide with flags. `lat` and `lon` are required. Chart rows load from the point-forecast endpoint unless `blocks` / `getBlocks` is passed. `domain` defaults to `land`:
 
 ```tsx
 <TimeseriesForecast
@@ -41,6 +41,17 @@ Import only from `@infoplaza/platform/timeseries`. Wrap host UI in `.ip-platform
   lon={4.9041}
   showToolbar={false}       // default true
   showFooter={false}       // default true
+/>
+```
+
+Marine catalog and rows:
+
+```tsx
+<TimeseriesForecast
+  lat={55.551448725742}
+  lon={4.0444930642829116}
+  domain="marine"
+  defaultElementGroup="wave"
 />
 ```
 
@@ -60,11 +71,11 @@ Import only from `@infoplaza/platform/timeseries`. Wrap host UI in `.ip-platform
 
 Selection is hybrid: `model` + `onModelChange` (controlled) or `defaultModel` / omit (provider-owned). Same for `run`, `elementGroup`, `directionView`. Unknown slugs/runtimes are clamped to the fetched catalog. If `blocks` is passed it wins; otherwise `getBlocks({ model, run, elementGroup, models, elementGroups })` is used when provided; otherwise the Provider fetches point-forecast rows. `elementGroups` defaults to `DEFAULT_TIMESERIES_ELEMENT_GROUPS`.
 
-Demo patterns live in `demo-next/components/timeseries/` (packaged, chart-only, composed). Prefer updating those examples over inventing a fourth usage mode.
+Demo patterns live in `demo-next/components/timeseries/` (packaged, marine, chart-only, composed). Prefer updating those examples over inventing a fourth usage mode.
 
 ## Rules
 
-- **Catalog is API-only.** Do not pass a `models` array into Provider or Forecast. `TimeseriesModelsProvider` is the only writer.
+- **Catalog is API-only.** Do not pass a `models` array into Provider or Forecast. `TimeseriesModelsProvider` is the only writer. `domain` (`land` | `marine`) lives on ModelsProvider / packaged Forecast, not on TimeseriesProvider.
 - **Provider loads chart rows by default.** Shape `TimeseriesBlock[]` (rows with `timestamp`, `value`, `color: { background, text }`). `blocks` / `getBlocks` remain a host override. Do not import ImWeather `TIMESERIES` config, BFF routes, or grid APIs into this package.
 - **Builder does not fetch.** It maps context `blocks` onto Chart. The Provider fetches point forecast. Land-cover filters, compare, ensemble members, and custom elements stay in the host.
 - **`run === 'all'`:** the Provider fetches one point-forecast request per catalog runtime and returns one block per runtime. A host `getBlocks` may still return that shape itself.

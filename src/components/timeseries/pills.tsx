@@ -10,6 +10,7 @@ export type TimeseriesPillsProps = {
   minItems?: number
   maxItems?: number
   resize?: boolean
+  toggle?: boolean
 }
 
 export default function TimeseriesPills({
@@ -18,6 +19,7 @@ export default function TimeseriesPills({
   minItems = 0,
   maxItems = 5,
   resize = true,
+  toggle = false,
 }: TimeseriesPillsProps) {
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const [menuAlign, setMenuAlign] = useState<'left' | 'right'>('right')
@@ -72,7 +74,9 @@ export default function TimeseriesPills({
               type="button"
               disabled={item.disabled}
               onClick={() => {
-                if (!item.active && !item.disabled) onChange(item.value)
+                if (item.disabled) return
+                if (item.active && !toggle) return
+                onChange(item.value)
               }}
               className={twMerge(
                 'ip:relative ip:flex ip:h-full ip:cursor-pointer ip:items-center ip:gap-1 ip:whitespace-nowrap ip:rounded-full ip:px-2 ip:text-xs ip:leading-none',
@@ -125,7 +129,9 @@ export default function TimeseriesPills({
                       type="button"
                       disabled={item.disabled}
                       onClick={() => {
-                        if (!item.active && !item.disabled) onChange(item.value)
+                        if (item.disabled) return
+                        if (item.active && !toggle) return
+                        onChange(item.value)
                       }}
                       className={twMerge(
                         'ip:flex ip:w-full ip:cursor-pointer ip:items-center ip:gap-2 ip:whitespace-nowrap ip:px-3 ip:py-1 ip:text-xs',

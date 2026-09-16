@@ -127,6 +127,12 @@ function ModelCount() {
 <TimeseriesForecast lat={52.3676} lon={4.9041} />`}</DocsCodeBlock>
       </DocsGuideSection>
 
+      <DocsGuideSection id="timeseries-charts" title="Timeseries charts">
+        <DocsCodeBlock>{`import { TimeseriesChartsForecast } from '@infoplaza/platform/timeseries-charts'
+
+<TimeseriesChartsForecast lat={52.3676} lon={4.9041} />`}</DocsCodeBlock>
+      </DocsGuideSection>
+
       <DocsGuideSection id="ensemble" title="Ensemble">
         <DocsCodeBlock>{`import { EnsembleForecast } from '@infoplaza/platform/ensemble'
 

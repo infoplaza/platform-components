@@ -49,8 +49,10 @@ export function TimeseriesDocs() {
   </TimeseriesProvider>
 </TimeseriesModelsProvider>`}</DocsCodeBlock>
         <p className="m-0">
-          Data flow: lat/lon → <Code>GET /api/platform/timeseries-models</Code> → selection
-          → <Code>GET /api/platform/timeseries-point-forecast</Code> (unless{' '}
+          Data flow: lat/lon → <Code>GET /api/platform/timeseries-models</Code> (or{' '}
+          <Code>marine-timeseries-models</Code> when <Code>domain=&quot;marine&quot;</Code>) →
+          selection → <Code>GET /api/platform/timeseries-point-forecast</Code> (or{' '}
+          <Code>marine-timeseries-point-forecast</Code>) (unless{' '}
           <Code>blocks</Code> / <Code>getBlocks</Code>) → Builder maps blocks onto Chart.
         </p>
       </DocsGuideSection>

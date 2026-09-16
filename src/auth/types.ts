@@ -88,4 +88,13 @@ export interface PlatformAuthOptions {
    * to `/weather/ensemble`, otherwise `https://api.infoplaza.dev/v1/weather/ensemble`.
    */
   ensembleBaseUrl?: string
+  /**
+   * Upstream base for marine timeseries routes
+   * (`GET /api/platform/marine-timeseries-models`,
+   * `GET /api/platform/marine-timeseries-point-forecast`).
+   * When omitted, `/marine/timeseries` on `baseUrl` is used as-is, otherwise
+   * `https://api.infoplaza.dev/v1/marine/timeseries`. Weather map/timeseries
+   * bases are not rewritten to marine.
+   */
+  marineTimeseriesBaseUrl?: string
 }
