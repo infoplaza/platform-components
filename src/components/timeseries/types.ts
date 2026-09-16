@@ -176,6 +176,8 @@ export type TimeseriesContextValue = {
   showPalette?: boolean
 }
 
+export type TimeseriesDomain = 'land' | 'marine'
+
 export type TimeseriesModelsContextValue = {
   models: readonly TimeseriesModel[]
   loading: boolean
@@ -183,12 +185,14 @@ export type TimeseriesModelsContextValue = {
   lat: number
   lon: number
   basePath: string
+  domain: TimeseriesDomain
 }
 
 export type TimeseriesModelsProviderProps = {
   lat: number
   lon: number
   basePath?: string
+  domain?: TimeseriesDomain
   children?: ReactNode
 }
 
@@ -225,6 +229,7 @@ export type TimeseriesForecastProps = TimeseriesProviderProps & {
   lat: number
   lon: number
   basePath?: string
+  domain?: TimeseriesDomain
   showToolbar?: boolean
   showFooter?: boolean
   className?: string

@@ -17,6 +17,27 @@ export default function PackagedTimeseries() {
 }
 `
 
+export const MARINE_FILENAME = 'marine.tsx'
+
+export const MARINE_SOURCE = `'use client'
+
+import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
+
+export default function MarineTimeseries() {
+  return (
+    <TimeseriesForecast
+      lat={55.551448725742}
+      lon={4.0444930642829116}
+      domain="marine"
+      defaultElementGroup="wave"
+      locale="en"
+      headerFormat={['EEEEEE d MMM', 'HH']}
+      scrollToCurrentTime
+    />
+  )
+}
+`
+
 export const CHART_ONLY_FILENAME = 'chart-only.tsx'
 
 export const CHART_ONLY_SOURCE = `'use client'
@@ -137,7 +158,7 @@ import { useState } from 'react'
 import { TimeseriesForecast } from '@infoplaza/platform/timeseries'
 
 export default function PaletteTimeseries() {
-  const [showPalette, setShowPalette] = useState(true)
+  const [showPalette, setShowPalette] = useState(false)
 
   return (
     <div>

@@ -106,6 +106,11 @@ function offsetFor(model: string): number {
 
 export const AMSTERDAM = { lat: 52.3676, lon: 4.9041 }
 
+export const NORTH_SEA = {
+  lat: 55.551448725742,
+  lon: 4.0444930642829116,
+}
+
 export const DEMO_LOCATIONS = [
   { label: 'Amsterdam', lat: 52.3676, lon: 4.9041 },
   { label: 'Rotterdam', lat: 51.9225, lon: 4.4792 },

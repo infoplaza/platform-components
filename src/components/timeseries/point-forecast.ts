@@ -1,6 +1,7 @@
 import type {
   TimeseriesBlock,
   TimeseriesCell,
+  TimeseriesDomain,
   TimeseriesElementGroup,
   TimeseriesElementItem,
   TimeseriesHiddenRow,
@@ -9,9 +10,7 @@ import type {
   TimeseriesRow,
   TimeseriesRun,
 } from './types'
-
-const HIDDEN_REASON = 'Not available for this model'
-const NO_DATA_REASON = 'No data'
+import { timeseriesPointPath } from './endpoints'
 
 export type TimeseriesPointSeries = {
   element: string
@@ -28,12 +27,29 @@ export type TimeseriesPointForecast = {
   elements: TimeseriesPointSeries[]
 }
 
-type RequestedItem = {
-  item: TimeseriesElementItem
+export type TimeseriesQueryableItem = {
+  title: string
+  element?: string
+  level?: string
+  unit?: string
+}
+
+export type TimeseriesRequestedItem<
+  T extends TimeseriesQueryableItem = TimeseriesQueryableItem,
+> = {
+  item: T
   element: string
   level: string
   unit?: string
 }
+
+export const TIMESERIES_HIDDEN_REASON = 'Not available for this model'
+export const TIMESERIES_NO_DATA_REASON = 'No data'
+
+const HIDDEN_REASON = TIMESERIES_HIDDEN_REASON
+const NO_DATA_REASON = TIMESERIES_NO_DATA_REASON
+
+type RequestedItem = TimeseriesRequestedItem<TimeseriesElementItem>
 
 function catalogElement(
   model: TimeseriesModel,
@@ -48,7 +64,7 @@ function hasRestrictedLevels(levels: readonly string[] | undefined): boolean {
 
 export function isTimeseriesItemAvailable(
   model: TimeseriesModel,
-  item: TimeseriesElementItem,
+  item: Pick<TimeseriesQueryableItem, 'element' | 'level'>,
 ): boolean {
   if (!item.element) {
     return false
@@ -63,9 +79,9 @@ export function isTimeseriesItemAvailable(
   return catalog.levels?.includes(item.level) === true
 }
 
-function resolveItemLevel(
+export function resolveTimeseriesItemLevel(
   model: TimeseriesModel,
-  item: TimeseriesElementItem,
+  item: Pick<TimeseriesQueryableItem, 'element' | 'level'>,
 ): string {
   if (item.level) {
     return item.level
@@ -73,7 +89,9 @@ function resolveItemLevel(
   return catalogElement(model, item.element ?? '')?.levels?.[0] ?? ''
 }
 
-function formatRuntime(runtime: number | null | undefined): string | undefined {
+export function formatTimeseriesRuntime(
+  runtime: number | null | undefined,
+): string | undefined {
   if (runtime == null || !Number.isFinite(runtime)) {
     return undefined
   }
@@ -82,14 +100,14 @@ function formatRuntime(runtime: number | null | undefined): string | undefined {
   )
 }
 
-function partitionGroupItems(
+export function partitionTimeseriesGroupItems<T extends TimeseriesQueryableItem>(
   model: TimeseriesModel,
-  group: TimeseriesElementGroup,
-): { available: RequestedItem[]; hidden: TimeseriesHiddenRow[] } {
-  const available: RequestedItem[] = []
+  items: readonly T[] | undefined,
+): { available: TimeseriesRequestedItem<T>[]; hidden: TimeseriesHiddenRow[] } {
+  const available: TimeseriesRequestedItem<T>[] = []
   const hidden: TimeseriesHiddenRow[] = []
 
-  for (const item of group.items ?? []) {
+  for (const item of items ?? []) {
     if (!item.element || !isTimeseriesItemAvailable(model, item)) {
       hidden.push({ title: item.title, reason: HIDDEN_REASON })
       continue
@@ -97,7 +115,7 @@ function partitionGroupItems(
     available.push({
       item,
       element: item.element,
-      level: resolveItemLevel(model, item),
+      level: resolveTimeseriesItemLevel(model, item),
       unit: item.unit,
     })
   }
@@ -105,22 +123,32 @@ function partitionGroupItems(
   return { available, hidden }
 }
 
-function normalizeLevel(level: string | null | undefined): string {
+function partitionGroupItems(
+  model: TimeseriesModel,
+  group: TimeseriesElementGroup,
+): { available: RequestedItem[]; hidden: TimeseriesHiddenRow[] } {
+  return partitionTimeseriesGroupItems(model, group.items)
+}
+
+export function normalizeTimeseriesLevel(
+  level: string | null | undefined,
+): string {
   if (level == null || level === '-' || level === 'null') {
     return ''
   }
   return String(level)
 }
 
-function findSeries(
+export function findTimeseriesSeries(
   elements: TimeseriesPointSeries[],
   element: string,
   level: string,
 ): TimeseriesPointSeries | undefined {
-  const wanted = normalizeLevel(level)
+  const wanted = normalizeTimeseriesLevel(level)
   const exact = elements.find(
     (series) =>
-      series.element === element && normalizeLevel(series.level) === wanted,
+      series.element === element &&
+      normalizeTimeseriesLevel(series.level) === wanted,
   )
   if (exact) {
     return exact
@@ -255,7 +283,7 @@ function assembleBlock(options: {
   const hiddenRows = [...options.hidden]
 
   for (const requested of options.available) {
-    const series = findSeries(
+    const series = findTimeseriesSeries(
       options.forecast.elements,
       requested.element,
       requested.level,
@@ -269,7 +297,8 @@ function assembleBlock(options: {
     }
 
     const level =
-      normalizeLevel(requested.level) || normalizeLevel(series.level)
+      normalizeTimeseriesLevel(requested.level) ||
+      normalizeTimeseriesLevel(series.level)
 
     rows.push({
       title: requested.item.title,
@@ -287,13 +316,13 @@ function assembleBlock(options: {
   return {
     title: options.model.title,
     titleExtra: options.titleExtra,
-    subtitle: formatRuntime(options.forecast.runtime),
+    subtitle: formatTimeseriesRuntime(options.forecast.runtime),
     rows,
     hiddenRows: hiddenRows.length > 0 ? hiddenRows : undefined,
   }
 }
 
-async function fetchPointForecast(options: {
+export async function fetchTimeseriesPointForecast(options: {
   basePath: string
   lat: number
   lon: number
@@ -302,6 +331,7 @@ async function fetchPointForecast(options: {
   elements: string[]
   levels: string[]
   units?: string[]
+  domain?: TimeseriesDomain
   signal?: AbortSignal
 }): Promise<TimeseriesPointForecast> {
   const params = new URLSearchParams({
@@ -323,7 +353,7 @@ async function fetchPointForecast(options: {
   }
 
   const response = await fetch(
-    `${options.basePath.replace(/\/+$/, '')}/timeseries-point-forecast?${params.toString()}`,
+    `${options.basePath.replace(/\/+$/, '')}/${timeseriesPointPath(options.domain)}?${params.toString()}`,
     { signal: options.signal },
   )
   if (!response.ok) {
@@ -352,7 +382,7 @@ function emptyBlocks(
   return runtimes.map((runtime, index) => ({
     title: model.title,
     titleExtra: run === 'all' && index === 0 ? 'latest' : undefined,
-    subtitle: formatRuntime(runtime),
+    subtitle: formatTimeseriesRuntime(runtime),
     rows: [],
     hiddenRows,
   }))
@@ -369,6 +399,7 @@ export async function fetchTimeseriesBlocks(options: {
   model: TimeseriesModel
   run: TimeseriesRun
   group: TimeseriesElementGroup
+  domain?: TimeseriesDomain
   signal?: AbortSignal
 }): Promise<TimeseriesBlock[]> {
   const { available, hidden } = partitionGroupItems(options.model, options.group)
@@ -392,7 +423,7 @@ export async function fetchTimeseriesBlocks(options: {
 
   const forecasts = await Promise.all(
     (runtimes.length > 0 ? runtimes : [undefined]).map((runtime) =>
-      fetchPointForecast({
+      fetchTimeseriesPointForecast({
         basePath: options.basePath,
         lat: options.lat,
         lon: options.lon,
@@ -401,6 +432,7 @@ export async function fetchTimeseriesBlocks(options: {
         elements,
         levels: levelsParam,
         units,
+        domain: options.domain,
         signal: options.signal,
       }),
     ),

@@ -1,6 +1,6 @@
 {
   "name": "@infoplaza/platform",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "",
   "main": "./dist/index.js",
   "style": "./dist/styles.css",
@@ -48,6 +48,10 @@
     "./ensemble": {
       "types": "./dist/ensemble/index.d.ts",
       "default": "./dist/ensemble/index.js"
+    },
+    "./timeseries-charts": {
+      "types": "./dist/timeseries-charts/index.d.ts",
+      "default": "./dist/timeseries-charts/index.js"
     },
     "./defaults": {
       "types": "./dist/defaults/index.d.ts",

@@ -10,7 +10,7 @@ export default function TimeseriesValueCell({
   data,
   config,
   unit,
-  showPalette = true,
+  showPalette = false,
 }: TimeseriesCellComponentProps) {
   const value = data.value
   if (value == null || Number.isNaN(value)) {

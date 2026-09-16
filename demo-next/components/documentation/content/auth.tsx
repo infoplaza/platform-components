@@ -14,7 +14,8 @@ export function AuthDocs() {
       packageName="@infoplaza/platform/auth"
       description={
         <p className="m-0">
-          <Code>Providers</Code>, timeseries, and ensemble load data by calling{' '}
+          <Code>Providers</Code>, timeseries, ensemble, and marine timeseries load data by
+          calling{' '}
           <Code>/api/platform/*</Code> on <strong>your</strong> server. That route proxies
           to the Infoplaza API with your secret key. Mount <Code>PlatformAuth</Code> once
           on a catch-all — every platform endpoint is served automatically. The browser
@@ -28,9 +29,10 @@ export function AuthDocs() {
           Infoplaza developer platform
         </DocsExternalLink>{' '}
         first, then mount this handler. Without a token and this route,{' '}
-        <Code>GET /api/platform/models</Code> (and the timeseries / ensemble catalog and
-        point-forecast routes) do not exist, so weather layers and forecast tables will
-        not load. To see API request counts and token credit cost in a host app, open the{' '}
+        <Code>GET /api/platform/models</Code> (and the timeseries / ensemble / marine
+        catalog and point-forecast routes) do not exist, so weather layers and forecast
+        tables will not load. To see API request counts and token credit cost in a host
+        app, open the{' '}
         <DocsExternalLink href={INFOPLAZA_PLATFORM_EXAMPLES_URL}>
           platform examples
         </DocsExternalLink>
@@ -44,8 +46,8 @@ export function AuthDocs() {
             Infoplaza developer platform
           </DocsExternalLink>
           . Copy the token into <Code>PLATFORM_API_KEY</Code> on your server. Without a
-          token, <Code>/api/platform/*</Code> cannot proxy weather, timeseries, or ensemble
-          data.
+          token, <Code>/api/platform/*</Code> cannot proxy weather, timeseries, ensemble,
+          or marine data.
         </p>
       </DocsGuideSection>
 
@@ -132,12 +134,18 @@ export default PlatformAuth({ apiKey: process.env.PLATFORM_API_KEY! })`}</DocsCo
               description:
                 'Upstream for ensemble-models and ensemble-point-forecast. Same path-swap rules as timeseries, targeting /weather/ensemble.',
             },
+            {
+              name: 'marineTimeseriesBaseUrl',
+              type: 'string',
+              description:
+                'Upstream for marine-timeseries-models and marine-timeseries-point-forecast. If baseUrl already contains /marine/timeseries it is used as-is; otherwise a product default is used. Weather map/timeseries bases are not rewritten to marine.',
+            },
           ]}
         />
         <p className="m-0">
-          Map requests send the key as <Code>?token=</Code> by default. Timeseries and
-          ensemble handlers send <Code>?api_key=</Code> regardless of{' '}
-          <Code>apiKeyQueryParam</Code>.
+          Map requests send the key as <Code>?token=</Code> by default. Timeseries,
+          ensemble, and marine timeseries handlers send <Code>?api_key=</Code>{' '}
+          regardless of <Code>apiKeyQueryParam</Code>.
         </p>
       </DocsGuideSection>
 
@@ -176,6 +184,18 @@ export default PlatformAuth({ apiKey: process.env.PLATFORM_API_KEY! })`}</DocsCo
               type: 'ensemble',
               description:
                 'Requires lat, lon, model, and elements. Optional levels, runtime, units.',
+            },
+            {
+              name: 'GET /marine-timeseries-models',
+              type: 'marine',
+              description:
+                'Requires lat and lon together if either is present. Location-filtered marine catalog.',
+            },
+            {
+              name: 'GET /marine-timeseries-point-forecast',
+              type: 'marine',
+              description:
+                'Requires lat, lon, model, and elements. Optional levels, runtime, units, members.',
             },
           ]}
         />

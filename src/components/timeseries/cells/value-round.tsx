@@ -3,7 +3,7 @@ import { twMerge } from '@/src/utilities/external/twMerge'
 
 export default function TimeseriesValueRoundCell({
   data,
-  showPalette = true,
+  showPalette = false,
 }: TimeseriesCellComponentProps) {
   if (data.value == null || Number.isNaN(data.value)) {
     return null

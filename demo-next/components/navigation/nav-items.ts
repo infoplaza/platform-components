@@ -11,7 +11,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   {
     href: '/demo',
     label: 'Demo',
-    hint: 'Map, timeseries, and ensemble examples',
+            hint: 'Map, timeseries, and ensemble examples',
   },
   {
     href: '/documentation',

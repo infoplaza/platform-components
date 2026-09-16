@@ -11,7 +11,7 @@ export default function TimeseriesDirectionCell({
   data,
   directionView,
   onDirectionViewChange,
-  showPalette = true,
+  showPalette = false,
 }: TimeseriesCellComponentProps) {
   const view = directionView ?? DEFAULT_DIRECTION_VIEW
 

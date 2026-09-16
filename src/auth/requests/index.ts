@@ -1,6 +1,8 @@
 import type { PlatformEndpoint, PlatformEndpointHandler } from './types'
 import { ensembleModelsEndpoint } from './ensemble-models'
 import { ensemblePointForecastEndpoint } from './ensemble-point-forecast'
+import { marineTimeseriesModelsEndpoint } from './marine-timeseries-models'
+import { marineTimeseriesPointForecastEndpoint } from './marine-timeseries-point-forecast'
 import { modelsEndpoint } from './models'
 import { timeseriesModelsEndpoint } from './timeseries-models'
 import { timeseriesPointForecastEndpoint } from './timeseries-point-forecast'
@@ -16,6 +18,8 @@ const registered: readonly PlatformEndpoint[] = [
   timeseriesPointForecastEndpoint,
   ensembleModelsEndpoint,
   ensemblePointForecastEndpoint,
+  marineTimeseriesModelsEndpoint,
+  marineTimeseriesPointForecastEndpoint,
 ]
 
 export const endpoints: Record<string, PlatformEndpointHandler> =

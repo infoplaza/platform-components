@@ -46,23 +46,13 @@ export default function EnsembleToolbar({
   const runtimes = selectedModel?.runtimes ?? []
 
   const runItems = useMemo(() => {
-    const sorted = [...runtimes].sort((a, b) => b - a)
-    return [
-      ...(sorted.length > 1
-        ? [
-            {
-              title: 'All',
-              value: 'all',
-              active: run === 'all',
-            },
-          ]
-        : []),
-      ...sorted.map((runtime) => ({
+    return [...runtimes]
+      .sort((a, b) => b - a)
+      .map((runtime) => ({
         title: formatRun(runtime, supportedLocale) ?? String(runtime),
         value: String(runtime),
         active: run !== 'all' && Number(run) === runtime,
-      })),
-    ]
+      }))
   }, [run, runtimes, supportedLocale])
 
   if (
@@ -86,9 +76,7 @@ export default function EnsembleToolbar({
       {runItems.length > 0 ? (
         <TimeseriesPills
           items={runItems}
-          onChange={(value) =>
-            onRunChange(value === 'all' ? 'all' : Number(value))
-          }
+          onChange={(value) => onRunChange(Number(value))}
           minItems={0}
           maxItems={2}
         />

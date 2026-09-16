@@ -21,12 +21,14 @@ import {
   COMPOSED_SOURCE,
   CUSTOM_LOCATION_FILENAME,
   CUSTOM_LOCATION_SOURCE,
+  MARINE_FILENAME,
+  MARINE_SOURCE,
   PACKAGED_FILENAME,
   PACKAGED_SOURCE,
   PALETTE_FILENAME,
   PALETTE_SOURCE,
 } from './examples'
-import { AMSTERDAM } from './fixtures'
+import { AMSTERDAM, NORTH_SEA } from './fixtures'
 import { LocationFields } from './location-fields'
 
 function ExampleSection({
@@ -72,6 +74,21 @@ function PackagedExample() {
     <TimeseriesForecast
       lat={AMSTERDAM.lat}
       lon={AMSTERDAM.lon}
+      locale="en"
+      timezone={null}
+      headerFormat={['EEEEEE d MMM', 'HH']}
+      scrollToCurrentTime
+    />
+  )
+}
+
+function MarineExample() {
+  return (
+    <TimeseriesForecast
+      lat={NORTH_SEA.lat}
+      lon={NORTH_SEA.lon}
+      domain="marine"
+      defaultElementGroup="wave"
       locale="en"
       timezone={null}
       headerFormat={['EEEEEE d MMM', 'HH']}
@@ -173,13 +190,13 @@ function PaletteToggle({
 }
 
 function PaletteExample() {
-  const [showPalette, setShowPalette] = useState(true)
+  const [showPalette, setShowPalette] = useState(false)
 
   return (
     <ExampleSection
       id="palette"
       title="Palette"
-      description="Turn cell palette colors off to use the default table text and background. showPalette defaults to true."
+      description="Turn cell palette colors on to color values from the forecast palette. showPalette defaults to false."
       filename={PALETTE_FILENAME}
       source={PALETTE_SOURCE}
       controls={
@@ -225,7 +242,7 @@ function CustomLocationExample() {
 }
 
 export default function TimeseriesDemo() {
-  const [fullWidth, setFullWidth] = useState(false)
+  const [fullWidth, setFullWidth] = useState(true)
 
   return (
     <section className="p-4 md:p-6">
@@ -249,7 +266,8 @@ export default function TimeseriesDemo() {
               ModelsProvider, Provider, Toolbar, Builder, Chart, and Footer, or
               pass your own lat and lon. Toggle palette colors when you want
               default table text and backgrounds. Models and chart rows load
-              for the selected point.
+              for the selected point. Marine uses domain=&quot;marine&quot; and
+              the North Sea catalog.
             </p>
             <DemoExamplesLink href={INFOPLAZA_PLATFORM_EXAMPLES_CHARTS_URL} />
           </header>
@@ -287,6 +305,16 @@ export default function TimeseriesDemo() {
           source={PACKAGED_SOURCE}
         >
           <PackagedExample />
+        </ExampleSection>
+
+        <ExampleSection
+          id="marine"
+          title="Marine"
+          description="Same packaged table with domain=&quot;marine&quot; for an offshore North Sea point. Catalog and rows load from the marine timeseries auth routes; the Maritime group is selected."
+          filename={MARINE_FILENAME}
+          source={MARINE_SOURCE}
+        >
+          <MarineExample />
         </ExampleSection>
 
         <PaletteExample />

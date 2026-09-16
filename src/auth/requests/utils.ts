@@ -5,6 +5,8 @@ const DEFAULT_TIMESERIES_BASE_URL =
 const DEFAULT_ENSEMBLE_BASE_URL =
   'https://api.infoplaza.dev/v1/weather/ensemble'
 const DEFAULT_MAPS_BASE_URL = 'https://api.infoplaza.dev/v1/weather/maps'
+const DEFAULT_MARINE_TIMESERIES_BASE_URL =
+  'https://api.infoplaza.dev/v1/marine/timeseries'
 
 export function parseRequestUrl(req: PlatformRequest): {
   pathname: string
@@ -108,6 +110,33 @@ export function ensembleAuthOptions(
   return {
     ...options,
     baseUrl: resolveEnsembleBaseUrl(options.baseUrl, options.ensembleBaseUrl),
+    apiKeyQueryParam: 'api_key',
+  }
+}
+
+export function resolveMarineTimeseriesBaseUrl(
+  baseUrl: string | undefined,
+  override?: string,
+): string {
+  if (override) {
+    return override.replace(/\/+$/, '')
+  }
+  const base = (baseUrl ?? '').replace(/\/+$/, '')
+  if (base.includes('/marine/timeseries')) {
+    return base
+  }
+  return DEFAULT_MARINE_TIMESERIES_BASE_URL
+}
+
+export function marineTimeseriesAuthOptions(
+  options: PlatformAuthOptions,
+): PlatformAuthOptions {
+  return {
+    ...options,
+    baseUrl: resolveMarineTimeseriesBaseUrl(
+      options.baseUrl,
+      options.marineTimeseriesBaseUrl,
+    ),
     apiKeyQueryParam: 'api_key',
   }
 }
