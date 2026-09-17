@@ -11,6 +11,7 @@ import type { TimeseriesModel, TimeseriesRun } from '../timeseries/types'
 import { useTimeseriesModels } from '../timeseries/models'
 import { latestRuntime } from '../timeseries/utils'
 import {
+  DEFAULT_TIMESERIES_CHART_HOUR_INTERVAL,
   DEFAULT_TIMESERIES_CHART_PLOT_HEIGHT,
   defaultTimeseriesChartGroups,
 } from './defaults'
@@ -84,6 +85,8 @@ export function TimeseriesChartsProvider({
   locale = 'en',
   timezone = null,
   plotHeight = DEFAULT_TIMESERIES_CHART_PLOT_HEIGHT,
+  hourInterval = DEFAULT_TIMESERIES_CHART_HOUR_INTERVAL,
+  thresholds = null,
   children,
 }: TimeseriesChartsProviderProps) {
   const {
@@ -296,11 +299,14 @@ export function TimeseriesChartsProvider({
       locale,
       timezone,
       plotHeight,
+      hourInterval,
+      thresholds,
     }),
     [
       charts,
       elementGroups,
       error,
+      hourInterval,
       loading,
       locale,
       model,
@@ -310,6 +316,7 @@ export function TimeseriesChartsProvider({
       onVisibleGroupsChange,
       plotHeight,
       run,
+      thresholds,
       timezone,
       visibleGroups,
     ],

@@ -89,6 +89,18 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
         defaultValue: '320',
         description: 'Plot-area height in pixels. Also sizes the Builder loading skeleton. Chart/Graph can override. fixedHeight still overrides the total Recharts container.',
       },
+      {
+        name: 'hourInterval',
+        type: '1 | 3 | 6',
+        defaultValue: '6',
+        description: 'Vertical unlabeled hour grid lines in the plot. Day-boundary ticks stay on the X axis. Chart/Graph can override.',
+      },
+      {
+        name: 'thresholds',
+        type: 'TimeseriesChartThresholds | null',
+        description:
+          'Optional project-style object; only conditions and ignored_hours are used. Each chart keeps AND-groups whose elementIds are all LINE series on that chart, then draws dashed Y-lines and a status strip above the date labels. Chart/Graph can override.',
+      },
       { name: 'className', type: 'string', description: 'Extra class on the root wrapper.' },
     ],
     example: `<TimeseriesChartsForecast
@@ -154,6 +166,18 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
         defaultValue: '320',
         description: 'Plot-area height in pixels. Flows to Chart/Graph and the Builder loading skeleton.',
       },
+      {
+        name: 'hourInterval',
+        type: '1 | 3 | 6',
+        defaultValue: '6',
+        description: 'Vertical unlabeled hour grid lines. Flows to Chart/Graph.',
+      },
+      {
+        name: 'thresholds',
+        type: 'TimeseriesChartThresholds | null',
+        description:
+          'Optional. conditions + ignored_hours. Per-chart Y-lines and status strip for LINE elements on that chart. Flows to Chart/Graph.',
+      },
     ],
   },
   {
@@ -210,6 +234,17 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
         defaultValue: 'context, else 320',
         description: 'Plot-area height in pixels. Falls back to TimeseriesChartsProvider.',
       },
+      {
+        name: 'hourInterval',
+        type: '1 | 3 | 6',
+        defaultValue: 'context, else 6',
+        description: 'Vertical unlabeled hour grid lines. Falls back to TimeseriesChartsProvider.',
+      },
+      {
+        name: 'thresholds',
+        type: 'TimeseriesChartThresholds | null',
+        description: 'Falls back to TimeseriesChartsProvider.',
+      },
     ],
   },
   {
@@ -231,7 +266,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
     name: 'TimeseriesGraph',
     summary: 'Low-level Recharts ComposedChart.',
     description:
-      'LINE series in the plot; DIRECTION arrows, VALUE labels, and PRECIPITATION_TYPE icons in a Customized axis strip. Hover header lists LINE values and precipitation type names. Threshold lines are out of scope.',
+      'LINE series in the plot; DIRECTION arrows, VALUE labels, and PRECIPITATION_TYPE icons in a Customized strip band under the plot (height grows with overlay rows). Day banding, hour lines, and the hover cursor continue through the band. Hover values sit in the title row (centered, no layout shift) and list LINE series plus precipitation type names. Optional thresholds add dashed Y-lines for in-scale LINE elements, a status color strip above the date labels, a Thresholds legend, and Watch / Caution / Critical on hover.',
     importStatement: `import { TimeseriesGraph } from '@infoplaza/platform/timeseries-charts'`,
     required: [
       {
@@ -251,7 +286,19 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
         name: 'plotHeight',
         type: 'number',
         defaultValue: '320',
-        description: 'Plot-area height in pixels. Direction/value/precipitation-type strips and axis chrome are added on top.',
+        description: 'Plot-area height in pixels. The strip band (direction/value/precipitation-type rows) and axis chrome are added on top.',
+      },
+      {
+        name: 'hourInterval',
+        type: '1 | 3 | 6',
+        defaultValue: '6',
+        description: 'Vertical unlabeled hour grid lines. Day-boundary ticks stay on the X axis.',
+      },
+      {
+        name: 'thresholds',
+        type: 'TimeseriesChartThresholds | null',
+        description:
+          'Optional. Only conditions and ignored_hours are read. Per-chart Y-lines and status strip for LINE elements plotted on this graph.',
       },
       { name: 'fixedWidth', type: 'number', description: 'Optional fixed pixel width.' },
       { name: 'fixedHeight', type: 'number', description: 'Optional fixed pixel height. Overrides plotHeight plus chrome.' },

@@ -4,6 +4,7 @@ import { DEFAULT_TIMESERIES_CHART_LINE_COLORS } from './defaults'
 import type {
   TimeseriesChartDirectionOverlay,
   TimeseriesChartElementItem,
+  TimeseriesChartHourInterval,
   TimeseriesChartLineSeries,
   TimeseriesChartPrecipitationTypeOverlay,
   TimeseriesChartValueOverlay,
@@ -45,6 +46,7 @@ export function mutateLineSeries(
     series: {
       slug: item.slug,
       title: item.title,
+      element: item.element,
       unit: item.unit,
       color: lineColorForIndex(colorIndex, item.color),
       decimals: item.decimals,
@@ -149,6 +151,23 @@ export function alignLineRows(
     })
 }
 
+/** Re-index line rows onto a shared timestamp list so Brush indices match. */
+export function alignRowsToTimestamps(
+  data: Array<Record<string, unknown>>,
+  keys: string[],
+  timestamps: number[],
+): Array<Record<string, unknown>> {
+  const byTs = new Map(data.map((row) => [Number(row.ts), row]))
+  return timestamps.map((ts) => {
+    const existing = byTs.get(ts)
+    const row: Record<string, unknown> = { ts }
+    for (const key of keys) {
+      row[key] = existing?.[key] ?? null
+    }
+    return row
+  })
+}
+
 export function dayTicks(startMs: number, endMs: number): number[] {
   if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || startMs > endMs) {
     return []
@@ -167,4 +186,31 @@ export function dayTicks(startMs: number, endMs: number): number[] {
   }
 
   return [...ticks].sort((a, b) => a - b)
+}
+
+const HOUR_MS = 60 * 60 * 1000
+
+export function hourTicks(
+  startMs: number,
+  endMs: number,
+  intervalHours: TimeseriesChartHourInterval,
+): number[] {
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || startMs > endMs) {
+    return []
+  }
+
+  const intervalMs = intervalHours * HOUR_MS
+  const current = new Date(startMs)
+  current.setHours(0, 0, 0, 0)
+  const ticks: number[] = []
+
+  while (current.getTime() <= endMs) {
+    const ts = current.getTime()
+    if (ts >= startMs) {
+      ticks.push(ts)
+    }
+    current.setTime(ts + intervalMs)
+  }
+
+  return ticks
 }

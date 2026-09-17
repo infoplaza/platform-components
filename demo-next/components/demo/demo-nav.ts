@@ -53,6 +53,8 @@ export const DEMO_NAV_ITEMS: readonly DemoNavItem[] = [
     label: 'Timeseries charts',
     children: [
       { href: '/demo/timeseries-charts#packaged', label: 'Packaged' },
+      { href: '/demo/timeseries-charts#hour-interval', label: 'Hour interval' },
+      { href: '/demo/timeseries-charts#thresholds', label: 'Thresholds' },
       { href: '/demo/timeseries-charts#marine', label: 'Marine' },
       { href: '/demo/timeseries-charts#chart-only', label: 'Chart only' },
       { href: '/demo/timeseries-charts#composed', label: 'Composed' },

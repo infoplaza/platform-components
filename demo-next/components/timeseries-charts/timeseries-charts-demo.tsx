@@ -9,6 +9,8 @@ import {
   TimeseriesChartsToolbar,
   TimeseriesModelsProvider,
   useTimeseriesCharts,
+  type TimeseriesChartHourInterval,
+  type TimeseriesChartThresholds,
 } from '@infoplaza/platform/timeseries-charts'
 import { DemoExamplesLink } from '../demo/demo-examples-link'
 import { INFOPLAZA_PLATFORM_EXAMPLES_CHARTS_URL } from '../../lib/infoplaza-platform'
@@ -18,10 +20,14 @@ import {
   CHART_ONLY_SOURCE,
   COMPOSED_FILENAME,
   COMPOSED_SOURCE,
+  HOUR_INTERVAL_FILENAME,
+  HOUR_INTERVAL_SOURCE,
   MARINE_FILENAME,
   MARINE_SOURCE,
   PACKAGED_FILENAME,
   PACKAGED_SOURCE,
+  THRESHOLDS_FILENAME,
+  THRESHOLDS_SOURCE,
 } from './examples'
 
 type DemoLocation = {
@@ -120,6 +126,122 @@ function ExamplePlaceholder({
   )
 }
 
+const HOUR_INTERVALS: TimeseriesChartHourInterval[] = [1, 3, 6]
+
+const DEMO_THRESHOLDS: TimeseriesChartThresholds = {
+  ignored_hours: [],
+  conditions: {
+    yellow: [
+      {
+        rows: [
+          {
+            elementId: 'temperature',
+            operator: 'greater-than',
+            from: 8,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'windspeed',
+            operator: 'greater-than',
+            from: 2,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'temperature',
+            operator: 'less-than',
+            from: 12,
+            to: null,
+          },
+        ],
+      },
+    ],
+    orange: [
+      {
+        rows: [
+          {
+            elementId: 'windspeed',
+            operator: 'greater-than',
+            from: 5,
+            to: null,
+          },
+          {
+            elementId: 'windgust',
+            operator: 'greater-than',
+            from: 25,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'temperature',
+            operator: 'greater-than',
+            from: 28,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'precipitation',
+            operator: 'greater-than',
+            from: 3.2,
+            to: null,
+          },
+        ],
+      },
+    ],
+    red: [
+      {
+        rows: [
+          {
+            elementId: 'windspeed',
+            operator: 'greater-than',
+            from: 8,
+            to: null,
+          },
+          {
+            elementId: 'windgust',
+            operator: 'greater-than',
+            from: 30,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'temperature',
+            operator: 'greater-than',
+            from: 20,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'precipitation',
+            operator: 'greater-than',
+            from: 7.6,
+            to: null,
+          },
+        ],
+      },
+    ],
+  },
+}
+
 function PackagedExample() {
   return (
     <TimeseriesChartsForecast
@@ -128,6 +250,58 @@ function PackagedExample() {
       model="gfs"
       locale="en"
       timezone={null}
+    />
+  )
+}
+
+function HourIntervalExample() {
+  const [hourInterval, setHourInterval] =
+    useState<TimeseriesChartHourInterval>(6)
+
+  return (
+    <div>
+      <div className="ip:flex ip:items-center ip:gap-2 ip:px-3 ip:py-2">
+        <span className="ip:text-xs ip:font-medium ip:text-dark/60 ip:dark:text-white/60">
+          Hour grid
+        </span>
+        <div className="ip:flex ip:h-5 ip:items-center ip:gap-1">
+          {HOUR_INTERVALS.map((hours) => (
+            <button
+              key={hours}
+              type="button"
+              onClick={() => setHourInterval(hours)}
+              className={
+                hourInterval === hours
+                  ? 'ip:flex ip:h-full ip:cursor-pointer ip:items-center ip:rounded-full ip:bg-primary ip:px-2 ip:text-xs ip:leading-none ip:text-white'
+                  : 'ip:flex ip:h-full ip:cursor-pointer ip:items-center ip:rounded-full ip:px-2 ip:text-xs ip:leading-none ip:opacity-50 ip:hover:bg-primary/20 ip:hover:opacity-100 ip:dark:text-white'
+              }
+            >
+              {hours}h
+            </button>
+          ))}
+        </div>
+      </div>
+      <TimeseriesChartsForecast
+        lat={AMSTERDAM.lat}
+        lon={AMSTERDAM.lon}
+        model="gfs"
+        locale="en"
+        timezone={null}
+        hourInterval={hourInterval}
+      />
+    </div>
+  )
+}
+
+function ThresholdsExample() {
+  return (
+    <TimeseriesChartsForecast
+      lat={AMSTERDAM.lat}
+      lon={AMSTERDAM.lon}
+      model="gfs"
+      locale="en"
+      timezone={null}
+      thresholds={DEMO_THRESHOLDS}
     />
   )
 }
@@ -211,7 +385,8 @@ export default function TimeseriesChartsDemo() {
             <p className="m-0 text-sm leading-relaxed text-dark/60">
               Point-forecast series as Recharts composed charts. Each config
               group is one chart: LINE series in the plot, DIRECTION arrows,
-              VALUE labels, and PRECIPITATION_TYPE icons in the axis strip.
+              VALUE labels, and PRECIPITATION_TYPE icons in a strip band under
+              the plot.
               Packaged examples use{' '}
               {locationLabel(AMSTERDAM)}; the marine example uses an offshore
               North Sea point.
@@ -253,6 +428,28 @@ export default function TimeseriesChartsDemo() {
           location={AMSTERDAM}
         >
           <PackagedExample />
+        </ExampleSection>
+
+        <ExampleSection
+          id="hour-interval"
+          title="Hour interval"
+          description="Host-owned hourInterval (1, 3, or 6). Default is 6-hourly unlabeled vertical lines; changing it does not refetch."
+          filename={HOUR_INTERVAL_FILENAME}
+          source={HOUR_INTERVAL_SOURCE}
+          location={AMSTERDAM}
+        >
+          <HourIntervalExample />
+        </ExampleSection>
+
+        <ExampleSection
+          id="thresholds"
+          title="Thresholds"
+          description="Optional thresholds prop. Each chart uses only conditions whose elements are all plotted there: dashed Y-lines with an up/down hue for greater-than vs less-than, a status strip above the date labels, and Watch / Caution / Critical on hover."
+          filename={THRESHOLDS_FILENAME}
+          source={THRESHOLDS_SOURCE}
+          location={AMSTERDAM}
+        >
+          <ThresholdsExample />
         </ExampleSection>
 
         <ExampleSection

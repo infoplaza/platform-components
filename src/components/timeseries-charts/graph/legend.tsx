@@ -1,18 +1,27 @@
 import { IpGraphLineIcon, IpPrecipitationTypeIcon } from '@/src/components/icons'
 import type { TimeseriesChartGraphConfig } from '../types'
+import {
+  TIMESERIES_CHART_THRESHOLD_COLORS,
+  thresholdLegendLevels,
+  type TimeseriesChartThresholdYLine,
+} from '../thresholds'
 
 const ARROW_POINTS = '0,-5 -2.5,3.5 0,1 2.5,3.5'
 
 export default function ChartLegend({
   config,
+  thresholdYLines = [],
 }: {
   config: TimeseriesChartGraphConfig
+  thresholdYLines?: TimeseriesChartThresholdYLine[]
 }) {
+  const thresholdLevels = thresholdLegendLevels(thresholdYLines)
   const hasItems =
     config.lines.length > 0 ||
     config.directions.length > 0 ||
     config.values.length > 0 ||
-    config.precipitationTypes.length > 0
+    config.precipitationTypes.length > 0 ||
+    thresholdLevels.length > 0
 
   if (!hasItems) {
     return null
@@ -54,6 +63,20 @@ export default function ChartLegend({
           <span>{overlay.title}</span>
         </li>
       ))}
+      {thresholdLevels.length > 0 ? (
+        <li className="ip:flex ip:items-center ip:gap-1">
+          <span className="ip:flex ip:items-center">
+            {thresholdLevels.map((level) => (
+              <span
+                key={level}
+                className="ip:inline-block ip:h-2 ip:w-2 ip:rounded-full ip:-ml-0.5 ip:first:ml-0"
+                style={{ backgroundColor: TIMESERIES_CHART_THRESHOLD_COLORS[level] }}
+              />
+            ))}
+          </span>
+          <span>Thresholds</span>
+        </li>
+      ) : null}
     </ul>
   )
 }
