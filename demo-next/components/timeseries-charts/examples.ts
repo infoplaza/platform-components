@@ -41,7 +41,38 @@ export const MARINE_FILENAME = 'marine.tsx'
 
 export const MARINE_SOURCE = `'use client'
 
-import { TimeseriesChartsForecast } from '@infoplaza/platform/timeseries-charts'
+import {
+  TimeseriesChartsForecast,
+  type TimeseriesChartThresholds,
+} from '@infoplaza/platform/timeseries-charts'
+
+const THRESHOLDS: TimeseriesChartThresholds = {
+  ignored_hours: [],
+  conditions: {
+    yellow: [
+      { rows: [{ elementId: 'windspeed', operator: 'greater-than', from: 2, to: null }] },
+      { rows: [{ elementId: 'waveheight_significant', operator: 'greater-than', from: 0.8, to: null }] },
+    ],
+    orange: [
+      {
+        rows: [
+          { elementId: 'windspeed', operator: 'greater-than', from: 5, to: null },
+          { elementId: 'windgust', operator: 'greater-than', from: 25, to: null },
+        ],
+      },
+      { rows: [{ elementId: 'waveheight_significant', operator: 'greater-than', from: 1.5, to: null }] },
+    ],
+    red: [
+      {
+        rows: [
+          { elementId: 'windspeed', operator: 'greater-than', from: 8, to: null },
+          { elementId: 'windgust', operator: 'greater-than', from: 30, to: null },
+        ],
+      },
+      { rows: [{ elementId: 'waveheight_significant', operator: 'greater-than', from: 2.5, to: null }] },
+    ],
+  },
+}
 
 export default function MarineTimeseriesCharts() {
   // North Sea
@@ -52,6 +83,7 @@ export default function MarineTimeseriesCharts() {
       domain="marine"
       model="gfswave"
       locale="en"
+      thresholds={THRESHOLDS}
     />
   )
 }
@@ -185,6 +217,55 @@ export default function ComposedTimeseriesCharts() {
         </TimeseriesChartsBuilder>
       </TimeseriesChartsProvider>
     </TimeseriesModelsProvider>
+  )
+}
+`
+
+export const CUSTOM_ELEMENTS_FILENAME = 'custom-elements.tsx'
+
+export const CUSTOM_ELEMENTS_SOURCE = `'use client'
+
+import {
+  TimeseriesChartsForecast,
+  DEFAULT_LAND_TIMESERIES_CHART_GROUPS,
+  type TimeseriesChartElementGroup,
+} from '@infoplaza/platform/timeseries-charts'
+
+const GROUPS: TimeseriesChartElementGroup[] = [
+  DEFAULT_LAND_TIMESERIES_CHART_GROUPS.find((g) => g.key === 'temperature')!,
+  {
+    key: 'clouds',
+    title: 'Cloud cover',
+    items: [
+      { slug: 'clouds_total', title: 'Total cloud cover', element: 'cloudcovertotal', unit: '%', view: 'LINE' },
+      { slug: 'clouds_low', title: 'Low clouds', element: 'cloudcoverlow', unit: '%', view: 'LINE' },
+    ],
+  },
+  {
+    key: 'pressure',
+    title: 'Pressure',
+    items: [
+      {
+        slug: 'pressure_msl',
+        title: 'Mean sea level pressure',
+        element: 'pressure_meansealevel',
+        unit: 'hPa',
+        view: 'LINE',
+      },
+    ],
+  },
+]
+
+export default function CustomElementsTimeseriesCharts() {
+  // Amsterdam
+  return (
+    <TimeseriesChartsForecast
+      lat={52.3676}
+      lon={4.9041}
+      model="gfs"
+      locale="en"
+      elementGroups={GROUPS}
+    />
   )
 }
 `

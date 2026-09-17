@@ -59,7 +59,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
         name: 'elementGroups',
         type: 'TimeseriesChartElementGroup[]',
         defaultValue: 'DEFAULT_LAND_TIMESERIES_CHART_GROUPS when domain is land, DEFAULT_MARINE_TIMESERIES_CHART_GROUPS when marine',
-        description: 'Chart config. Each group is one composed chart. Item view is LINE, DIRECTION, VALUE, or PRECIPITATION_TYPE. Host override; otherwise picked from domain.',
+        description: 'Chart config. Each group is one composed chart. Item view is LINE, DIRECTION, VALUE, or PRECIPITATION_TYPE. A defined array replaces domain defaults (it does not merge). Omit to use land or marine defaults from domain.',
       },
       {
         name: 'visibleGroups / defaultVisibleGroups / onVisibleGroupsChange',
@@ -155,7 +155,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
           'Preferred catalog slug. model without onModelChange (or defaultModel) is the initial selection; model + onModelChange is controlled. If the slug is not in the fetched catalog, the first model is used.',
       },
       { name: 'run / defaultRun / onRunChange', type: "number | 'all'", description: 'Runtime selection. all fetches one payload per catalog runtime.' },
-      { name: 'elementGroups', type: 'TimeseriesChartElementGroup[]', description: 'Defaults from domain: land uses DEFAULT_LAND_TIMESERIES_CHART_GROUPS, marine uses DEFAULT_MARINE_TIMESERIES_CHART_GROUPS.' },
+      { name: 'elementGroups', type: 'TimeseriesChartElementGroup[]', description: 'Replaces domain defaults when defined (does not merge). Land uses DEFAULT_LAND_TIMESERIES_CHART_GROUPS, marine uses DEFAULT_MARINE_TIMESERIES_CHART_GROUPS.' },
       { name: 'visibleGroups / defaultVisibleGroups / onVisibleGroupsChange', type: 'string[]', description: 'Group keys currently shown.' },
       { name: 'charts', type: 'TimeseriesChartBlock[]', description: 'Host-owned blocks. Skips the fetch.' },
       { name: 'getCharts', type: '(options) => TimeseriesChartBlock[]', description: 'Sync override when charts is omitted.' },

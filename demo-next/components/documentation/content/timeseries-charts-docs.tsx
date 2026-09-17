@@ -64,6 +64,33 @@ export function TimeseriesChartsDocs() {
           Each group is one composed chart. Group-visibility footer pills are
           off for now.
         </p>
+        <p className="m-0">
+          Pass <Code>elementGroups</Code> to replace those defaults (it does not
+          merge). Reuse a default group or define new ones:
+        </p>
+        <DocsCodeBlock>{`const GROUPS = [
+  DEFAULT_LAND_TIMESERIES_CHART_GROUPS.find((g) => g.key === 'temperature')!,
+  {
+    key: 'pressure',
+    title: 'Pressure',
+    items: [
+      {
+        slug: 'pressure_msl',
+        title: 'Mean sea level pressure',
+        element: 'pressure_meansealevel',
+        unit: 'hPa',
+        view: 'LINE',
+      },
+    ],
+  },
+]
+
+<TimeseriesChartsForecast
+  lat={52.3676}
+  lon={4.9041}
+  model="gfs"
+  elementGroups={GROUPS}
+/>`}</DocsCodeBlock>
       </DocsGuideSection>
 
       <DocsPackageSection

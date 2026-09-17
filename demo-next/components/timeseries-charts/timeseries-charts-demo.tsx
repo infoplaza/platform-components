@@ -9,6 +9,8 @@ import {
   TimeseriesChartsToolbar,
   TimeseriesModelsProvider,
   useTimeseriesCharts,
+  DEFAULT_LAND_TIMESERIES_CHART_GROUPS,
+  type TimeseriesChartElementGroup,
   type TimeseriesChartHourInterval,
   type TimeseriesChartThresholds,
 } from '@infoplaza/platform/timeseries-charts'
@@ -20,6 +22,8 @@ import {
   CHART_ONLY_SOURCE,
   COMPOSED_FILENAME,
   COMPOSED_SOURCE,
+  CUSTOM_ELEMENTS_FILENAME,
+  CUSTOM_ELEMENTS_SOURCE,
   HOUR_INTERVAL_FILENAME,
   HOUR_INTERVAL_SOURCE,
   MARINE_FILENAME,
@@ -100,33 +104,44 @@ function ExampleSection({
   )
 }
 
-function ExamplePlaceholder({
-  id,
-  title,
-  description,
-}: {
-  id: string
-  title: string
-  description: string
-}) {
-  return (
-    <article id={id} className="flex scroll-mt-4 flex-col gap-3">
-      <div>
-        <h2 className="m-0 text-base font-semibold tracking-tight text-dark">
-          {title}
-        </h2>
-        <p className="m-0 mt-1 text-sm leading-relaxed text-dark/60">
-          {description}
-        </p>
-      </div>
-      <div className="flex min-h-100 items-center justify-center overflow-hidden rounded-2xl border border-cloud/10 bg-cloud-100">
-        <p className="m-0 text-sm text-dark/60">… in progress</p>
-      </div>
-    </article>
-  )
-}
-
 const HOUR_INTERVALS: TimeseriesChartHourInterval[] = [1, 3, 6]
+
+const DEMO_CUSTOM_ELEMENT_GROUPS: TimeseriesChartElementGroup[] = [
+  DEFAULT_LAND_TIMESERIES_CHART_GROUPS.find((group) => group.key === 'temperature')!,
+  {
+    key: 'clouds',
+    title: 'Cloud cover',
+    items: [
+      {
+        slug: 'clouds_total',
+        title: 'Total cloud cover',
+        element: 'cloudcovertotal',
+        unit: '%',
+        view: 'LINE',
+      },
+      {
+        slug: 'clouds_low',
+        title: 'Low clouds',
+        element: 'cloudcoverlow',
+        unit: '%',
+        view: 'LINE',
+      },
+    ],
+  },
+  {
+    key: 'pressure',
+    title: 'Pressure',
+    items: [
+      {
+        slug: 'pressure_msl',
+        title: 'Mean sea level pressure',
+        element: 'pressure_meansealevel',
+        unit: 'hPa',
+        view: 'LINE',
+      },
+    ],
+  },
+]
 
 const DEMO_THRESHOLDS: TimeseriesChartThresholds = {
   ignored_hours: [],
@@ -242,6 +257,51 @@ const DEMO_THRESHOLDS: TimeseriesChartThresholds = {
   },
 }
 
+const DEMO_MARINE_THRESHOLDS: TimeseriesChartThresholds = {
+  ignored_hours: DEMO_THRESHOLDS.ignored_hours,
+  conditions: {
+    yellow: [
+      ...(DEMO_THRESHOLDS.conditions?.yellow ?? []),
+      {
+        rows: [
+          {
+            elementId: 'waveheight_significant',
+            operator: 'greater-than',
+            from: 0.8,
+            to: null,
+          },
+        ],
+      },
+    ],
+    orange: [
+      ...(DEMO_THRESHOLDS.conditions?.orange ?? []),
+      {
+        rows: [
+          {
+            elementId: 'waveheight_significant',
+            operator: 'greater-than',
+            from: 1.5,
+            to: null,
+          },
+        ],
+      },
+    ],
+    red: [
+      ...(DEMO_THRESHOLDS.conditions?.red ?? []),
+      {
+        rows: [
+          {
+            elementId: 'waveheight_significant',
+            operator: 'greater-than',
+            from: 2.5,
+            to: null,
+          },
+        ],
+      },
+    ],
+  },
+}
+
 function PackagedExample() {
   return (
     <TimeseriesChartsForecast
@@ -315,6 +375,7 @@ function MarineExample() {
       model="gfswave"
       locale="en"
       timezone={null}
+      thresholds={DEMO_MARINE_THRESHOLDS}
     />
   )
 }
@@ -359,6 +420,19 @@ function ComposedExample() {
         <ComposedBody />
       </TimeseriesChartsProvider>
     </TimeseriesModelsProvider>
+  )
+}
+
+function CustomElementsExample() {
+  return (
+    <TimeseriesChartsForecast
+      lat={AMSTERDAM.lat}
+      lon={AMSTERDAM.lon}
+      model="gfs"
+      locale="en"
+      timezone={null}
+      elementGroups={DEMO_CUSTOM_ELEMENT_GROUPS}
+    />
   )
 }
 
@@ -455,7 +529,7 @@ export default function TimeseriesChartsDemo() {
         <ExampleSection
           id="marine"
           title="Marine"
-          description="The same packaged wind and wave charts for an offshore North Sea point, with domain=&quot;marine&quot; so models and series load from the marine timeseries auth routes."
+          description="The same packaged wind and wave charts for an offshore North Sea point, with domain=&quot;marine&quot; so models and series load from the marine timeseries auth routes. Thresholds include the land wind rules plus significant-wave height (0.8 / 1.5 / 2.5 m)."
           filename={MARINE_FILENAME}
           source={MARINE_SOURCE}
           location={NORTH_SEA}
@@ -485,11 +559,16 @@ export default function TimeseriesChartsDemo() {
           <ComposedExample />
         </ExampleSection>
 
-        <ExamplePlaceholder
+        <ExampleSection
           id="custom-elements"
           title="Custom elements"
-          description="Host-owned elementGroups — pick which series appear in each composed chart."
-        />
+          description="Host-owned elementGroups replace the land defaults. Reuse a default group (Temperature) and add custom Cloud cover and Pressure charts."
+          filename={CUSTOM_ELEMENTS_FILENAME}
+          source={CUSTOM_ELEMENTS_SOURCE}
+          location={AMSTERDAM}
+        >
+          <CustomElementsExample />
+        </ExampleSection>
 
         <footer className="flex flex-wrap items-center gap-4 px-0.5 pb-2 text-xs text-dark/60">
           <span>
