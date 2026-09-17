@@ -25,9 +25,9 @@ A compound API. The models list is not host-supplied.
 | `TimeseriesChartsBuilder` | Presentational: loading skeleton, one chart-block context per `TimeseriesChartBlock` |
 | `TimeseriesChartsChart` | Reads the current block (or explicit graph props) and renders `TimeseriesGraph` |
 | `TimeseriesChartsFooter` | Group-visibility pills. Disabled for now — do not mount in packaged or composed usage. |
-| `TimeseriesGraph` | Low-level Recharts `ComposedChart` (LINE series, DIRECTION arrows, VALUE strip labels, PRECIPITATION_TYPE icons) |
+| `TimeseriesGraph` | Low-level Recharts `ComposedChart` (LINE series; DIRECTION / VALUE / PRECIPITATION_TYPE in a strip band under the plot) |
 
-Config item views: `LINE`, `DIRECTION`, `VALUE`, `PRECIPITATION_TYPE`. One **group** = one composed chart. Builder stacks every group. Threshold `yLines` are out of scope.
+Config item views: `LINE`, `DIRECTION`, `VALUE`, `PRECIPITATION_TYPE`. One **group** = one composed chart. Builder stacks every group. Optional `thresholds` draws per-chart Y-lines and a status strip from `conditions` + `ignored_hours`.
 
 ## How
 
@@ -67,9 +67,9 @@ Marine:
 </TimeseriesModelsProvider>
 ```
 
-Selection is hybrid: `model` + `onModelChange` (controlled) or `model` without `onModelChange` / `defaultModel` / omit (provider-owned preferred slug). Same for `run` and `visibleGroups`. Unknown slugs fall back to the first catalog model; unknown runtimes are clamped to the catalog. If `charts` is passed it wins; otherwise `getCharts({ model, run, models, elementGroups, visibleGroups, locale, timezone })` is used when provided; otherwise the Provider fetches point-forecast charts. `elementGroups` defaults from `domain`: `DEFAULT_LAND_TIMESERIES_CHART_GROUPS` or `DEFAULT_MARINE_TIMESERIES_CHART_GROUPS`. Fetch once per runtime for all groups; do not N+1 by group. `plotHeight` defaults to 320 (`DEFAULT_TIMESERIES_CHART_PLOT_HEIGHT`); set it on Forecast or Provider so Chart/Graph and the Builder loading skeleton share it. Chart/Graph can override. `fixedHeight` still overrides the total Recharts container.
+Selection is hybrid: `model` + `onModelChange` (controlled) or `model` without `onModelChange` / `defaultModel` / omit (provider-owned preferred slug). Same for `run` and `visibleGroups`. Unknown slugs fall back to the first catalog model; unknown runtimes are clamped to the catalog. If `charts` is passed it wins; otherwise `getCharts({ model, run, models, elementGroups, visibleGroups, locale, timezone })` is used when provided; otherwise the Provider fetches point-forecast charts. `elementGroups` defaults from `domain`: `DEFAULT_LAND_TIMESERIES_CHART_GROUPS` or `DEFAULT_MARINE_TIMESERIES_CHART_GROUPS`. Fetch once per runtime for all groups; do not N+1 by group. `plotHeight` defaults to 320 (`DEFAULT_TIMESERIES_CHART_PLOT_HEIGHT`); set it on Forecast or Provider so Chart/Graph and the Builder loading skeleton share it. Chart/Graph can override. `fixedHeight` still overrides the total Recharts container. `hourInterval` defaults to 6 (`DEFAULT_TIMESERIES_CHART_HOUR_INTERVAL`); allowed values are `1`, `3`, or `6`. It draws unlabeled vertical hour lines (day ticks stay on the X axis). Set it on Forecast or Provider so Chart/Graph share it. Chart/Graph can override. `thresholds` is optional (`conditions` + `ignored_hours`). Each chart keeps AND-groups whose `elementId`s are all LINE series on that chart; it draws dashed Y-lines and a status strip above the date labels. Chart/Graph can override.
 
-Demo patterns live in `demo-next/components/timeseries-charts/` (packaged, marine, chart-only, composed). Prefer updating those examples over inventing a fourth usage mode.
+Demo patterns live in `demo-next/components/timeseries-charts/` (packaged, hour-interval, thresholds, marine, chart-only, composed). Prefer updating those examples over inventing a fourth usage mode.
 
 ## Rules
 
@@ -81,4 +81,4 @@ Demo patterns live in `demo-next/components/timeseries-charts/` (packaged, marin
 - **Toolbar** resolves `props ?? context` and returns `null` if neither exists — do not throw. Footer group pills exist but are off for now (`showFooter` defaults to false; do not mount `TimeseriesChartsFooter` in demos). `useTimeseriesCharts()` throws outside the provider; `useTimeseriesChartsContext()` is nullable for standalone pieces.
 - **Keep map, timeseries table, and charts separate.** No charts in the timeseries or map barrels. Toolbar/footer reuse timeseries pills internally, not map controls. Coordinates live on `TimeseriesModelsProvider` (and packaged Forecast), not as props on `TimeseriesChartsProvider`.
 - **Stay presentational.** No next-intl, next-auth, `#main-header` sticky offsets, or paywall chrome. Titles and group labels are already-resolved strings. Locale is for date axis labels (`en`/`nl`/`de`/`it`/`es`/`fr`).
-- **Out of scope:** threshold lines, ICON on charts, dual Y-axis, renaming `TimeseriesChart`, nesting under the table package.
+- **Out of scope:** ICON on charts, dual Y-axis, renaming `TimeseriesChart`, nesting under the table package.

@@ -4,30 +4,33 @@ import {
   ComposedChart,
   Customized,
   Line,
+  ReferenceArea,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
 import {
+  DEFAULT_TIMESERIES_CHART_HOUR_INTERVAL,
   DEFAULT_TIMESERIES_CHART_PLOT_HEIGHT,
+  TIMESERIES_CHART_DATE_AXIS_HEIGHT,
   TIMESERIES_CHART_PLOT_CHROME_HEIGHT,
+  TIMESERIES_CHART_PLOT_TOP_MARGIN,
+  timeseriesChartStripHeight,
 } from './defaults'
 import type { TimeseriesGraphProps } from './types'
 import ChartAxisStrip from './graph/axis-strip'
 import ChartLegend from './graph/legend'
+import ChartThresholdHues from './graph/threshold-hues'
 import ChartHoverHeader, { formatChartTimestamp } from './graph/tooltip'
-
-function stripHeight(config: NonNullable<TimeseriesGraphProps['config']>) {
-  const rows =
-    (config.directions.length > 0 ? 1 : 0) +
-    (config.values.length > 0 ? 1 : 0) +
-    (config.precipitationTypes.length > 0 ? 1 : 0)
-  if (rows === 0) {
-    return 0
-  }
-  return rows * 18 + 8
-}
+import { hourTicks } from './series'
+import {
+  thresholdLevelAtTimestamp,
+  thresholdStripSegments,
+  thresholdYAxisMax,
+  thresholdYLines,
+} from './thresholds'
 
 export default function TimeseriesGraph({
   id = '',
@@ -38,15 +41,47 @@ export default function TimeseriesGraph({
   locale = 'en',
   timezone = null,
   plotHeight = DEFAULT_TIMESERIES_CHART_PLOT_HEIGHT,
+  hourInterval = DEFAULT_TIMESERIES_CHART_HOUR_INTERVAL,
+  thresholds = null,
   fixedWidth = null,
   fixedHeight = null,
 }: TimeseriesGraphProps) {
   const [hoverTs, setHoverTs] = useState<number | null>(null)
 
+  const yLines = useMemo(
+    () => (config ? thresholdYLines(config, thresholds) : []),
+    [config, thresholds],
+  )
+  const thresholdSegments = useMemo(
+    () =>
+      config ? thresholdStripSegments(config, thresholds, timezone) : [],
+    [config, thresholds, timezone],
+  )
+  const hasThresholdStrip = thresholdSegments.length > 0
+
   const chartHeight = useMemo(() => {
     if (!config) return plotHeight
-    return plotHeight + stripHeight(config)
-  }, [config, plotHeight])
+    return (
+      plotHeight +
+      timeseriesChartStripHeight(config, { thresholdStrip: hasThresholdStrip })
+    )
+  }, [config, hasThresholdStrip, plotHeight])
+
+  const hourLines = useMemo(() => {
+    if (!config?.domain) return []
+    const days = new Set(config.ticks ?? [])
+    return hourTicks(config.domain[0], config.domain[1], hourInterval).filter(
+      (ts) => !days.has(ts),
+    )
+  }, [config, hourInterval])
+
+  const hoverLevel = useMemo(
+    () =>
+      config
+        ? thresholdLevelAtTimestamp(config, thresholds, hoverTs, timezone)
+        : null,
+    [config, hoverTs, thresholds, timezone],
+  )
 
   if (config && config.data.length === 0 && config.lines.length === 0) {
     return (
@@ -82,13 +117,23 @@ export default function TimeseriesGraph({
     return null
   }
 
-  const bottom = stripHeight(config) + 24
+  const strip = timeseriesChartStripHeight(config, {
+    thresholdStrip: hasThresholdStrip,
+  })
+  const axisHeight = strip + TIMESERIES_CHART_DATE_AXIS_HEIGHT
   const height = fixedHeight ?? chartHeight + TIMESERIES_CHART_PLOT_CHROME_HEIGHT
+  const ticks = config.ticks ?? []
+  const yMax = thresholdYAxisMax(config, yLines)
 
   const renderChart = (extraProps: Record<string, unknown>) => (
     <ComposedChart
       data={config.data}
-      margin={{ top: 8, right: 12, left: 0, bottom }}
+      margin={{
+        top: TIMESERIES_CHART_PLOT_TOP_MARGIN,
+        right: 12,
+        left: 0,
+        bottom: 0,
+      }}
       onMouseMove={(state) => {
         const label = Number(state?.activeLabel)
         setHoverTs(Number.isFinite(label) ? label : null)
@@ -96,7 +141,39 @@ export default function TimeseriesGraph({
       onMouseLeave={() => setHoverTs(null)}
       {...extraProps}
     >
+      {ticks.length > 0
+        ? ticks.map((entry, index) => {
+            if (index === ticks.length - 1) return null
+            return (
+              <ReferenceArea
+                key={`bg-gray-interval-area-${id}-${index}-${entry}`}
+                x1={entry}
+                x2={ticks[index + 1]}
+                fill={index % 2 === 0 ? '#787878' : 'transparent'}
+                fillOpacity={0.1}
+              />
+            )
+          })
+        : null}
+      {hourLines.map((entry, index) => (
+        <ReferenceLine
+          key={`ref-x-hour-${id}-${index}-${entry}`}
+          x={entry}
+          stroke="#0000001a"
+          strokeWidth={0.5}
+        />
+      ))}
       <CartesianGrid stroke="#C5C5C5" vertical />
+      <Customized
+        component={(props: Record<string, unknown>) => (
+          <ChartThresholdHues
+            id={id}
+            yLines={yLines}
+            yAxisMap={props.yAxisMap as never}
+            offset={props.offset as never}
+          />
+        )}
+      />
       {config.lines.map((line) => (
         <Line
           key={`line-${id}-${line.slug}`}
@@ -109,6 +186,16 @@ export default function TimeseriesGraph({
           isAnimationActive={false}
         />
       ))}
+      {yLines.map((entry, index) => (
+        <ReferenceLine
+          key={`ref-y-threshold-${id}-${index}-${entry.level}-${entry.y}`}
+          y={entry.y}
+          stroke={entry.color}
+          strokeDasharray="4 4"
+          strokeWidth={1}
+          ifOverflow="extendDomain"
+        />
+      ))}
       <XAxis
         dataKey="ts"
         type="number"
@@ -118,10 +205,14 @@ export default function TimeseriesGraph({
           formatChartTimestamp(value, locale, timezone, 'EEEEEE d')
         }
         interval={0}
+        height={axisHeight}
         tick={{ fontSize: 10, fill: '#6c757d' }}
+        tickLine={strip > 0 ? false : undefined}
+        tickSize={strip > 0 ? 0 : undefined}
+        tickMargin={strip > 0 ? strip : undefined}
       />
       <YAxis
-        domain={[0, 'auto']}
+        domain={[0, yMax]}
         width={36}
         tick={{ fontSize: 10, fill: '#6c757d' }}
         allowDecimals
@@ -133,6 +224,9 @@ export default function TimeseriesGraph({
             config={config}
             xAxisMap={props.xAxisMap as never}
             offset={props.offset as never}
+            hoverTs={hoverTs}
+            hourLines={hourLines}
+            thresholdSegments={thresholdSegments}
           />
         )}
       />
@@ -141,9 +235,9 @@ export default function TimeseriesGraph({
 
   return (
     <div className="ip:relative ip:pr-2">
-      <div className="ip:flex ip:flex-wrap ip:items-start ip:justify-between ip:gap-2 ip:px-1">
-        <div className="ip:flex ip:flex-col ip:items-start ip:text-xs ip:font-bold ip:uppercase ip:dark:text-white">
-          <div className="ip:min-w-52 ip:overflow-hidden ip:truncate">
+      <div className="ip:px-4 ip:pb-2">
+        <div className="ip:relative ip:flex ip:h-6 ip:items-center">
+          <div className="ip:relative ip:z-10 ip:min-w-0 ip:shrink-0 ip:truncate ip:text-xs ip:font-bold ip:uppercase ip:dark:text-white">
             {title ?? ''}
             {config.unit ? (
               <span className="ip:ml-2 ip:text-[10px] ip:font-light ip:normal-case ip:text-dark/60 ip:dark:text-white/60">
@@ -156,18 +250,21 @@ export default function TimeseriesGraph({
               </span>
             ) : null}
           </div>
-          {subtitle ? (
-            <div className="ip:text-[10px] ip:font-normal ip:opacity-75">
-              {subtitle}
-            </div>
-          ) : null}
+          <div className="ip:pointer-events-none ip:absolute ip:inset-0 ip:flex ip:items-center ip:justify-center ip:overflow-hidden">
+            <ChartHoverHeader
+              config={config}
+              timestamp={hoverTs}
+              locale={locale}
+              timezone={timezone}
+              thresholdLevel={hoverLevel}
+            />
+          </div>
         </div>
-        <ChartHoverHeader
-          config={config}
-          timestamp={hoverTs}
-          locale={locale}
-          timezone={timezone}
-        />
+        {subtitle ? (
+          <div className="ip:text-[10px] ip:font-normal ip:uppercase ip:opacity-75 ip:dark:text-white">
+            {subtitle}
+          </div>
+        ) : null}
       </div>
       {fixedWidth ? (
         renderChart({ width: fixedWidth, height })
@@ -178,9 +275,9 @@ export default function TimeseriesGraph({
           </ResponsiveContainer>
         </div>
       )}
-      {/* <div className="ip:pt-1">
-        <ChartLegend config={config} />
-      </div> */}
+      <div className="ip:pt-1">
+        <ChartLegend config={config} thresholdYLines={yLines} />
+      </div>
     </div>
   )
 }

@@ -7,6 +7,8 @@ import type {
 
 export type { TimeseriesDomain, TimeseriesModel, TimeseriesRun }
 
+export type TimeseriesChartHourInterval = 1 | 3 | 6
+
 export type TimeseriesChartView =
   | 'LINE'
   | 'DIRECTION'
@@ -36,9 +38,41 @@ export type TimeseriesChartElementGroup = {
 export type TimeseriesChartLineSeries = {
   slug: string
   title: string
+  element?: string
   unit?: string
   color: string
   decimals?: number
+}
+
+export type TimeseriesChartThresholdOperator =
+  | 'greater-than'
+  | 'greater-than-or-equal'
+  | 'less-than'
+  | 'less-than-or-equal'
+  | 'between'
+  | 'equal'
+
+export type TimeseriesChartThresholdLevel = 'none' | 'yellow' | 'orange' | 'red'
+
+export type TimeseriesChartThresholdRow = {
+  elementId: string
+  operator: TimeseriesChartThresholdOperator | (string & {})
+  from: number | null
+  to: number | null
+  unit?: string
+}
+
+export type TimeseriesChartThresholdGroup = {
+  rows: TimeseriesChartThresholdRow[]
+}
+
+export type TimeseriesChartThresholds = {
+  conditions?: {
+    yellow?: TimeseriesChartThresholdGroup[]
+    orange?: TimeseriesChartThresholdGroup[]
+    red?: TimeseriesChartThresholdGroup[]
+  }
+  ignored_hours?: number[]
 }
 
 export type TimeseriesChartDirectionPoint = {
@@ -123,6 +157,8 @@ export type TimeseriesChartsContextValue = {
   locale: string
   timezone: string | null
   plotHeight: number
+  hourInterval: TimeseriesChartHourInterval
+  thresholds: TimeseriesChartThresholds | null
 }
 
 export type TimeseriesChartsProviderProps = {
@@ -141,6 +177,8 @@ export type TimeseriesChartsProviderProps = {
   locale?: string
   timezone?: string | null
   plotHeight?: number
+  hourInterval?: TimeseriesChartHourInterval
+  thresholds?: TimeseriesChartThresholds | null
   children?: ReactNode
 }
 
@@ -167,6 +205,8 @@ export type TimeseriesGraphProps = {
   locale?: string
   timezone?: string | null
   plotHeight?: number
+  hourInterval?: TimeseriesChartHourInterval
+  thresholds?: TimeseriesChartThresholds | null
   fixedWidth?: number | null
   fixedHeight?: number | null
 }

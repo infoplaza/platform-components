@@ -30,7 +30,7 @@ export default function ChartOnlyTimeseriesCharts() {
       lat={52.3676}
       lon={4.9041}
       model="gfs"
-      locale="en"c
+      locale="en"
       showToolbar={false}
     />
   )
@@ -52,6 +52,111 @@ export default function MarineTimeseriesCharts() {
       domain="marine"
       model="gfswave"
       locale="en"
+    />
+  )
+}
+`
+
+export const HOUR_INTERVAL_FILENAME = 'hour-interval.tsx'
+
+export const HOUR_INTERVAL_SOURCE = `'use client'
+
+import { useState } from 'react'
+import {
+  TimeseriesChartsForecast,
+  type TimeseriesChartHourInterval,
+} from '@infoplaza/platform/timeseries-charts'
+
+const INTERVALS: TimeseriesChartHourInterval[] = [1, 3, 6]
+
+export default function HourIntervalTimeseriesCharts() {
+  const [hourInterval, setHourInterval] =
+    useState<TimeseriesChartHourInterval>(6)
+
+  return (
+    <div>
+      <div className="ip:flex ip:items-center ip:gap-2 ip:px-3 ip:py-2">
+        <span className="ip:text-xs ip:font-medium ip:text-dark/60">
+          Hour grid
+        </span>
+        <div className="ip:flex ip:h-5 ip:items-center ip:gap-1">
+          {INTERVALS.map((hours) => (
+            <button
+              key={hours}
+              type="button"
+              onClick={() => setHourInterval(hours)}
+              className={
+                hourInterval === hours
+                  ? 'ip:flex ip:h-full ip:cursor-pointer ip:items-center ip:rounded-full ip:bg-primary ip:px-2 ip:text-xs ip:leading-none ip:text-white'
+                  : 'ip:flex ip:h-full ip:cursor-pointer ip:items-center ip:rounded-full ip:px-2 ip:text-xs ip:leading-none ip:opacity-50 ip:hover:bg-primary/20 ip:hover:opacity-100'
+              }
+            >
+              {hours}h
+            </button>
+          ))}
+        </div>
+      </div>
+      <TimeseriesChartsForecast
+        lat={52.3676}
+        lon={4.9041}
+        model="gfs"
+        locale="en"
+        hourInterval={hourInterval}
+      />
+    </div>
+  )
+}
+`
+
+export const THRESHOLDS_FILENAME = 'thresholds.tsx'
+
+export const THRESHOLDS_SOURCE = `'use client'
+
+import {
+  TimeseriesChartsForecast,
+  type TimeseriesChartThresholds,
+} from '@infoplaza/platform/timeseries-charts'
+
+const THRESHOLDS: TimeseriesChartThresholds = {
+  ignored_hours: [],
+  conditions: {
+    yellow: [
+      { rows: [{ elementId: 'temperature', operator: 'greater-than', from: 8, to: null }] },
+      { rows: [{ elementId: 'windspeed', operator: 'greater-than', from: 2, to: null }] },
+      { rows: [{ elementId: 'temperature', operator: 'less-than', from: 12, to: null }] },
+    ],
+    orange: [
+      {
+        rows: [
+          { elementId: 'windspeed', operator: 'greater-than', from: 5, to: null },
+          { elementId: 'windgust', operator: 'greater-than', from: 25, to: null },
+        ],
+      },
+      { rows: [{ elementId: 'temperature', operator: 'greater-than', from: 28, to: null }] },
+      { rows: [{ elementId: 'precipitation', operator: 'greater-than', from: 3.2, to: null }] },
+    ],
+    red: [
+      {
+        rows: [
+          { elementId: 'windspeed', operator: 'greater-than', from: 8, to: null },
+          { elementId: 'windgust', operator: 'greater-than', from: 30, to: null },
+        ],
+      },
+      { rows: [{ elementId: 'temperature', operator: 'greater-than', from: 20, to: null }] },
+      { rows: [{ elementId: 'precipitation', operator: 'greater-than', from: 7.6, to: null }] },
+    ],
+  },
+}
+
+export default function ThresholdsTimeseriesCharts() {
+  // Amsterdam
+  return (
+    <TimeseriesChartsForecast
+      lat={52.3676}
+      lon={4.9041}
+      model="gfs"
+      locale="en"
+      thresholds={THRESHOLDS}
     />
   )
 }

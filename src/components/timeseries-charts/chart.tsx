@@ -14,6 +14,8 @@ export default function TimeseriesChartsChart({
   locale: localeProp,
   timezone: timezoneProp,
   plotHeight: plotHeightProp,
+  hourInterval: hourIntervalProp,
+  thresholds: thresholdsProp,
   fixedWidth,
   fixedHeight,
 }: TimeseriesChartsChartProps) {
@@ -35,6 +37,8 @@ export default function TimeseriesChartsChart({
       locale={localeProp ?? ctx?.locale}
       timezone={timezoneProp ?? ctx?.timezone}
       plotHeight={plotHeightProp ?? ctx?.plotHeight}
+      hourInterval={hourIntervalProp ?? ctx?.hourInterval}
+      thresholds={thresholdsProp ?? ctx?.thresholds}
       fixedWidth={fixedWidth}
       fixedHeight={fixedHeight}
     />

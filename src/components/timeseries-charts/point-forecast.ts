@@ -12,6 +12,7 @@ import {
 } from '../timeseries/point-forecast'
 import {
   alignLineRows,
+  alignRowsToTimestamps,
   dayTicks,
   mutateDirectionOverlay,
   mutateLineSeries,
@@ -131,11 +132,48 @@ export function assembleChart(options: {
   return {
     key: `${options.group.key}-${options.forecast.runtime ?? 'latest'}`,
     title: options.group.title,
-    subtitle: formatTimeseriesRuntime(options.forecast.runtime),
+    // subtitle: formatTimeseriesRuntime(options.forecast.runtime),
     titleExtra: options.titleExtra,
     groupKey: options.group.key,
     config,
   }
+}
+
+function alignRuntimeChartBlocks(
+  blocks: TimeseriesChartBlock[],
+): TimeseriesChartBlock[] {
+  const timestamps = new Set<number>()
+  for (const block of blocks) {
+    for (const row of block.config.data) {
+      const ts = Number(row.ts)
+      if (Number.isFinite(ts)) {
+        timestamps.add(ts)
+      }
+    }
+  }
+
+  const sorted = [...timestamps].sort((a, b) => a - b)
+  if (sorted.length === 0) {
+    return blocks
+  }
+
+  const start = sorted[0]
+  const end = sorted[sorted.length - 1]
+  const ticks = dayTicks(start, end)
+
+  return blocks.map((block) => ({
+    ...block,
+    config: {
+      ...block.config,
+      data: alignRowsToTimestamps(
+        block.config.data,
+        block.config.lines.map((line) => line.slug),
+        sorted,
+      ),
+      domain: [start, end],
+      ticks,
+    },
+  }))
 }
 
 function emptyChart(
@@ -211,14 +249,16 @@ export async function fetchTimeseriesCharts(options: {
   )
 
   return forecasts.flatMap((forecast, index) =>
-    options.groups.map((group) =>
-      assembleChart({
-        group,
-        forecast,
-        model: options.model,
-        titleExtra:
-          options.run === 'all' && index === 0 ? 'latest' : undefined,
-      }),
+    alignRuntimeChartBlocks(
+      options.groups.map((group) =>
+        assembleChart({
+          group,
+          forecast,
+          model: options.model,
+          titleExtra:
+            options.run === 'all' && index === 0 ? 'latest' : undefined,
+        }),
+      ),
     ),
   )
 }
