@@ -127,6 +127,7 @@ export function assembleChart(options: {
         : undefined,
     ticks:
       start != null && end != null ? dayTicks(start, end) : undefined,
+    yAxis: options.group.yAxis,
   }
 
   return {
@@ -193,6 +194,7 @@ function emptyChart(
       directions: [],
       values: [],
       precipitationTypes: [],
+      yAxis: group.yAxis,
     },
   }
 }

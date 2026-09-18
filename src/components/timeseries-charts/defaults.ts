@@ -18,7 +18,19 @@ type GroupIcon = NonNullable<TimeseriesChartElementGroup['icon']>
 /** Plot-area height in pixels. Hosts can override via `plotHeight`. */
 export const DEFAULT_TIMESERIES_CHART_PLOT_HEIGHT = 320
 
-/** Vertical hour-grid interval in hours. Hosts can override via `hourInterval`. */
+/** Y-axis width in pixels. */
+export const TIMESERIES_CHART_Y_AXIS_WIDTH = 36
+
+/**
+ * Minimum plot pixels per forecast day before the graph switches to a
+ * one-day pager (phones and other narrow containers).
+ */
+export const TIMESERIES_CHART_MIN_PX_PER_DAY = 80
+
+/** LINE stroke width in pixels. Hosts can override per item via `line.strokeWidth`. */
+export const DEFAULT_TIMESERIES_CHART_LINE_STROKE_WIDTH = 1.5
+
+/** Vertical hour-grid interval in hours. Also summarizes strip overlays for 3h/6h. Hosts can override via `hourInterval`. */
 export const DEFAULT_TIMESERIES_CHART_HOUR_INTERVAL: TimeseriesChartHourInterval = 6
 
 /** Docked Recharts Brush bar (container height). */

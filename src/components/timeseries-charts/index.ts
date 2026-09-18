@@ -28,6 +28,7 @@ export {
   DEFAULT_MARINE_TIMESERIES_CHART_GROUPS,
   DEFAULT_TIMESERIES_CHART_GROUPS,
   DEFAULT_TIMESERIES_CHART_HOUR_INTERVAL,
+  DEFAULT_TIMESERIES_CHART_LINE_STROKE_WIDTH,
   DEFAULT_TIMESERIES_CHART_PLOT_HEIGHT,
   defaultTimeseriesChartGroups,
 } from './defaults'
@@ -36,17 +37,21 @@ export type { TimeseriesChartsToolbarProps } from './toolbar'
 export { default as TimeseriesChartsFooter } from './footer'
 export type { TimeseriesChartsFooterProps } from './footer'
 export type {
+  TimeseriesChartAxisBound,
   TimeseriesChartBlock,
   TimeseriesChartElementGroup,
   TimeseriesChartElementItem,
   TimeseriesChartGraphConfig,
   TimeseriesChartHourInterval,
+  TimeseriesChartLineCurve,
+  TimeseriesChartLineStyle,
   TimeseriesChartThresholdGroup,
   TimeseriesChartThresholdLevel,
   TimeseriesChartThresholdOperator,
   TimeseriesChartThresholdRow,
   TimeseriesChartThresholds,
   TimeseriesChartView,
+  TimeseriesChartYAxis,
   TimeseriesModel,
   TimeseriesRun,
 } from './types'

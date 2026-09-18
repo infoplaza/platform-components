@@ -41,7 +41,38 @@ export const MARINE_FILENAME = 'marine.tsx'
 
 export const MARINE_SOURCE = `'use client'
 
-import { TimeseriesChartsForecast } from '@infoplaza/platform/timeseries-charts'
+import {
+  TimeseriesChartsForecast,
+  type TimeseriesChartThresholds,
+} from '@infoplaza/platform/timeseries-charts'
+
+const THRESHOLDS: TimeseriesChartThresholds = {
+  ignored_hours: [],
+  conditions: {
+    yellow: [
+      { rows: [{ elementId: 'windspeed', operator: 'greater-than', from: 2, to: null }] },
+      { rows: [{ elementId: 'waveheight_significant', operator: 'greater-than', from: 0.8, to: null }] },
+    ],
+    orange: [
+      {
+        rows: [
+          { elementId: 'windspeed', operator: 'greater-than', from: 5, to: null },
+          { elementId: 'windgust', operator: 'greater-than', from: 25, to: null },
+        ],
+      },
+      { rows: [{ elementId: 'waveheight_significant', operator: 'greater-than', from: 1.5, to: null }] },
+    ],
+    red: [
+      {
+        rows: [
+          { elementId: 'windspeed', operator: 'greater-than', from: 8, to: null },
+          { elementId: 'windgust', operator: 'greater-than', from: 30, to: null },
+        ],
+      },
+      { rows: [{ elementId: 'waveheight_significant', operator: 'greater-than', from: 2.5, to: null }] },
+    ],
+  },
+}
 
 export default function MarineTimeseriesCharts() {
   // North Sea
@@ -52,6 +83,7 @@ export default function MarineTimeseriesCharts() {
       domain="marine"
       model="gfswave"
       locale="en"
+      thresholds={THRESHOLDS}
     />
   )
 }
@@ -185,6 +217,174 @@ export default function ComposedTimeseriesCharts() {
         </TimeseriesChartsBuilder>
       </TimeseriesChartsProvider>
     </TimeseriesModelsProvider>
+  )
+}
+`
+
+export const CUSTOM_ELEMENTS_FILENAME = 'custom-elements.tsx'
+
+export const CUSTOM_ELEMENTS_SOURCE = `'use client'
+
+import {
+  TimeseriesChartsForecast,
+  DEFAULT_LAND_TIMESERIES_CHART_GROUPS,
+  type TimeseriesChartElementGroup,
+  type TimeseriesChartThresholds,
+} from '@infoplaza/platform/timeseries-charts'
+
+const GROUPS: TimeseriesChartElementGroup[] = [
+  DEFAULT_LAND_TIMESERIES_CHART_GROUPS.find((g) => g.key === 'temperature')!,
+  {
+    key: 'clouds',
+    title: 'Cloud cover',
+    items: [
+      { slug: 'clouds_total', title: 'Total cloud cover', element: 'cloudcovertotal', unit: '%', view: 'LINE' },
+      { slug: 'clouds_low', title: 'Low clouds', element: 'cloudcoverlow', unit: '%', view: 'LINE' },
+      { slug: 'clouds_mid', title: 'Mid clouds', element: 'cloudcovermiddle', unit: '%', view: 'LINE' },
+      { slug: 'clouds_high', title: 'High clouds', element: 'cloudcoverhigh', unit: '%', view: 'LINE' },
+      { slug: 'clouds_rh', title: 'Relative humidity', element: 'relativehumidity', level: '2m', unit: '%', view: 'LINE' },
+      { slug: 'clouds_vis', title: 'Visibility', element: 'visibility', unit: 'km', view: 'VALUE', stripLabel: 'Vis' },
+    ],
+  },
+  {
+    key: 'pressure',
+    title: 'Pressure',
+    yAxis: { domain: ['dataMin', 'dataMax'] },
+    items: [
+      {
+        slug: 'pressure_msl',
+        title: 'Mean sea level pressure',
+        element: 'pressure_meansealevel',
+        unit: 'hPa',
+        view: 'LINE',
+      },
+      {
+        slug: 'pressure_surface',
+        title: 'Surface pressure',
+        element: 'pressure',
+        level: 'surface',
+        unit: 'hPa',
+        view: 'LINE',
+      },
+    ],
+  },
+]
+
+const THRESHOLDS: TimeseriesChartThresholds = {
+  ignored_hours: [],
+  conditions: {
+    yellow: [
+      { rows: [{ elementId: 'cloudcovertotal', operator: 'greater-than', from: 50, to: null }] },
+      { rows: [{ elementId: 'relativehumidity', operator: 'greater-than', from: 80, to: null }] },
+      { rows: [{ elementId: 'pressure_meansealevel', operator: 'less-than', from: 1010, to: null }] },
+    ],
+    orange: [
+      { rows: [{ elementId: 'cloudcovertotal', operator: 'greater-than', from: 75, to: null }] },
+      { rows: [{ elementId: 'relativehumidity', operator: 'greater-than', from: 90, to: null }] },
+      { rows: [{ elementId: 'pressure_meansealevel', operator: 'less-than', from: 1000, to: null }] },
+    ],
+    red: [
+      { rows: [{ elementId: 'cloudcovertotal', operator: 'greater-than', from: 90, to: null }] },
+      { rows: [{ elementId: 'relativehumidity', operator: 'greater-than', from: 95, to: null }] },
+      { rows: [{ elementId: 'pressure_meansealevel', operator: 'less-than', from: 990, to: null }] },
+    ],
+  },
+}
+
+export default function CustomElementsTimeseriesCharts() {
+  // Amsterdam
+  return (
+    <TimeseriesChartsForecast
+      lat={52.3676}
+      lon={4.9041}
+      model="gfs"
+      locale="en"
+      elementGroups={GROUPS}
+      thresholds={THRESHOLDS}
+    />
+  )
+}
+`
+
+export const CUSTOM_STYLING_FILENAME = 'custom-styling.tsx'
+
+export const CUSTOM_STYLING_SOURCE = `'use client'
+
+import {
+  TimeseriesChartsForecast,
+  type TimeseriesChartElementGroup,
+} from '@infoplaza/platform/timeseries-charts'
+
+const GROUPS: TimeseriesChartElementGroup[] = [
+  {
+    key: 'temperature',
+    title: 'Temperature',
+    items: [
+      {
+        slug: 'temperature_temperature',
+        title: 'Temperature',
+        element: 'temperature',
+        level: '2m',
+        unit: '°C',
+        view: 'LINE',
+        line: { color: '#E63A48', strokeWidth: 2, type: 'monotone' },
+      },
+      {
+        slug: 'temperature_dewpoint',
+        title: 'Dewpoint',
+        element: 'dewpoint',
+        level: '2m',
+        unit: '°C',
+        view: 'LINE',
+        line: { color: '#3b82f6', strokeDasharray: '4 4' },
+      },
+      {
+        slug: 'temperature_temperatureapparent',
+        title: 'Feels like',
+        element: 'temperatureapparent',
+        level: '2m',
+        unit: '°C',
+        view: 'LINE',
+        line: { color: '#b45309', strokeWidth: 1, opacity: 0.55 },
+      },
+    ],
+  },
+  {
+    key: 'pressure',
+    title: 'Pressure',
+    yAxis: { domain: ['dataMin', 'dataMax'] },
+    items: [
+      {
+        slug: 'pressure_msl',
+        title: 'Mean sea level pressure',
+        element: 'pressure_meansealevel',
+        unit: 'hPa',
+        view: 'LINE',
+        line: { color: '#111111', strokeWidth: 2 },
+      },
+      {
+        slug: 'pressure_surface',
+        title: 'Surface pressure',
+        element: 'pressure',
+        level: 'surface',
+        unit: 'hPa',
+        view: 'LINE',
+        line: { color: '#9ca3af', strokeDasharray: '4 4' },
+      },
+    ],
+  },
+]
+
+export default function CustomStylingTimeseriesCharts() {
+  // Amsterdam
+  return (
+    <TimeseriesChartsForecast
+      lat={52.3676}
+      lon={4.9041}
+      model="gfs"
+      locale="en"
+      elementGroups={GROUPS}
+    />
   )
 }
 `

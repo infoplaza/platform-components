@@ -1,15 +1,21 @@
+import { IpArrowUp } from '@/src/components/icons'
 import { getPrecipitationType } from '../../timeseries/cells/precipitation-type'
 import {
+  DEFAULT_TIMESERIES_CHART_HOUR_INTERVAL,
   TIMESERIES_CHART_STRIP_DATE_GAP,
   TIMESERIES_CHART_THRESHOLD_STRIP_HEIGHT,
   timeseriesChartStripHeight,
   timeseriesChartStripRowCenter,
 } from '../defaults'
+import { summarizeStripPoints } from '../series'
 import type { TimeseriesChartThresholdSegment } from '../thresholds'
-import type { TimeseriesChartGraphConfig } from '../types'
+import type {
+  TimeseriesChartGraphConfig,
+  TimeseriesChartHourInterval,
+} from '../types'
 
-const ARROW_POINTS = '0,-6 -3,4 0,1 3,4'
-const DIRECTION_SPACING = 12
+const DIRECTION_SPACING = 14
+const ARROW_ICON_SIZE = 12
 const VALUE_SPACING = 20
 const PRECIP_ICON_SPACING = 14
 const PRECIP_ICON_SIZE = 12
@@ -25,6 +31,7 @@ type AxisStripProps = {
   offset?: { top?: number; height?: number; left?: number; width?: number }
   hoverTs?: number | null
   hourLines?: number[]
+  hourInterval?: TimeseriesChartHourInterval
   thresholdSegments?: TimeseriesChartThresholdSegment[]
 }
 
@@ -49,12 +56,27 @@ function spacedPoints<T extends { ts: number }>(
   return visible
 }
 
+function overlayPoints<T extends { ts: number }>(
+  points: T[],
+  xScale: ScaleFn,
+  minSpacing: number,
+  hourInterval: TimeseriesChartHourInterval,
+  domain: [number, number] | undefined,
+): T[] {
+  const summarized = summarizeStripPoints(points, domain, hourInterval)
+  if (hourInterval !== 1) {
+    return summarized
+  }
+  return spacedPoints(summarized, xScale, minSpacing)
+}
+
 export default function ChartAxisStrip({
   config,
   xAxisMap,
   offset,
   hoverTs = null,
   hourLines = [],
+  hourInterval = DEFAULT_TIMESERIES_CHART_HOUR_INTERVAL,
   thresholdSegments = [],
 }: AxisStripProps & { config: TimeseriesChartGraphConfig }) {
   const xScale =
@@ -109,6 +131,10 @@ export default function ChartAxisStrip({
     : 0
 
   const hoverX = hoverTs != null ? xScale(hoverTs) : Number.NaN
+  const plotRight = plotLeft + plotWidth
+
+  const inPlot = (x: number) =>
+    Number.isFinite(x) && x >= plotLeft && x <= plotRight
 
   return (
     <g>
@@ -126,9 +152,9 @@ export default function ChartAxisStrip({
             if (index === ticks.length - 1) {
               return null
             }
-            const x1 = xScale(entry)
-            const x2 = xScale(ticks[index + 1] as number)
-            if (!Number.isFinite(x1) || !Number.isFinite(x2)) {
+            const x1 = Math.max(plotLeft, xScale(entry))
+            const x2 = Math.min(plotRight, xScale(ticks[index + 1] as number))
+            if (!Number.isFinite(x1) || !Number.isFinite(x2) || x2 <= x1) {
               return null
             }
             return (
@@ -147,7 +173,7 @@ export default function ChartAxisStrip({
       {overlayHeight > 0
         ? hourLines.map((entry) => {
             const x = xScale(entry)
-            if (!Number.isFinite(x)) {
+            if (!inPlot(x)) {
               return null
             }
             return (
@@ -166,7 +192,7 @@ export default function ChartAxisStrip({
       {overlayHeight > 0
         ? ticks.map((entry) => {
             const x = xScale(entry)
-            if (!Number.isFinite(x)) {
+            if (!inPlot(x)) {
               return null
             }
             return (
@@ -192,14 +218,32 @@ export default function ChartAxisStrip({
         />
       ) : null}
       {config.directions.map((overlay) =>
-        spacedPoints(overlay.points, xScale, DIRECTION_SPACING).map((point) => {
+        overlayPoints(
+          overlay.points,
+          xScale,
+          DIRECTION_SPACING,
+          hourInterval,
+          config.domain,
+        ).map((point) => {
           const x = xScale(point.ts)
+          if (!inPlot(x)) {
+            return null
+          }
+          const half = ARROW_ICON_SIZE / 2
           return (
             <g
               key={`${overlay.slug}-${point.ts}`}
               transform={`translate(${x},${arrowY}) rotate(${point.direction - 180})`}
             >
-              <polygon points={ARROW_POINTS} fill="#6c757d" fillOpacity={0.85} />
+              <IpArrowUp
+                x={-half}
+                y={-half}
+                width={ARROW_ICON_SIZE}
+                height={ARROW_ICON_SIZE}
+                color="#6c757d"
+                opacity={0.85}
+                aria-hidden
+              />
             </g>
           )
         }),
@@ -220,34 +264,51 @@ export default function ChartAxisStrip({
                 {overlay.stripLabel}
               </text>
             ) : null}
-            {spacedPoints(
+            {overlayPoints(
               overlay.points.filter((point) => point.label),
               xScale,
               VALUE_SPACING,
-            ).map((point) => (
-              <text
-                key={`${overlay.slug}-${point.ts}`}
-                x={xScale(point.ts)}
-                y={valueY}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize={9}
-                fill="#6c757d"
-              >
-                {point.label}
-              </text>
-            ))}
+              hourInterval,
+              config.domain,
+            ).map((point) => {
+              const x = xScale(point.ts)
+              if (!inPlot(x)) {
+                return null
+              }
+              return (
+                <text
+                  key={`${overlay.slug}-${point.ts}`}
+                  x={x}
+                  y={valueY}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize={9}
+                  fill="#6c757d"
+                >
+                  {point.label}
+                </text>
+              )
+            })}
           </g>
         )
       })}
       {config.precipitationTypes.map((overlay) =>
-        spacedPoints(overlay.points, xScale, PRECIP_ICON_SPACING).map((point) => {
+        overlayPoints(
+          overlay.points,
+          xScale,
+          PRECIP_ICON_SPACING,
+          hourInterval,
+          config.domain,
+        ).map((point) => {
           const typeInfo = getPrecipitationType(point.value)
           const Icon = typeInfo?.Icon
           if (!Icon) {
             return null
           }
           const x = xScale(point.ts)
+          if (!inPlot(x)) {
+            return null
+          }
           const half = PRECIP_ICON_SIZE / 2
           return (
             <foreignObject
@@ -262,7 +323,7 @@ export default function ChartAxisStrip({
                 style={{
                   width: PRECIP_ICON_SIZE,
                   height: PRECIP_ICON_SIZE,
-                  color: '#6c757d',
+                  color: point.color,
                 }}
               >
                 <Icon className="ip:size-3" />
@@ -273,8 +334,8 @@ export default function ChartAxisStrip({
       )}
       {hasThresholds
         ? thresholdSegments.map((segment) => {
-            const x1 = xScale(segment.startTs)
-            const x2 = xScale(segment.endTs)
+            const x1 = Math.max(plotLeft, xScale(segment.startTs))
+            const x2 = Math.min(plotRight, xScale(segment.endTs))
             if (!Number.isFinite(x1) || !Number.isFinite(x2) || x2 <= x1) {
               return null
             }
@@ -290,7 +351,7 @@ export default function ChartAxisStrip({
             )
           })
         : null}
-      {Number.isFinite(hoverX) ? (
+      {inPlot(hoverX) ? (
         <line
           x1={hoverX}
           y1={plotBottom}

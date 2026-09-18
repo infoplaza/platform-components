@@ -1,4 +1,5 @@
 import type {
+  TimeseriesChartAxisBound,
   TimeseriesChartGraphConfig,
   TimeseriesChartLineSeries,
   TimeseriesChartThresholdGroup,
@@ -437,4 +438,26 @@ export function thresholdYAxisMax(
   }
   const max = Math.max(Number.isFinite(dataMax) ? dataMax : 0, lineMax)
   return max > 0 ? max : 'auto'
+}
+
+/** Y-axis domain: host `yAxis.domain` when set, else `[0, thresholdYAxisMax]`. */
+export function resolveTimeseriesChartYDomain(
+  config: TimeseriesChartGraphConfig,
+  lines: TimeseriesChartThresholdYLine[],
+): [TimeseriesChartAxisBound, TimeseriesChartAxisBound] {
+  const thresholdMax = thresholdYAxisMax(config, lines)
+  const host = config.yAxis?.domain
+  if (!host) {
+    return [0, thresholdMax]
+  }
+
+  const [min, max] = host
+  if (
+    typeof max === 'number' &&
+    typeof thresholdMax === 'number' &&
+    thresholdMax > max
+  ) {
+    return [min, thresholdMax]
+  }
+  return host
 }
