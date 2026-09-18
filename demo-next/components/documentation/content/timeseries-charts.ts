@@ -200,7 +200,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
     name: 'TimeseriesChartsBuilder',
     summary: 'Maps chart blocks onto Chart. Does not fetch.',
     description:
-      'Requires TimeseriesChartsProvider. Loading skeleton, then one chart-block context per TimeseriesChartBlock (runtime × group). Clone children once per block.',
+      'Requires TimeseriesChartsProvider. Loading skeleton, then one chart-block context per TimeseriesChartBlock (runtime × group). Clone children once per block. On a narrow plot it shows a sticky day pager so every stacked chart stays on the same calendar day.',
     importStatement: `import { TimeseriesChartsBuilder, TimeseriesChartsChart } from '@infoplaza/platform/timeseries-charts'`,
     required: [],
     optional: [
@@ -266,7 +266,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
     name: 'TimeseriesGraph',
     summary: 'Low-level Recharts ComposedChart.',
     description:
-      'LINE series in the plot; DIRECTION arrows, VALUE labels, and PRECIPITATION_TYPE icons in a Customized strip band under the plot (height grows with overlay rows). Precipitation-type icons use the point-forecast palette (the same visualization as the map legend); hail is off-white so it stays readable on the strip. Day banding, hour lines, and the hover cursor continue through the band. Hover values float in the title row (centered overlay, no layout shift) and list every group item at the hovered hour: LINE values, DIRECTION (arrow + degrees + compass), VALUE, and PRECIPITATION_TYPE. Optional thresholds add dashed Y-lines for in-scale LINE elements, a status color strip above the date labels, a Thresholds legend, and Watch / Caution / Critical on hover. LINE series read color, strokeWidth, dash, opacity, and curve from the series; Y-axis domain comes from config.yAxis or defaults to [0, auto]. config.domain is the X-axis time range.',
+      'LINE series in the plot; DIRECTION arrows, VALUE labels, and PRECIPITATION_TYPE icons in a Customized strip band under the plot (height grows with overlay rows). Precipitation-type icons use the point-forecast palette (the same visualization as the map legend); hail is off-white so it stays readable on the strip. Day banding, hour lines, and the hover cursor continue through the band. Hover values float in the title row (centered overlay, no layout shift) and list every group item at the hovered hour: LINE values, DIRECTION (arrow + degrees + compass), VALUE, and PRECIPITATION_TYPE. On a narrow plot (under about 80px per forecast day) the graph windows the X domain to one calendar day, labels hours on the axis, wraps hover values under the title, and shows a day pager (or uses the Builder pager when stacked). Swipe the plot to change day. Wide plots keep the full domain. Optional thresholds add dashed Y-lines for in-scale LINE elements, a status color strip above the date labels, a Thresholds legend, and Watch / Caution / Critical on hover. LINE series read color, strokeWidth, dash, opacity, and curve from the series; Y-axis domain comes from config.yAxis or defaults to [0, auto]. config.domain is the X-axis time range.',
     importStatement: `import { TimeseriesGraph } from '@infoplaza/platform/timeseries-charts'`,
     required: [
       {

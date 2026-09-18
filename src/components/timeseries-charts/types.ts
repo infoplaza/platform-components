@@ -194,6 +194,12 @@ export type TimeseriesChartsContextValue = {
   plotHeight: number
   hourInterval: TimeseriesChartHourInterval
   thresholds: TimeseriesChartThresholds | null
+  /** Start of the compact day-pager window. Null means “today” (clamped to the domain). */
+  dayStart: number | null
+  onDayStartChange: (startTs: number) => void
+  /** True when the Builder (or last writer) is in one-day compact view. */
+  dayViewCompact: boolean
+  onDayViewCompactChange: (compact: boolean) => void
 }
 
 export type TimeseriesChartsProviderProps = {

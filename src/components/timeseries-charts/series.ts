@@ -202,6 +202,60 @@ export function dayTicks(startMs: number, endMs: number): number[] {
   return [...ticks].sort((a, b) => a - b)
 }
 
+export type TimeseriesChartDayWindow = {
+  startTs: number
+  endTs: number
+}
+
+/** Consecutive tick pairs from `dayTicks` (each pair is one calendar-day band). */
+export function chartDayWindows(
+  ticks: number[] | undefined,
+): TimeseriesChartDayWindow[] {
+  if (!ticks || ticks.length < 2) {
+    return []
+  }
+  const windows: TimeseriesChartDayWindow[] = []
+  for (let index = 0; index < ticks.length - 1; index += 1) {
+    const startTs = ticks[index]
+    const endTs = ticks[index + 1]
+    if (
+      startTs == null ||
+      endTs == null ||
+      !Number.isFinite(startTs) ||
+      !Number.isFinite(endTs) ||
+      endTs <= startTs
+    ) {
+      continue
+    }
+    windows.push({ startTs, endTs })
+  }
+  return windows
+}
+
+export function chartDayContaining(
+  days: TimeseriesChartDayWindow[],
+  timestamp: number,
+): TimeseriesChartDayWindow | null {
+  if (days.length === 0 || !Number.isFinite(timestamp)) {
+    return null
+  }
+  const match = days.find(
+    (day) => timestamp >= day.startTs && timestamp < day.endTs,
+  )
+  if (match) {
+    return match
+  }
+  const first = days[0]
+  const last = days[days.length - 1]
+  if (!first || !last) {
+    return null
+  }
+  if (timestamp < first.startTs) {
+    return first
+  }
+  return last
+}
+
 const HOUR_MS = 60 * 60 * 1000
 
 export type TimeseriesChartHourBucket = {

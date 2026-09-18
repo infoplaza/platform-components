@@ -62,7 +62,9 @@ export function TimeseriesChartsDocs() {
           Precipitation, Wind); marine uses{' '}
           <Code>DEFAULT_MARINE_TIMESERIES_CHART_GROUPS</Code> (Wind and Wave).
           Each group is one composed chart. Group-visibility footer pills are
-          off for now.
+          off for now. On a narrow plot the charts show one day at a time, with
+          a sticky day pager shared across the stack (tap a day or swipe the
+          plot). Wide plots keep the full forecast domain.
         </p>
         <p className="m-0">
           Pass <Code>elementGroups</Code> to replace those defaults (it does not

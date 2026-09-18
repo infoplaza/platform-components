@@ -131,6 +131,10 @@ export default function ChartAxisStrip({
     : 0
 
   const hoverX = hoverTs != null ? xScale(hoverTs) : Number.NaN
+  const plotRight = plotLeft + plotWidth
+
+  const inPlot = (x: number) =>
+    Number.isFinite(x) && x >= plotLeft && x <= plotRight
 
   return (
     <g>
@@ -148,9 +152,9 @@ export default function ChartAxisStrip({
             if (index === ticks.length - 1) {
               return null
             }
-            const x1 = xScale(entry)
-            const x2 = xScale(ticks[index + 1] as number)
-            if (!Number.isFinite(x1) || !Number.isFinite(x2)) {
+            const x1 = Math.max(plotLeft, xScale(entry))
+            const x2 = Math.min(plotRight, xScale(ticks[index + 1] as number))
+            if (!Number.isFinite(x1) || !Number.isFinite(x2) || x2 <= x1) {
               return null
             }
             return (
@@ -169,7 +173,7 @@ export default function ChartAxisStrip({
       {overlayHeight > 0
         ? hourLines.map((entry) => {
             const x = xScale(entry)
-            if (!Number.isFinite(x)) {
+            if (!inPlot(x)) {
               return null
             }
             return (
@@ -188,7 +192,7 @@ export default function ChartAxisStrip({
       {overlayHeight > 0
         ? ticks.map((entry) => {
             const x = xScale(entry)
-            if (!Number.isFinite(x)) {
+            if (!inPlot(x)) {
               return null
             }
             return (
@@ -222,6 +226,9 @@ export default function ChartAxisStrip({
           config.domain,
         ).map((point) => {
           const x = xScale(point.ts)
+          if (!inPlot(x)) {
+            return null
+          }
           const half = ARROW_ICON_SIZE / 2
           return (
             <g
@@ -263,19 +270,25 @@ export default function ChartAxisStrip({
               VALUE_SPACING,
               hourInterval,
               config.domain,
-            ).map((point) => (
-              <text
-                key={`${overlay.slug}-${point.ts}`}
-                x={xScale(point.ts)}
-                y={valueY}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize={9}
-                fill="#6c757d"
-              >
-                {point.label}
-              </text>
-            ))}
+            ).map((point) => {
+              const x = xScale(point.ts)
+              if (!inPlot(x)) {
+                return null
+              }
+              return (
+                <text
+                  key={`${overlay.slug}-${point.ts}`}
+                  x={x}
+                  y={valueY}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize={9}
+                  fill="#6c757d"
+                >
+                  {point.label}
+                </text>
+              )
+            })}
           </g>
         )
       })}
@@ -293,6 +306,9 @@ export default function ChartAxisStrip({
             return null
           }
           const x = xScale(point.ts)
+          if (!inPlot(x)) {
+            return null
+          }
           const half = PRECIP_ICON_SIZE / 2
           return (
             <foreignObject
@@ -318,8 +334,8 @@ export default function ChartAxisStrip({
       )}
       {hasThresholds
         ? thresholdSegments.map((segment) => {
-            const x1 = xScale(segment.startTs)
-            const x2 = xScale(segment.endTs)
+            const x1 = Math.max(plotLeft, xScale(segment.startTs))
+            const x2 = Math.min(plotRight, xScale(segment.endTs))
             if (!Number.isFinite(x1) || !Number.isFinite(x2) || x2 <= x1) {
               return null
             }
@@ -335,7 +351,7 @@ export default function ChartAxisStrip({
             )
           })
         : null}
-      {Number.isFinite(hoverX) ? (
+      {inPlot(hoverX) ? (
         <line
           x1={hoverX}
           y1={plotBottom}

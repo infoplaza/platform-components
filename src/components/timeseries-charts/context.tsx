@@ -283,6 +283,20 @@ export function TimeseriesChartsProvider({
   const loading = catalogLoading || (!hostOwned && forecastLoading)
   const error = catalogError ?? forecastError
 
+  const [dayStart, setDayStart] = useState<number | null>(null)
+  const onDayStartChange = useCallback((startTs: number) => {
+    setDayStart(startTs)
+  }, [])
+  const [dayViewCompact, setDayViewCompact] = useState(false)
+  const onDayViewCompactChange = useCallback((next: boolean) => {
+    setDayViewCompact(next)
+  }, [])
+
+  useEffect(() => {
+    setDayStart(null)
+    setDayViewCompact(false)
+  }, [model, run])
+
   const value = useMemo<TimeseriesChartsContextValue>(
     () => ({
       models,
@@ -301,9 +315,15 @@ export function TimeseriesChartsProvider({
       plotHeight,
       hourInterval,
       thresholds,
+      dayStart,
+      onDayStartChange,
+      dayViewCompact,
+      onDayViewCompactChange,
     }),
     [
       charts,
+      dayStart,
+      dayViewCompact,
       elementGroups,
       error,
       hourInterval,
@@ -311,6 +331,8 @@ export function TimeseriesChartsProvider({
       locale,
       model,
       models,
+      onDayStartChange,
+      onDayViewCompactChange,
       onModelChange,
       onRunChange,
       onVisibleGroupsChange,

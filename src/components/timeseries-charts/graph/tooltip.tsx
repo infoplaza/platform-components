@@ -74,12 +74,14 @@ export default function ChartHoverHeader({
   locale,
   timezone,
   thresholdLevel = null,
+  wrap = false,
 }: {
   config: TimeseriesChartGraphConfig
   timestamp: number | null
   locale: string
   timezone: string | null
   thresholdLevel?: TimeseriesChartThresholdLevel | null
+  wrap?: boolean
 }) {
   if (timestamp == null) {
     return null
@@ -91,7 +93,13 @@ export default function ChartHoverHeader({
   const metrics = hoverMetrics(config, timestamp)
 
   return (
-    <div className="ip:flex ip:items-center ip:gap-1 ip:whitespace-nowrap ip:text-[11px] ip:leading-none ip:text-dark/80 ip:dark:text-white/80">
+    <div
+      className={
+        wrap
+          ? 'ip:flex ip:flex-wrap ip:items-center ip:gap-1 ip:text-[11px] ip:leading-none ip:text-dark/80 ip:dark:text-white/80'
+          : 'ip:flex ip:items-center ip:gap-1 ip:whitespace-nowrap ip:text-[11px] ip:leading-none ip:text-dark/80 ip:dark:text-white/80'
+      }
+    >
       <span className="ip:px-1 ip:text-dark ip:dark:text-white">
         <span className="ip:font-semibold">
           {formatChartTimestamp(timestamp, locale, timezone, 'EEEE d LLL')}

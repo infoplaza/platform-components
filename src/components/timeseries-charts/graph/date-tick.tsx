@@ -1,7 +1,8 @@
+import { TIMESERIES_CHART_Y_AXIS_WIDTH } from '../defaults'
 import { formatChartTimestamp } from './tooltip'
 
-const LABEL_ROOM = 48
-const Y_AXIS_WIDTH = 36
+const DAY_LABEL_ROOM = 48
+const HOUR_LABEL_ROOM = 32
 
 type ChartDateTickProps = {
   x?: number
@@ -12,6 +13,7 @@ type ChartDateTickProps = {
   timezone: string | null
   domainEnd?: number
   axisLeft?: number
+  variant?: 'day' | 'hour'
 }
 
 export default function ChartDateTick({
@@ -22,14 +24,34 @@ export default function ChartDateTick({
   locale,
   timezone,
   domainEnd,
-  axisLeft = Y_AXIS_WIDTH,
+  axisLeft = TIMESERIES_CHART_Y_AXIS_WIDTH,
+  variant = 'day',
 }: ChartDateTickProps) {
   const ts = Number(payload?.value)
   if (!Number.isFinite(ts) || (domainEnd != null && ts === domainEnd)) {
     return null
   }
-  if (typeof width === 'number' && x + LABEL_ROOM / 2 > axisLeft + width) {
+  const labelRoom = variant === 'hour' ? HOUR_LABEL_ROOM : DAY_LABEL_ROOM
+  if (typeof width === 'number' && x + labelRoom / 2 > axisLeft + width) {
     return null
+  }
+
+  if (variant === 'hour') {
+    const hour = formatChartTimestamp(ts, locale, timezone, 'HH:mm')
+    if (!hour) {
+      return null
+    }
+    return (
+      <text
+        x={x}
+        y={y}
+        dy="0.71em"
+        textAnchor="middle"
+        className="ip:fill-dark ip:text-2xs ip:dark:fill-white"
+      >
+        {hour}
+      </text>
+    )
   }
 
   const weekday = formatChartTimestamp(ts, locale, timezone, 'EEE')

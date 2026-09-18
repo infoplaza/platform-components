@@ -1,4 +1,11 @@
-import { useMemo, useState } from 'react'
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 import {
   CartesianGrid,
   ComposedChart,
@@ -18,14 +25,18 @@ import {
   TIMESERIES_CHART_DATE_AXIS_HEIGHT,
   TIMESERIES_CHART_PLOT_CHROME_HEIGHT,
   TIMESERIES_CHART_PLOT_TOP_MARGIN,
+  TIMESERIES_CHART_Y_AXIS_WIDTH,
   timeseriesChartStripHeight,
 } from './defaults'
-import type { TimeseriesGraphProps } from './types'
+import type { TimeseriesChartHourInterval, TimeseriesGraphProps } from './types'
 import ChartAxisStrip from './graph/axis-strip'
 import ChartDateTick from './graph/date-tick'
+import ChartDayPager from './graph/day-pager'
+import { useTimeseriesChartDayView } from './graph/day-view'
 import ChartLegend from './graph/legend'
 import ChartThresholdHues from './graph/threshold-hues'
 import ChartHoverHeader from './graph/tooltip'
+import { useTimeseriesChartBlockContext, useTimeseriesChartsContext } from './context'
 import { hourTicks } from './series'
 import {
   resolveTimeseriesChartYDomain,
@@ -33,6 +44,12 @@ import {
   thresholdStripSegments,
   thresholdYLines,
 } from './thresholds'
+
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect
+
+const DAY_VIEW_LABEL_INTERVAL: TimeseriesChartHourInterval = 6
+const SWIPE_MIN_PX = 48
 
 export default function TimeseriesGraph({
   id = '',
@@ -49,6 +66,43 @@ export default function TimeseriesGraph({
   fixedHeight = null,
 }: TimeseriesGraphProps) {
   const [hoverTs, setHoverTs] = useState<number | null>(null)
+  const [width, setWidth] = useState(0)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const swipeRef = useRef<{ x: number; y: number } | null>(null)
+
+  const block = useTimeseriesChartBlockContext()
+  const chartsCtx = useTimeseriesChartsContext()
+  const {
+    days,
+    compact: ownCompact,
+    selected,
+    onDayStartChange,
+  } = useTimeseriesChartDayView(config?.ticks, width, fixedWidth)
+  const compact = block ? Boolean(chartsCtx?.dayViewCompact) : ownCompact
+
+  useIsomorphicLayoutEffect(() => {
+    if (fixedWidth != null) {
+      return
+    }
+    const el = rootRef.current
+    if (!el) {
+      return
+    }
+    if (typeof ResizeObserver === 'undefined') {
+      setWidth(el.clientWidth)
+      return
+    }
+    const observer = new ResizeObserver((entries) => {
+      setWidth(entries[0]?.contentRect.width ?? el.clientWidth)
+    })
+    observer.observe(el)
+    setWidth(el.clientWidth)
+    return () => observer.disconnect()
+  }, [fixedWidth])
+
+  useEffect(() => {
+    setHoverTs(null)
+  }, [selected?.startTs])
 
   const yLines = useMemo(
     () => (config ? thresholdYLines(config, thresholds) : []),
@@ -69,13 +123,52 @@ export default function TimeseriesGraph({
     )
   }, [config, hasThresholdStrip, plotHeight])
 
+  const viewDomain = useMemo<[number, number] | undefined>(() => {
+    if (compact && selected) {
+      return [selected.startTs, selected.endTs]
+    }
+    return config?.domain
+  }, [compact, config?.domain, selected])
+
+  const bandTicks = useMemo(() => {
+    if (compact && selected) {
+      return [selected.startTs, selected.endTs]
+    }
+    return config?.ticks ?? []
+  }, [compact, config?.ticks, selected])
+
+  const axisTicks = useMemo(() => {
+    if (compact && selected) {
+      return hourTicks(
+        selected.startTs,
+        selected.endTs,
+        DAY_VIEW_LABEL_INTERVAL,
+      )
+    }
+    return config?.ticks ?? []
+  }, [compact, config?.ticks, selected])
+
   const hourLines = useMemo(() => {
-    if (!config?.domain) return []
-    const days = new Set(config.ticks ?? [])
-    return hourTicks(config.domain[0], config.domain[1], hourInterval).filter(
-      (ts) => !days.has(ts),
+    if (!viewDomain) return []
+    const labeled = new Set(axisTicks)
+    return hourTicks(viewDomain[0], viewDomain[1], hourInterval).filter(
+      (ts) => !labeled.has(ts),
     )
-  }, [config, hourInterval])
+  }, [axisTicks, hourInterval, viewDomain])
+
+  const viewConfig = useMemo(() => {
+    if (!config) {
+      return null
+    }
+    if (!compact || !viewDomain) {
+      return config
+    }
+    return {
+      ...config,
+      domain: viewDomain,
+      ticks: bandTicks,
+    }
+  }, [bandTicks, compact, config, viewDomain])
 
   const hoverLevel = useMemo(
     () =>
@@ -103,10 +196,7 @@ export default function TimeseriesGraph({
             </div>
           ) : null}
         </div>
-        <div
-          className="ip:flex ip:grow ip:items-center ip:justify-center ip:rounded ip:bg-gray-600/5 ip:dark:bg-white/10 ip:py-5"
-          // style={{ minHeight: plotHeight }}
-        >
+        <div className="ip:flex ip:grow ip:items-center ip:justify-center ip:rounded ip:bg-gray-600/5 ip:dark:bg-white/10 ip:py-5">
           <span className="ip:text-sm ip:text-dark/75 ip:dark:text-white/75">
             No data.
           </span>
@@ -115,7 +205,7 @@ export default function TimeseriesGraph({
     )
   }
 
-  if (!config) {
+  if (!config || !viewConfig) {
     return null
   }
 
@@ -124,11 +214,43 @@ export default function TimeseriesGraph({
   })
   const axisHeight = strip + TIMESERIES_CHART_DATE_AXIS_HEIGHT
   const height = fixedHeight ?? chartHeight + TIMESERIES_CHART_PLOT_CHROME_HEIGHT
-  const ticks = config.ticks ?? []
   const yDomain = resolveTimeseriesChartYDomain(config, yLines)
+  const bandIndex =
+    compact && selected
+      ? days.findIndex((day) => day.startTs === selected.startTs)
+      : 0
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!compact) {
+      return
+    }
+    swipeRef.current = { x: event.clientX, y: event.clientY }
+  }
+
+  const handlePointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const start = swipeRef.current
+    swipeRef.current = null
+    if (!start || !compact || !selected) {
+      return
+    }
+    const dx = event.clientX - start.x
+    const dy = event.clientY - start.y
+    if (Math.abs(dx) < SWIPE_MIN_PX || Math.abs(dx) < Math.abs(dy) * 1.25) {
+      return
+    }
+    const index = days.findIndex((day) => day.startTs === selected.startTs)
+    if (index < 0) {
+      return
+    }
+    const next = dx < 0 ? days[index + 1] : days[index - 1]
+    if (next) {
+      onDayStartChange(next.startTs)
+    }
+  }
 
   const renderChart = (extraProps: Record<string, unknown>) => (
     <ComposedChart
+      key={`day-${viewDomain?.[0] ?? 0}-${viewDomain?.[1] ?? 0}`}
       data={config.data}
       margin={{
         top: TIMESERIES_CHART_PLOT_TOP_MARGIN,
@@ -143,19 +265,20 @@ export default function TimeseriesGraph({
       onMouseLeave={() => setHoverTs(null)}
       {...extraProps}
     >
-      {ticks.length > 0
-        ? ticks.map((entry, index) => {
-            if (index === ticks.length - 1) return null
-            return (
-              <ReferenceArea
-                key={`bg-gray-interval-area-${id}-${index}-${entry}`}
-                x1={entry}
-                x2={ticks[index + 1]}
-                fill={index % 2 === 0 ? '#787878' : 'transparent'}
-                fillOpacity={0.1}
-              />
-            )
-          })
+      {bandTicks.length > 1
+        ? bandTicks.slice(0, -1).map((entry, index) => (
+            <ReferenceArea
+              key={`bg-gray-interval-area-${id}-${index}-${entry}`}
+              x1={entry}
+              x2={bandTicks[index + 1]}
+              fill={
+                (compact ? bandIndex : index) % 2 === 0
+                  ? '#787878'
+                  : 'transparent'
+              }
+              fillOpacity={0.1}
+            />
+          ))
         : null}
       {hourLines.map((entry, index) => (
         <ReferenceLine
@@ -206,15 +329,17 @@ export default function TimeseriesGraph({
       <XAxis
         dataKey="ts"
         type="number"
-        domain={config.domain ?? ['dataMin', 'dataMax']}
-        ticks={config.ticks}
+        domain={viewDomain ?? ['dataMin', 'dataMax']}
+        ticks={axisTicks}
         interval={0}
         height={axisHeight}
+        allowDataOverflow={compact}
         tick={
           <ChartDateTick
             locale={locale}
             timezone={timezone}
-            domainEnd={config.domain?.[1]}
+            domainEnd={viewDomain?.[1]}
+            variant={compact ? 'hour' : 'day'}
           />
         }
         tickLine={strip > 0 ? false : undefined}
@@ -223,7 +348,7 @@ export default function TimeseriesGraph({
       />
       <YAxis
         domain={yDomain}
-        width={36}
+        width={TIMESERIES_CHART_Y_AXIS_WIDTH}
         tick={{ fontSize: 10, fill: '#6c757d' }}
         allowDecimals
       />
@@ -231,7 +356,7 @@ export default function TimeseriesGraph({
       <Customized
         component={(props: Record<string, unknown>) => (
           <ChartAxisStrip
-            config={config}
+            config={viewConfig}
             xAxisMap={props.xAxisMap as never}
             offset={props.offset as never}
             hoverTs={hoverTs}
@@ -244,43 +369,83 @@ export default function TimeseriesGraph({
     </ComposedChart>
   )
 
+  const hoverHeader = (
+    <ChartHoverHeader
+      config={config}
+      timestamp={hoverTs}
+      locale={locale}
+      timezone={timezone}
+      thresholdLevel={hoverLevel}
+      wrap={compact}
+    />
+  )
+
   return (
-    <div className="ip:relative ip:pr-2">
+    <div ref={rootRef} className="ip:relative ip:pr-2">
       <div className="ip:px-4 ip:pb-2">
-        <div className="ip:relative ip:flex ip:h-6 ip:items-center">
-          <div className="ip:relative ip:z-10 ip:min-w-0 ip:shrink-0 ip:truncate ip:text-xs ip:font-bold ip:uppercase ip:dark:text-white">
-            {title ?? ''}
-            {config.unit ? (
-              <span className="ip:ml-2 ip:text-[10px] ip:font-light ip:normal-case ip:text-dark/60 ip:dark:text-white/60">
-                {config.unit}
-              </span>
-            ) : null}
-            {titleExtra ? (
-              <span className="ip:ml-2 ip:text-[10px] ip:font-light ip:truncate">
-                {titleExtra}
-              </span>
-            ) : null}
+        {compact ? (
+          <div className="ip:flex ip:flex-col ip:gap-1">
+            <div className="ip:min-w-0 ip:truncate ip:text-xs ip:font-bold ip:uppercase ip:dark:text-white">
+              {title ?? ''}
+              {config.unit ? (
+                <span className="ip:ml-2 ip:text-[10px] ip:font-light ip:normal-case ip:text-dark/60 ip:dark:text-white/60">
+                  {config.unit}
+                </span>
+              ) : null}
+              {titleExtra ? (
+                <span className="ip:ml-2 ip:text-[10px] ip:font-light ip:truncate">
+                  {titleExtra}
+                </span>
+              ) : null}
+            </div>
+            {hoverHeader}
           </div>
-          <div className="ip:pointer-events-none ip:absolute ip:inset-0 ip:flex ip:items-center ip:justify-center ip:overflow-hidden">
-            <ChartHoverHeader
-              config={config}
-              timestamp={hoverTs}
-              locale={locale}
-              timezone={timezone}
-              thresholdLevel={hoverLevel}
-            />
+        ) : (
+          <div className="ip:relative ip:flex ip:h-6 ip:items-center">
+            <div className="ip:relative ip:z-10 ip:min-w-0 ip:shrink-0 ip:truncate ip:text-xs ip:font-bold ip:uppercase ip:dark:text-white">
+              {title ?? ''}
+              {config.unit ? (
+                <span className="ip:ml-2 ip:text-[10px] ip:font-light ip:normal-case ip:text-dark/60 ip:dark:text-white/60">
+                  {config.unit}
+                </span>
+              ) : null}
+              {titleExtra ? (
+                <span className="ip:ml-2 ip:text-[10px] ip:font-light ip:truncate">
+                  {titleExtra}
+                </span>
+              ) : null}
+            </div>
+            <div className="ip:pointer-events-none ip:absolute ip:inset-0 ip:flex ip:items-center ip:justify-center ip:overflow-hidden">
+              {hoverHeader}
+            </div>
           </div>
-        </div>
+        )}
         {subtitle ? (
           <div className="ip:text-[10px] ip:font-normal ip:uppercase ip:opacity-75 ip:dark:text-white">
             {subtitle}
           </div>
         ) : null}
+        {compact && selected && !block ? (
+          <ChartDayPager
+            days={days}
+            selectedStart={selected.startTs}
+            onSelect={onDayStartChange}
+            locale={locale}
+            timezone={timezone}
+          />
+        ) : null}
       </div>
       {fixedWidth ? (
         renderChart({ width: fixedWidth, height })
       ) : (
-        <div style={{ width: '100%', height }}>
+        <div
+          style={{ width: '100%', height, touchAction: compact ? 'pan-y' : undefined }}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={() => {
+            swipeRef.current = null
+          }}
+        >
           <ResponsiveContainer width="100%" height="100%">
             {renderChart({})}
           </ResponsiveContainer>
