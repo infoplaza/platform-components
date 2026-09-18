@@ -65,6 +65,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist && rollup -c && tsc -p tsconfig.json --emitDeclarationOnly --ignoreDeprecations 6.0 && node scripts/fix-dts.mjs && npm run build:css",
+    "build:watch": "node scripts/watch.mjs",
     "build:css": "npm run build:css:full && npm run build:css:embed",
     "build:css:full": "tailwindcss -i ./src/styles/tailwind.css -o ./dist/styles.css --minify",
     "build:css:embed": "tailwindcss -i ./src/styles/tailwind.embed.css -o ./dist/styles.embed.css --minify",

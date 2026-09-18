@@ -59,6 +59,7 @@ export const DEMO_NAV_ITEMS: readonly DemoNavItem[] = [
       { href: '/demo/timeseries-charts#chart-only', label: 'Chart only' },
       { href: '/demo/timeseries-charts#composed', label: 'Composed' },
       { href: '/demo/timeseries-charts#custom-elements', label: 'Custom elements' },
+      { href: '/demo/timeseries-charts#custom-styling', label: 'Custom styling' },
       {
         href: INFOPLAZA_PLATFORM_EXAMPLES_CHARTS_URL,
         label: 'Token usage',

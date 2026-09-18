@@ -59,7 +59,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
         name: 'elementGroups',
         type: 'TimeseriesChartElementGroup[]',
         defaultValue: 'DEFAULT_LAND_TIMESERIES_CHART_GROUPS when domain is land, DEFAULT_MARINE_TIMESERIES_CHART_GROUPS when marine',
-        description: 'Chart config. Each group is one composed chart. Item view is LINE, DIRECTION, VALUE, or PRECIPITATION_TYPE. A defined array replaces domain defaults (it does not merge). Omit to use land or marine defaults from domain.',
+        description: 'Chart config. Each group is one composed chart. Item view is LINE, DIRECTION, VALUE, or PRECIPITATION_TYPE. LINE items may set optional line (color, strokeWidth, strokeDasharray, opacity, type). Groups may set optional yAxis.domain ([number | auto | dataMin | dataMax, ...]); omit to keep Y pinned at 0. Graph config.domain remains the X-axis time range. A defined array replaces domain defaults (it does not merge). Omit to use land or marine defaults from domain.',
       },
       {
         name: 'visibleGroups / defaultVisibleGroups / onVisibleGroupsChange',
@@ -93,7 +93,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
         name: 'hourInterval',
         type: '1 | 3 | 6',
         defaultValue: '6',
-        description: 'Vertical unlabeled hour grid lines in the plot. Day-boundary ticks stay on the X axis. Chart/Graph can override.',
+        description: 'Vertical unlabeled hour grid lines in the plot. Day-boundary ticks stay on the X axis. For 3h and 6h, strip overlays (direction, value, precipitation type) show the latest point in each bucket, centered; 1h keeps hourly strip points. LINE series are unchanged. Chart/Graph can override.',
       },
       {
         name: 'thresholds',
@@ -155,7 +155,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
           'Preferred catalog slug. model without onModelChange (or defaultModel) is the initial selection; model + onModelChange is controlled. If the slug is not in the fetched catalog, the first model is used.',
       },
       { name: 'run / defaultRun / onRunChange', type: "number | 'all'", description: 'Runtime selection. all fetches one payload per catalog runtime.' },
-      { name: 'elementGroups', type: 'TimeseriesChartElementGroup[]', description: 'Replaces domain defaults when defined (does not merge). Land uses DEFAULT_LAND_TIMESERIES_CHART_GROUPS, marine uses DEFAULT_MARINE_TIMESERIES_CHART_GROUPS.' },
+      { name: 'elementGroups', type: 'TimeseriesChartElementGroup[]', description: 'Replaces domain defaults when defined (does not merge). Land uses DEFAULT_LAND_TIMESERIES_CHART_GROUPS, marine uses DEFAULT_MARINE_TIMESERIES_CHART_GROUPS. LINE items may set optional line; groups may set optional yAxis.domain.' },
       { name: 'visibleGroups / defaultVisibleGroups / onVisibleGroupsChange', type: 'string[]', description: 'Group keys currently shown.' },
       { name: 'charts', type: 'TimeseriesChartBlock[]', description: 'Host-owned blocks. Skips the fetch.' },
       { name: 'getCharts', type: '(options) => TimeseriesChartBlock[]', description: 'Sync override when charts is omitted.' },
@@ -170,7 +170,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
         name: 'hourInterval',
         type: '1 | 3 | 6',
         defaultValue: '6',
-        description: 'Vertical unlabeled hour grid lines. Flows to Chart/Graph.',
+        description: 'Vertical unlabeled hour grid lines. For 3h and 6h, strip overlays summarize to the latest point in each bucket, centered. Flows to Chart/Graph.',
       },
       {
         name: 'thresholds',
@@ -238,7 +238,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
         name: 'hourInterval',
         type: '1 | 3 | 6',
         defaultValue: 'context, else 6',
-        description: 'Vertical unlabeled hour grid lines. Falls back to TimeseriesChartsProvider.',
+        description: 'Vertical unlabeled hour grid lines. For 3h and 6h, strip overlays summarize to the latest point in each bucket, centered. Falls back to TimeseriesChartsProvider.',
       },
       {
         name: 'thresholds',
@@ -266,7 +266,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
     name: 'TimeseriesGraph',
     summary: 'Low-level Recharts ComposedChart.',
     description:
-      'LINE series in the plot; DIRECTION arrows, VALUE labels, and PRECIPITATION_TYPE icons in a Customized strip band under the plot (height grows with overlay rows). Day banding, hour lines, and the hover cursor continue through the band. Hover values sit in the title row (centered, no layout shift) and list LINE series plus precipitation type names. Optional thresholds add dashed Y-lines for in-scale LINE elements, a status color strip above the date labels, a Thresholds legend, and Watch / Caution / Critical on hover.',
+      'LINE series in the plot; DIRECTION arrows, VALUE labels, and PRECIPITATION_TYPE icons in a Customized strip band under the plot (height grows with overlay rows). Precipitation-type icons use the point-forecast palette (the same visualization as the map legend); hail is off-white so it stays readable on the strip. Day banding, hour lines, and the hover cursor continue through the band. Hover values float in the title row (centered overlay, no layout shift) and list every group item at the hovered hour: LINE values, DIRECTION (arrow + degrees + compass), VALUE, and PRECIPITATION_TYPE. Optional thresholds add dashed Y-lines for in-scale LINE elements, a status color strip above the date labels, a Thresholds legend, and Watch / Caution / Critical on hover. LINE series read color, strokeWidth, dash, opacity, and curve from the series; Y-axis domain comes from config.yAxis or defaults to [0, auto]. config.domain is the X-axis time range.',
     importStatement: `import { TimeseriesGraph } from '@infoplaza/platform/timeseries-charts'`,
     required: [
       {
@@ -292,7 +292,7 @@ export const TIMESERIES_CHARTS_COMPONENTS: DocsComponent[] = [
         name: 'hourInterval',
         type: '1 | 3 | 6',
         defaultValue: '6',
-        description: 'Vertical unlabeled hour grid lines. Day-boundary ticks stay on the X axis.',
+        description: 'Vertical unlabeled hour grid lines. Day-boundary ticks stay on the X axis. For 3h and 6h, strip overlays show the latest point in each bucket, centered; 1h keeps hourly strip points. LINE series are unchanged.',
       },
       {
         name: 'thresholds',

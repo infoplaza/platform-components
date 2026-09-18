@@ -11,6 +11,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const projectRootDir = path.dirname(fileURLToPath(import.meta.url))
+const isWatch = process.env.ROLLUP_WATCH === 'true'
 
 const pkg = JSON.parse(
   readFileSync(path.resolve(projectRootDir, 'package.json'), 'utf8'),
@@ -97,6 +98,6 @@ export default {
       tsconfig: './tsconfig.json',
       compilerOptions: { ignoreDeprecations: '6.0' },
     }),
-    terser({ maxWorkers: 1, format: { comments: false } }),
-  ],
+    !isWatch && terser({ maxWorkers: 1, format: { comments: false } }),
+  ].filter(Boolean),
 }

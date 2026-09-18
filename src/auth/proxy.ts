@@ -77,7 +77,6 @@ export async function proxyUpstream(
     headers.set('content-type', 'application/json')
   }
 
-  console.log('targetUrl', targetUrl)
   const upstream = await fetch(targetUrl, { method, headers, body })
   const contentType = upstream.headers.get('content-type') ?? ''
 

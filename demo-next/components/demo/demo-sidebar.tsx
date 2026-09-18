@@ -27,6 +27,27 @@ function childLinkClass(isActive: boolean) {
     : 'rounded-md px-2.5 py-1 text-[13px] font-medium text-dark/60 hover:bg-dark/5 hover:text-primary'
 }
 
+function ExternalLinkIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="12"
+      height="12"
+      aria-hidden="true"
+      className="shrink-0 opacity-70"
+    >
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6m-7 1l9-9m-5 0h5v5"
+      />
+    </svg>
+  )
+}
+
 export function DemoSidebar() {
   const pathname = usePathname()
   const [hash, setHash] = useState('')
@@ -72,11 +93,13 @@ export function DemoSidebar() {
                           <a
                             key={child.href}
                             href={child.href}
-                            className={childLinkClass(false)}
+                            className={`${childLinkClass(false)} inline-flex items-center gap-1`}
                             rel="noreferrer"
                             target="_blank"
                           >
                             {child.label}
+                            <ExternalLinkIcon />
+                            <span className="sr-only"> (opens in a new tab)</span>
                           </a>
                         )
                       }

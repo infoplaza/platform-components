@@ -15,6 +15,29 @@ export type TimeseriesChartView =
   | 'VALUE'
   | 'PRECIPITATION_TYPE'
 
+export type TimeseriesChartLineCurve =
+  | 'linear'
+  | 'monotone'
+  | 'step'
+  | 'stepAfter'
+  | 'stepBefore'
+
+export type TimeseriesChartLineStyle = {
+  color?: string
+  strokeWidth?: number
+  strokeDasharray?: string
+  opacity?: number
+  type?: TimeseriesChartLineCurve
+  connectNulls?: boolean
+  dot?: boolean
+}
+
+export type TimeseriesChartAxisBound = number | 'auto' | 'dataMin' | 'dataMax'
+
+export type TimeseriesChartYAxis = {
+  domain?: [TimeseriesChartAxisBound, TimeseriesChartAxisBound]
+}
+
 export type TimeseriesChartElementItem = {
   slug: string
   title: string
@@ -26,6 +49,8 @@ export type TimeseriesChartElementItem = {
   color?: string
   decimals?: number
   stripLabel?: string
+  /** LINE series styling. Ignored for other views. */
+  line?: TimeseriesChartLineStyle
 }
 
 export type TimeseriesChartElementGroup = {
@@ -33,6 +58,7 @@ export type TimeseriesChartElementGroup = {
   title: string
   icon?: ComponentType<{ className?: string; style?: CSSProperties }>
   items?: TimeseriesChartElementItem[]
+  yAxis?: TimeseriesChartYAxis
 }
 
 export type TimeseriesChartLineSeries = {
@@ -42,6 +68,12 @@ export type TimeseriesChartLineSeries = {
   unit?: string
   color: string
   decimals?: number
+  strokeWidth?: number
+  strokeDasharray?: string
+  opacity?: number
+  type?: TimeseriesChartLineCurve
+  connectNulls?: boolean
+  dot?: boolean
 }
 
 export type TimeseriesChartThresholdOperator =
@@ -104,6 +136,7 @@ export type TimeseriesChartPrecipitationTypePoint = {
   ts: number
   value: number
   title: string
+  color: string
 }
 
 export type TimeseriesChartPrecipitationTypeOverlay = {
@@ -119,8 +152,10 @@ export type TimeseriesChartGraphConfig = {
   values: TimeseriesChartValueOverlay[]
   precipitationTypes: TimeseriesChartPrecipitationTypeOverlay[]
   unit?: string
+  /** X-axis time range in milliseconds. */
   domain?: [number, number]
   ticks?: number[]
+  yAxis?: TimeseriesChartYAxis
 }
 
 export type TimeseriesChartBlock = {

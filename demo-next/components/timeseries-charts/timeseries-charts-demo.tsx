@@ -24,6 +24,8 @@ import {
   COMPOSED_SOURCE,
   CUSTOM_ELEMENTS_FILENAME,
   CUSTOM_ELEMENTS_SOURCE,
+  CUSTOM_STYLING_FILENAME,
+  CUSTOM_STYLING_SOURCE,
   HOUR_INTERVAL_FILENAME,
   HOUR_INTERVAL_SOURCE,
   MARINE_FILENAME,
@@ -64,6 +66,23 @@ function LocationCaption({ location }: { location: DemoLocation }) {
   )
 }
 
+function ElementBuilderComingSoonButton() {
+  return (
+    <button
+      type="button"
+      disabled
+      aria-disabled="true"
+      title="Element Builder is coming soon"
+      className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-md bg-cloud-200 px-3 py-1.5 text-sm font-medium text-dark/40"
+    >
+      Element Builder
+      <span className="rounded-full bg-dark/10 px-1.5 py-px text-2xs font-semibold uppercase tracking-wide text-dark/35">
+        Coming soon
+      </span>
+    </button>
+  )
+}
+
 function ExampleSection({
   id,
   title,
@@ -71,6 +90,7 @@ function ExampleSection({
   filename,
   source,
   location,
+  actions,
   children,
 }: {
   id: string
@@ -79,6 +99,7 @@ function ExampleSection({
   filename: string
   source: string
   location: DemoLocation
+  actions?: ReactNode
   children: ReactNode
 }) {
   return (
@@ -95,7 +116,10 @@ function ExampleSection({
             <LocationCaption location={location} />
           </div>
         </div>
-        <ViewCodeButton title={`${title} code`} filename={filename} source={source} />
+        <div className="flex flex-wrap items-center gap-2">
+          {actions}
+          <ViewCodeButton title={`${title} code`} filename={filename} source={source} />
+        </div>
       </div>
       <div className="ip-platform overflow-auto rounded-2xl border border-cloud/10 bg-white">
         {children}
@@ -126,11 +150,42 @@ const DEMO_CUSTOM_ELEMENT_GROUPS: TimeseriesChartElementGroup[] = [
         unit: '%',
         view: 'LINE',
       },
+      {
+        slug: 'clouds_mid',
+        title: 'Mid clouds',
+        element: 'cloudcovermiddle',
+        unit: '%',
+        view: 'LINE',
+      },
+      {
+        slug: 'clouds_high',
+        title: 'High clouds',
+        element: 'cloudcoverhigh',
+        unit: '%',
+        view: 'LINE',
+      },
+      {
+        slug: 'clouds_rh',
+        title: 'Relative humidity',
+        element: 'relativehumidity',
+        level: '2m',
+        unit: '%',
+        view: 'LINE',
+      },
+      {
+        slug: 'clouds_vis',
+        title: 'Visibility',
+        element: 'visibility',
+        unit: 'km',
+        view: 'VALUE',
+        stripLabel: 'Vis',
+      },
     ],
   },
   {
     key: 'pressure',
     title: 'Pressure',
+    yAxis: { domain: ['dataMin', 'dataMax'] },
     items: [
       {
         slug: 'pressure_msl',
@@ -139,9 +194,119 @@ const DEMO_CUSTOM_ELEMENT_GROUPS: TimeseriesChartElementGroup[] = [
         unit: 'hPa',
         view: 'LINE',
       },
+      {
+        slug: 'pressure_surface',
+        title: 'Surface pressure',
+        element: 'pressure',
+        level: 'surface',
+        unit: 'hPa',
+        view: 'LINE',
+      },
     ],
   },
 ]
+
+const DEMO_CUSTOM_THRESHOLDS: TimeseriesChartThresholds = {
+  ignored_hours: [],
+  conditions: {
+    yellow: [
+      {
+        rows: [
+          {
+            elementId: 'cloudcovertotal',
+            operator: 'greater-than',
+            from: 50,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'relativehumidity',
+            operator: 'greater-than',
+            from: 80,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'pressure_meansealevel',
+            operator: 'less-than',
+            from: 1010,
+            to: null,
+          },
+        ],
+      },
+    ],
+    orange: [
+      {
+        rows: [
+          {
+            elementId: 'cloudcovertotal',
+            operator: 'greater-than',
+            from: 75,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'relativehumidity',
+            operator: 'greater-than',
+            from: 90,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'pressure_meansealevel',
+            operator: 'less-than',
+            from: 1000,
+            to: null,
+          },
+        ],
+      },
+    ],
+    red: [
+      {
+        rows: [
+          {
+            elementId: 'cloudcovertotal',
+            operator: 'greater-than',
+            from: 90,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'relativehumidity',
+            operator: 'greater-than',
+            from: 95,
+            to: null,
+          },
+        ],
+      },
+      {
+        rows: [
+          {
+            elementId: 'pressure_meansealevel',
+            operator: 'less-than',
+            from: 990,
+            to: null,
+          },
+        ],
+      },
+    ],
+  },
+}
 
 const DEMO_THRESHOLDS: TimeseriesChartThresholds = {
   ignored_hours: [],
@@ -432,6 +597,80 @@ function CustomElementsExample() {
       locale="en"
       timezone={null}
       elementGroups={DEMO_CUSTOM_ELEMENT_GROUPS}
+      thresholds={DEMO_CUSTOM_THRESHOLDS}
+    />
+  )
+}
+
+const DEMO_CUSTOM_STYLING_GROUPS: TimeseriesChartElementGroup[] = [
+  {
+    key: 'temperature',
+    title: 'Temperature',
+    items: [
+      {
+        slug: 'temperature_temperature',
+        title: 'Temperature',
+        element: 'temperature',
+        level: '2m',
+        unit: '°C',
+        view: 'LINE',
+        line: { color: '#E63A48', strokeWidth: 2, type: 'monotone' },
+      },
+      {
+        slug: 'temperature_dewpoint',
+        title: 'Dewpoint',
+        element: 'dewpoint',
+        level: '2m',
+        unit: '°C',
+        view: 'LINE',
+        line: { color: '#3b82f6', strokeDasharray: '4 4' },
+      },
+      {
+        slug: 'temperature_temperatureapparent',
+        title: 'Feels like',
+        element: 'temperatureapparent',
+        level: '2m',
+        unit: '°C',
+        view: 'LINE',
+        line: { color: '#b45309', strokeWidth: 1, opacity: 0.55 },
+      },
+    ],
+  },
+  {
+    key: 'pressure',
+    title: 'Pressure',
+    yAxis: { domain: ['dataMin', 'dataMax'] },
+    items: [
+      {
+        slug: 'pressure_msl',
+        title: 'Mean sea level pressure',
+        element: 'pressure_meansealevel',
+        unit: 'hPa',
+        view: 'LINE',
+        line: { color: '#111111', strokeWidth: 2 },
+      },
+      {
+        slug: 'pressure_surface',
+        title: 'Surface pressure',
+        element: 'pressure',
+        level: 'surface',
+        unit: 'hPa',
+        view: 'LINE',
+        line: { color: '#9ca3af', strokeDasharray: '4 4' },
+      },
+    ],
+  },
+]
+
+function CustomStylingExample() {
+  return (
+    <TimeseriesChartsForecast
+      lat={AMSTERDAM.lat}
+      lon={AMSTERDAM.lon}
+      model="gfs"
+      locale="en"
+      timezone={null}
+      elementGroups={DEMO_CUSTOM_STYLING_GROUPS}
     />
   )
 }
@@ -507,7 +746,7 @@ export default function TimeseriesChartsDemo() {
         <ExampleSection
           id="hour-interval"
           title="Hour interval"
-          description="Host-owned hourInterval (1, 3, or 6). Default is 6-hourly unlabeled vertical lines; changing it does not refetch."
+          description="Host-owned hourInterval (1, 3, or 6). Default is 6-hourly unlabeled vertical lines and a 4-per-day strip summary; 3h shows 8 strip entries per day. Changing it does not refetch. LINE series stay hourly."
           filename={HOUR_INTERVAL_FILENAME}
           source={HOUR_INTERVAL_SOURCE}
           location={AMSTERDAM}
@@ -562,12 +801,24 @@ export default function TimeseriesChartsDemo() {
         <ExampleSection
           id="custom-elements"
           title="Custom elements"
-          description="Host-owned elementGroups replace the land defaults. Reuse a default group (Temperature) and add custom Cloud cover and Pressure charts."
+          description="Host-owned elementGroups replace the land defaults. Reuse Temperature, then custom Cloud cover (total / low / mid / high / humidity plus visibility in the strip) and Pressure (MSL and surface, with yAxis domain dataMin–dataMax so hPa values fill the plot). Thresholds flag overcast sky (50 / 75 / 90 %), humid air (80 / 90 / 95 %), and falling MSL pressure (1010 / 1000 / 990 hPa)."
           filename={CUSTOM_ELEMENTS_FILENAME}
           source={CUSTOM_ELEMENTS_SOURCE}
           location={AMSTERDAM}
+          actions={<ElementBuilderComingSoonButton />}
         >
           <CustomElementsExample />
+        </ExampleSection>
+
+        <ExampleSection
+          id="custom-styling"
+          title="Custom styling"
+          description="Optional LINE style per item (color, strokeWidth, strokeDasharray, opacity, curve type) and a group yAxis domain. Temperature uses distinct colors, a dashed dewpoint, and a thinner feels-like series. Pressure fits the plot to the data range instead of pinning Y at 0."
+          filename={CUSTOM_STYLING_FILENAME}
+          source={CUSTOM_STYLING_SOURCE}
+          location={AMSTERDAM}
+        >
+          <CustomStylingExample />
         </ExampleSection>
 
         <footer className="flex flex-wrap items-center gap-4 px-0.5 pb-2 text-xs text-dark/60">

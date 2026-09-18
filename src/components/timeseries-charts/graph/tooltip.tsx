@@ -1,5 +1,6 @@
+import type { CSSProperties, ReactNode } from 'react'
 import { formatDate } from '@/src/utilities/date'
-import { formatChartValue } from '../series'
+import { IpArrowUp, IpExclamationTriangle } from '@/src/components/icons'
 import { toSupportedLocale } from '../locale'
 import type {
   TimeseriesChartGraphConfig,
@@ -9,6 +10,7 @@ import {
   TIMESERIES_CHART_THRESHOLD_COLORS,
   TIMESERIES_CHART_THRESHOLD_LABELS,
 } from '../thresholds'
+import { hoverMetrics } from './hover'
 
 export function formatChartTimestamp(
   value: unknown,
@@ -23,6 +25,46 @@ export function formatChartTimestamp(
   return (
     formatDate(ms, pattern, toSupportedLocale(locale), timezone ?? undefined) ??
     ''
+  )
+}
+
+const HOVER_PILL_CLASS =
+  'ip:inline-flex ip:h-5 ip:items-center ip:gap-1 ip:rounded-full ip:px-2'
+
+function hoverPillStyle(color: string): CSSProperties {
+  return {
+    color,
+    backgroundColor: `color-mix(in srgb, ${color} 10%, transparent)`,
+  }
+}
+
+function HoverPill({
+  color,
+  children,
+}: {
+  color?: string
+  children: ReactNode
+}) {
+  return (
+    <span
+      className={
+        color
+          ? HOVER_PILL_CLASS
+          : `${HOVER_PILL_CLASS} ip:bg-dark/10 ip:text-dark/80 ip:dark:bg-white/10 ip:dark:text-white/80`
+      }
+      style={color ? hoverPillStyle(color) : undefined}
+    >
+      {children}
+    </span>
+  )
+}
+
+function HoverMetric({ name, value }: { name: string; value: string }) {
+  return (
+    <span>
+      <span className="ip:font-extralight">{name}: </span>
+      <span className="ip:font-semibold">{value}</span>
+    </span>
   )
 }
 
@@ -43,62 +85,75 @@ export default function ChartHoverHeader({
     return null
   }
 
-  const row = config.data.find((entry) => Number(entry.ts) === timestamp)
-  if (!row) {
-    return null
-  }
-
   const level =
     thresholdLevel && thresholdLevel !== 'none' ? thresholdLevel : null
   const levelColor = level ? TIMESERIES_CHART_THRESHOLD_COLORS[level] : undefined
+  const metrics = hoverMetrics(config, timestamp)
 
   return (
-    <div className="ip:flex ip:items-center ip:gap-x-3 ip:whitespace-nowrap ip:text-[11px] ip:leading-none ip:text-dark/80 ip:dark:text-white/80">
-      <span className="ip:font-semibold ip:text-dark ip:dark:text-white">
-        {formatChartTimestamp(timestamp, locale, timezone)}
+    <div className="ip:flex ip:items-center ip:gap-1 ip:whitespace-nowrap ip:text-[11px] ip:leading-none ip:text-dark/80 ip:dark:text-white/80">
+      <span className="ip:px-1 ip:text-dark ip:dark:text-white">
+        <span className="ip:font-semibold">
+          {formatChartTimestamp(timestamp, locale, timezone, 'EEEE d LLL')}
+        </span>{' '}
+        <span className="ip:font-light">
+          {formatChartTimestamp(timestamp, locale, timezone, 'HH:mm')}
+        </span>
       </span>
       {level ? (
-        <span
-          className="ip:inline-flex ip:items-center ip:gap-1 ip:font-semibold"
-          style={{ color: levelColor }}
-        >
-          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden>
-            <path d="M5 1.2 9.2 8.8H.8Z" fill="currentColor" />
-          </svg>
-          {TIMESERIES_CHART_THRESHOLD_LABELS[level]}
-        </span>
+        <HoverPill color={levelColor}>
+          <IpExclamationTriangle className="ip:size-3" />
+          <span className="ip:font-semibold">
+            {TIMESERIES_CHART_THRESHOLD_LABELS[level]}
+          </span>
+        </HoverPill>
       ) : null}
-      {config.lines.map((line) => {
-        const raw = row[line.slug]
-        const value = typeof raw === 'number' ? raw : raw == null || raw === '' ? Number.NaN : Number(raw)
-        const label =
-          Number.isFinite(value)
-            ? `${formatChartValue(value, line.decimals)}${line.unit ? ` ${line.unit}` : ''}`
-            : '—'
+      {metrics.map((metric) => {
+        if (metric.kind === 'line') {
+          return (
+            <HoverPill key={metric.slug} color={metric.color}>
+              <span
+                className="ip:inline-block ip:h-2 ip:w-2 ip:shrink-0 ip:rounded-full"
+                style={{ backgroundColor: metric.color }}
+              />
+              <HoverMetric name={metric.title} value={metric.label} />
+            </HoverPill>
+          )
+        }
+
+        if (metric.kind === 'direction') {
+          return (
+            <HoverPill key={metric.slug}>
+              {metric.direction != null ? (
+                <IpArrowUp
+                  className="ip:inline-block ip:size-3 ip:shrink-0 ip:origin-center"
+                  style={{ transform: `rotate(${metric.direction - 180}deg)` }}
+                  aria-hidden
+                />
+              ) : null}
+              <HoverMetric name={metric.title} value={metric.label} />
+            </HoverPill>
+          )
+        }
+
+        if (metric.kind === 'value') {
+          return (
+            <HoverPill key={metric.slug}>
+              <HoverMetric name={metric.title} value={metric.label} />
+            </HoverPill>
+          )
+        }
+
         return (
-          <span
-            key={line.slug}
-            className="ip:flex ip:items-center ip:gap-1"
-            style={{ color: line.color }}
-          >
-            <span
-              className="ip:inline-block ip:h-2 ip:w-2 ip:shrink-0 ip:rounded-full"
-              style={{ backgroundColor: line.color }}
-            />
-            <span>
-              {line.title}: {label}
-            </span>
-          </span>
-        )
-      })}
-      {config.precipitationTypes.map((overlay) => {
-        const point = overlay.points.find((entry) => entry.ts === timestamp)
-        return (
-          <span key={overlay.slug} className="ip:flex ip:items-center ip:gap-1">
-            <span>
-              {overlay.title}: {point?.title ?? '—'}
-            </span>
-          </span>
+          <HoverPill key={metric.slug} color={metric.color}>
+            {metric.color ? (
+              <span
+                className="ip:inline-block ip:h-2 ip:w-2 ip:shrink-0 ip:rounded-full"
+                style={{ backgroundColor: metric.color }}
+              />
+            ) : null}
+            <HoverMetric name={metric.title} value={metric.label} />
+          </HoverPill>
         )
       })}
     </div>

@@ -13,6 +13,7 @@ import {
 } from 'recharts'
 import {
   DEFAULT_TIMESERIES_CHART_HOUR_INTERVAL,
+  DEFAULT_TIMESERIES_CHART_LINE_STROKE_WIDTH,
   DEFAULT_TIMESERIES_CHART_PLOT_HEIGHT,
   TIMESERIES_CHART_DATE_AXIS_HEIGHT,
   TIMESERIES_CHART_PLOT_CHROME_HEIGHT,
@@ -21,14 +22,15 @@ import {
 } from './defaults'
 import type { TimeseriesGraphProps } from './types'
 import ChartAxisStrip from './graph/axis-strip'
+import ChartDateTick from './graph/date-tick'
 import ChartLegend from './graph/legend'
 import ChartThresholdHues from './graph/threshold-hues'
-import ChartHoverHeader, { formatChartTimestamp } from './graph/tooltip'
+import ChartHoverHeader from './graph/tooltip'
 import { hourTicks } from './series'
 import {
+  resolveTimeseriesChartYDomain,
   thresholdLevelAtTimestamp,
   thresholdStripSegments,
-  thresholdYAxisMax,
   thresholdYLines,
 } from './thresholds'
 
@@ -123,7 +125,7 @@ export default function TimeseriesGraph({
   const axisHeight = strip + TIMESERIES_CHART_DATE_AXIS_HEIGHT
   const height = fixedHeight ?? chartHeight + TIMESERIES_CHART_PLOT_CHROME_HEIGHT
   const ticks = config.ticks ?? []
-  const yMax = thresholdYAxisMax(config, yLines)
+  const yDomain = resolveTimeseriesChartYDomain(config, yLines)
 
   const renderChart = (extraProps: Record<string, unknown>) => (
     <ComposedChart
@@ -179,10 +181,15 @@ export default function TimeseriesGraph({
           key={`line-${id}-${line.slug}`}
           dataKey={line.slug}
           name={line.title}
-          type="linear"
+          type={line.type ?? 'linear'}
           stroke={line.color}
-          strokeWidth={1.5}
-          dot={false}
+          strokeWidth={
+            line.strokeWidth ?? DEFAULT_TIMESERIES_CHART_LINE_STROKE_WIDTH
+          }
+          strokeDasharray={line.strokeDasharray}
+          strokeOpacity={line.opacity}
+          connectNulls={line.connectNulls ?? false}
+          dot={line.dot ?? false}
           isAnimationActive={false}
         />
       ))}
@@ -201,18 +208,21 @@ export default function TimeseriesGraph({
         type="number"
         domain={config.domain ?? ['dataMin', 'dataMax']}
         ticks={config.ticks}
-        tickFormatter={(value: number) =>
-          formatChartTimestamp(value, locale, timezone, 'EEEEEE d')
-        }
         interval={0}
         height={axisHeight}
-        tick={{ fontSize: 10, fill: '#6c757d' }}
+        tick={
+          <ChartDateTick
+            locale={locale}
+            timezone={timezone}
+            domainEnd={config.domain?.[1]}
+          />
+        }
         tickLine={strip > 0 ? false : undefined}
         tickSize={strip > 0 ? 0 : undefined}
         tickMargin={strip > 0 ? strip : undefined}
       />
       <YAxis
-        domain={[0, yMax]}
+        domain={yDomain}
         width={36}
         tick={{ fontSize: 10, fill: '#6c757d' }}
         allowDecimals
@@ -226,6 +236,7 @@ export default function TimeseriesGraph({
             offset={props.offset as never}
             hoverTs={hoverTs}
             hourLines={hourLines}
+            hourInterval={hourInterval}
             thresholdSegments={thresholdSegments}
           />
         )}
